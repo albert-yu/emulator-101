@@ -1,4 +1,38 @@
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+int disassemble8080op(unsigned char *codebuffer, int pc);
+
+int main(int argc, char** argv)
+{
+    FILE *f = fopen(argv[1], "rb");
+    if (f == NULL)
+    {
+        printf("Error: couldn't open %s\n", argv[1]);
+        exit(1);
+    }
+
+    // get the file size and read it into a memory buffer
+    fseek(f, 0L, SEEK_END);
+    int fsize = ftell(f);
+    fseek(f, 0L, SEEK_SET);
+
+    unsigned char *buffer = malloc(fsize);
+
+    fread(buffer, fsize, 1, f);
+    fclose(f);
+
+    int pc = 0;
+
+    while (pc < fsize)
+    {
+        pc += disassemble8080op(buffer, pc);
+        printf("\n");
+    }
+
+    return 0;
+}
+
 
 /*
  * Prints out the mnemonic
@@ -264,7 +298,7 @@ int disassemble8080op(unsigned char *codebuffer, int pc)
         case 0xfb: printf("EI "); break;
         case 0xfc: printf("CM     $%02x%02x", code[2], code[1]); opbytes = 3; break;
         case 0xfd: printf("NOP"); break;
-        case 0xfe: printf("CPI    #$%02x%02x", code[1]); opbytes = 2; break;
+        case 0xfe: printf("CPI    #$%02x", code[1]); opbytes = 2; break;
         case 0xff: printf("RST    7"); break;
     }
 
