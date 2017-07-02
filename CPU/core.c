@@ -33,19 +33,41 @@ void UnimplementedInstruction(State8080 *state)
     exit(1);
 }
 
+uint8_t Parity(uint8_t ans)
+{
+    return ~(ans & 0x01);  // 1 (true) if even, 0 otherwise
+}
+
 void EmulateOp(State8080 *state)
 {
     unsigned char *opcode = &state->memory[state->pc];
 
     switch(*opcode)
     {
-        case 0x00: break;
-        case 0x01: UnimplementedInstruction(state); break;
+        case 0x00: 
+            break;
+        case 0x01: 
+            state->c = opcode[1];  // c <- byte 2
+            state->b = opcode[2];  // b <- byte 3
+            state->pc += 2;  // advance two more bytes
+            break;
         case 0x02: UnimplementedInstruction(state); break;
         case 0x03: UnimplementedInstruction(state); break;
-        case 0x04: UnimplementedInstruction(state); break;
-        case 0x05: UnimplementedInstruction(state); break;
-        case 0x06: UnimplementedInstruction(state); break;
+        case 0x04: 
+            uint8_t ans = state->b + 1;
+            state->cc.z = ((ans & 0xff) == 0);
+            state->cc.s = ((ans & 0x80) == 0);
+            state->cc.p = Parity(ans & 0xff);
+            state->cc.ac;  // skip because Space Invaders does not use it
+            state->b = ans;  // b <- b + 1
+            break;
+        case 0x05: 
+            state->b -= 1;
+            break;
+        case 0x06: 
+            state->b = opcode[1];  // b <- byte 2
+            state->pc += 1;
+            break;
         case 0x07: UnimplementedInstruction(state); break;
         case 0x08: UnimplementedInstruction(state); break;
         case 0x09: UnimplementedInstruction(state); break;
@@ -296,4 +318,6 @@ void EmulateOp(State8080 *state)
         case 0xfe: UnimplementedInstruction(state); break;
         case 0xff: UnimplementedInstruction(state); break;
     }
+
+    state->pc += 1;
 }
