@@ -33,23 +33,25 @@ void UnimplementedInstruction(State8080 *state)
     exit(1);
 }
 
-// flags
+// Flags
 
 uint8_t Zero(uint16_t answer)
 {
+    // set to 1 if answer is 0, 0 otherwise
     return ((answer & 0xff) == 0);
 }
 
 uint8_t Sign(uint16_t answer)
 {
-    // set to 1 whn bit 7 of the math instruction is set
+    // set to 1 when bit 7 of the math instruction is set
     return ((answer & 0x80) == 0);
 }
 
-uint8_t Parity(uint8_t answer)
+uint8_t Parity(uint16_t answer)
 {
+    uint8_t ans8bit = answer & 0xff;
     // 1 (true) if even, 0 otherwise
-    return ((answer & 0x01) == 0); 
+    return ((ans8bit & 0x01) == 0); 
 }
 
 uint8_t Carry(uint16_t answer)
@@ -60,7 +62,7 @@ uint8_t Carry(uint16_t answer)
 
 uint8_t AuxCarry(uint16_t answer)
 {
-    // skip impelentation because Space Invaders doesn't use it
+    // skip implementation because Space Invaders doesn't use it
     return 0;  
 }
 
@@ -70,7 +72,7 @@ void EmulateOp(State8080 *state)
 
     switch(*opcode)
     {
-        case 0x00: 
+        case 0x00:  // NOP
             break;
         case 0x01: 
             state->c = opcode[1];  // c <- byte 2
@@ -80,31 +82,39 @@ void EmulateOp(State8080 *state)
         case 0x02: UnimplementedInstruction(state); break;
         case 0x03: UnimplementedInstruction(state); break;
         case 0x04: 
-            uint16_t answer = state->b + 1;
-            state->cc.z = ((answer & 0xff) == 0);
-            state->cc.s = ((answer & 0x80) == 0);
-            state->cc.p = Parity(answer & 0xff); // 1 (true) if even, 0 otherwise
-            state->cc.ac = 0;  // skip because Space Invaders does not use it
+            uint16_t answer = (uint16_t) state->b + 1;
+            state->cc.z = Zero(answer);
+            state->cc.s = Sign(answer);
+            state->cc.p = Parity(answer); // 1 (true) if even, 0 otherwise
+            state->cc.ac = AuxCarry(answer); 
             state->b = answer & 0xff;  // b <- b + 1
             break;
         case 0x05: 
             uint8_t answer = state->b - 1;
-            state->cc.z = ((answer & 0xff) == 0);
-            state->cc.s = ((answer & 0x80) == 0);
-            state->cc.p = Parity(answer & 0xff);
-            state->cc.ac = 0;  // skip because Space Invaders does not use it
+            state->cc.z = Zero(answer);
+            state->cc.s = Sign(answer);
+            state->cc.p = Parity(answer);
+            state->cc.ac = AuxCarry(answer); 
             state->b = answer & 0xff;
             break;
         case 0x06: 
             state->b = opcode[1];  // b <- byte 2
             state->pc += 1;
             break;
-        case 0x07: UnimplementedInstruction(state); break;
-        case 0x08: UnimplementedInstruction(state); break;
+        case 0x07:  // A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
+            // get left-most bit
+            uint8_t leftmost = state->a & 0x80;
+            state->cc.cy = leftmost;
+            // TODO: Set right-most bit to whatever the left-most bit is
+            break;
+        case 0x08:  // NOP
+            break;
         case 0x09: UnimplementedInstruction(state); break;
         case 0x0a: UnimplementedInstruction(state); break;
         case 0x0b: UnimplementedInstruction(state); break;
-        case 0x0c: UnimplementedInstruction(state); break;
+        case 0x0c: 
+            uint16_t answer = ((uint16_t) state->c) + 1; 
+            break;
         case 0x0d: UnimplementedInstruction(state); break;
         case 0x0e: UnimplementedInstruction(state); break;
         case 0x0f: UnimplementedInstruction(state); break;
@@ -163,13 +173,21 @@ void EmulateOp(State8080 *state)
         case 0x42:  // MOV B,D
             state->b = state->d; 
             break;
-        case 0x43: 
+        case 0x43:  // MOV B,E
             state->b = state->e; 
             break;
-        case 0x44: UnimplementedInstruction(state); break;
-        case 0x45: UnimplementedInstruction(state); break;
-        case 0x46: UnimplementedInstruction(state); break;
-        case 0x47: UnimplementedInstruction(state); break;
+        case 0x44:  // etc.
+            state->b = state->h;
+            break;
+        case 0x45: 
+            state->b = state->l;
+            break;
+        case 0x46: 
+            state->b = state->m;
+            break;
+        case 0x47: 
+            state->b = state->a;
+            break;
         case 0x48: UnimplementedInstruction(state); break;
         case 0x49: UnimplementedInstruction(state); break;
         case 0x4a: UnimplementedInstruction(state); break;
@@ -228,25 +246,25 @@ void EmulateOp(State8080 *state)
         case 0x7f: UnimplementedInstruction(state); break;
         case 0x80:  // ADD B
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;    
-            state->cc.z = ((answer & 0xff) == 0);    
-            state->cc.s = ((answer & 0x80) != 0);    
-            state->cc.cy = (answer > 0xff);    
-            state->cc.p = Parity(answer & 0xff); // need to convert 16 to 8 bits
+            state->cc.z = Zero(answer);    
+            state->cc.s = Sign(answer);    
+            state->cc.cy = Carry(answer);    
+            state->cc.p = Parity(answer); 
             state->a = answer & 0xff;
             break;
         case 0x81:  // ADD C
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;    
-            state->cc.z = ((answer & 0xff) == 0);    
-            state->cc.s = ((answer & 0x80) != 0);    
-            state->cc.cy = (answer > 0xff);    
-            state->cc.p = Parity(answer & 0xff);    
+            state->cc.z = Zero(answer);    
+            state->cc.s = Sign(answer);    
+            state->cc.cy = Carry(answer);    
+            state->cc.p = Parity(answer);    
             state->a = answer & 0xff;
             break;
         case 0x82: 
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->d;    
-            state->cc.z = ((answer & 0xff) == 0);    
-            state->cc.s = ((answer & 0x80) != 0);    
-            state->cc.cy = (answer > 0xff);    
+            state->cc.z = Zero(answer);    
+            state->cc.s = Sign(answer);    
+            state->cc.cy = Carry(answer);    
             state->cc.p = Parity(answer & 0xff);    
             state->a = answer & 0xff;
             break;
