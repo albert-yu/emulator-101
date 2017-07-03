@@ -33,10 +33,10 @@ void UnimplementedInstruction(State8080 *state)
     exit(1);
 }
 
-uint8_t Parity(uint8_t ans)
-{
-    return ~(ans & 0x01);  // 1 (true) if even, 0 otherwise
-}
+// uint8_t Parity(uint8_t ans)
+// {
+//     return ((ans & 0x01) == 0);  // 1 (true) if even, 0 otherwise
+// }
 
 void EmulateOp(State8080 *state)
 {
@@ -57,12 +57,17 @@ void EmulateOp(State8080 *state)
             uint8_t ans = state->b + 1;
             state->cc.z = ((ans & 0xff) == 0);
             state->cc.s = ((ans & 0x80) == 0);
-            state->cc.p = Parity(ans & 0xff);
+            state->cc.p = ((ans & 0x01) == 0); // 1 (true) if even, 0 otherwise
             state->cc.ac;  // skip because Space Invaders does not use it
             state->b = ans;  // b <- b + 1
             break;
         case 0x05: 
-            state->b -= 1;
+            uint8_t ans = state->b - 1;
+            state->cc.z = ((ans & 0xff) == 0);
+            state->cc.s = ((ans & 0x80) == 0);
+            state->cc.p = ((ans & 0x01) == 0);
+            state->cc.ac;  // skip because Space Invaders does not use it
+            state->b = ans;
             break;
         case 0x06: 
             state->b = opcode[1];  // b <- byte 2
@@ -190,7 +195,14 @@ void EmulateOp(State8080 *state)
         case 0x7e: UnimplementedInstruction(state); break;
         case 0x7f: UnimplementedInstruction(state); break;
         case 0x80: UnimplementedInstruction(state); break;
-        case 0x81: UnimplementedInstruction(state); break;
+        case 0x81: 
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;    
+            state->cc.z = ((answer & 0xff) == 0);    
+            state->cc.s = ((answer & 0x80) != 0);    
+            state->cc.cy = (answer > 0xff);    
+            state->cc.p = Parity(answer&0xff);    
+            state->a = answer & 0xff;
+            break;
         case 0x82: UnimplementedInstruction(state); break;
         case 0x83: UnimplementedInstruction(state); break;
         case 0x84: UnimplementedInstruction(state); break;
