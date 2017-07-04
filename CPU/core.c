@@ -103,9 +103,11 @@ void EmulateOp(State8080 *state)
             break;
         case 0x07:  // A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
             // get left-most bit
-            uint8_t leftmost = state->a & 0x80;
+            uint8_t leftmost = state->a >> 7;
             state->cc.cy = leftmost;
-            // TODO: Set right-most bit to whatever the left-most bit is
+            // Set right-most bit to whatever the left-most bit is
+            state->a = state->a << 1;
+            state->a = state->a | leftmost;
             break;
         case 0x08:  // NOP
             break;
