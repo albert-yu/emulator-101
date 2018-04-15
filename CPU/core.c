@@ -369,8 +369,20 @@ void emulate_op(State8080 *state)
         case 0xbf: unimplemented_instr(state); break;
         case 0xc0: unimplemented_instr(state); break;
         case 0xc1: unimplemented_instr(state); break;
-        case 0xc2: unimplemented_instr(state); break;
-        case 0xc3: unimplemented_instr(state); break;
+        case 0xc2: 
+            if (state->cc.z == 0)
+            {
+                state->pc = (opcode[2] << 8 | opcode[1]);
+            }
+            else
+            {
+                // branch not taken
+                state->pc += 2;
+            }
+            break;
+        case 0xc3: 
+            state->pc = (opcode[2] << 8 | opcode[1]);
+            break;
         case 0xc4: unimplemented_instr(state); break;
         case 0xc5: unimplemented_instr(state); break;
         case 0xc6: unimplemented_instr(state); break;
