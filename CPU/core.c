@@ -24,7 +24,7 @@ typedef struct state8080_t
     uint16_t    sp;
     uint16_t    pc;
     uint8_t     *memory;
-    struct      ConditionCodes      cc;
+    struct      condition_codes_t      cc;
     uint8_t     int_enable;
 } State8080;
 
