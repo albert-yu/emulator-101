@@ -1,4 +1,6 @@
-#include <stdint.h>
+#include <inttypes.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct ConditionCodes
 {
@@ -10,7 +12,7 @@ typedef struct ConditionCodes
     uint8_t     pad:3;
 } ConditionCodes;
 
-typedef struct State8080
+typedef struct state8080_t
 {
     uint8_t     a;
     uint8_t     b;
@@ -74,48 +76,67 @@ void EmulateOp(State8080 *state)
     {
         case 0x00:  // NOP
             break;
+            
         case 0x01: 
+        {
             state->c = opcode[1];  // c <- byte 2
             state->b = opcode[2];  // b <- byte 3
             state->pc += 2;  // advance two more bytes
+        }
             break;
+
         case 0x02: UnimplementedInstruction(state); break;
         case 0x03: UnimplementedInstruction(state); break;
         case 0x04: 
+        {
             uint16_t answer = (uint16_t) state->b + 1;
             state->cc.z = Zero(answer);
             state->cc.s = Sign(answer);
             state->cc.p = Parity(answer); // 1 (true) if even, 0 otherwise
             state->cc.ac = AuxCarry(answer); 
             state->b = answer & 0xff;  // b <- b + 1
+        }
             break;
+
         case 0x05: 
+        {
             uint8_t answer = state->b - 1;
             state->cc.z = Zero(answer);
             state->cc.s = Sign(answer);
             state->cc.p = Parity(answer);
             state->cc.ac = AuxCarry(answer); 
             state->b = answer & 0xff;
+        }           
             break;
+
         case 0x06: 
+        {
             state->b = opcode[1];  // b <- byte 2
             state->pc += 1;
+        }           
             break;
+
         case 0x07:  // A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
+        {
             // get left-most bit
             uint8_t leftmost = state->a >> 7;
             state->cc.cy = leftmost;
             // Set right-most bit to whatever the left-most bit is
             state->a = state->a << 1;
             state->a = state->a | leftmost;
+        }
             break;
+
         case 0x08:  // NOP
             break;
         case 0x09: UnimplementedInstruction(state); break;
         case 0x0a: UnimplementedInstruction(state); break;
         case 0x0b: UnimplementedInstruction(state); break;
         case 0x0c: 
+        {
             uint16_t answer = ((uint16_t) state->c) + 1; 
+        }
+            
             break;
         case 0x0d: UnimplementedInstruction(state); break;
         case 0x0e: UnimplementedInstruction(state); break;
@@ -247,29 +268,38 @@ void EmulateOp(State8080 *state)
         case 0x7e: UnimplementedInstruction(state); break;
         case 0x7f: UnimplementedInstruction(state); break;
         case 0x80:  // ADD B
+        {
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;    
             state->cc.z = Zero(answer);    
             state->cc.s = Sign(answer);    
             state->cc.cy = Carry(answer);    
             state->cc.p = Parity(answer); 
             state->a = answer & 0xff;
+        }            
             break;
+
         case 0x81:  // ADD C
+        {
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;    
             state->cc.z = Zero(answer);    
             state->cc.s = Sign(answer);    
             state->cc.cy = Carry(answer);    
             state->cc.p = Parity(answer);    
             state->a = answer & 0xff;
+        }
             break;
-        case 0x82: 
+
+        case 0x82:
+        {
             uint16_t answer = (uint16_t) state->a + (uint16_t) state->d;    
             state->cc.z = Zero(answer);    
             state->cc.s = Sign(answer);    
             state->cc.cy = Carry(answer);    
             state->cc.p = Parity(answer & 0xff);    
             state->a = answer & 0xff;
+        } 
             break;
+
         case 0x83: UnimplementedInstruction(state); break;
         case 0x84: UnimplementedInstruction(state); break;
         case 0x85: UnimplementedInstruction(state); break;
@@ -398,4 +428,9 @@ void EmulateOp(State8080 *state)
     }
 
     state->pc += 1;
+}
+
+int main()
+{
+    return 0;
 }
