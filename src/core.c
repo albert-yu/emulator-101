@@ -211,6 +211,7 @@ void sbb_x(State8080 *state, uint8_t x) {
 }
 
 /*
+ * Bitwise AND
  * ANA X: A <- A & A
  */
 void ana_x(State8080 *state, uint8_t x) {
@@ -223,7 +224,17 @@ void ana_x(State8080 *state, uint8_t x) {
 }
 
 /*
- * Reads that value in memory pointed to by
+ * Bitwise XOR
+ * XRA X: A <- A ^ X
+ */
+void xra_x(State8080 *state, uint8_t x) {
+    uint16_t answer = (uint16_t) state->a ^ x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
+ * Reads the value in memory pointed to by
  * the HL register pair
  */
 uint8_t read_hl(State8080 *state) {
@@ -653,14 +664,47 @@ void emulate_op(State8080 *state) {
             ana_x(state, state->a);
         }
             break;
-        case 0xa8: unimplemented_instr(state); break;
-        case 0xa9: unimplemented_instr(state); break;
-        case 0xaa: unimplemented_instr(state); break;
-        case 0xab: unimplemented_instr(state); break;
-        case 0xac: unimplemented_instr(state); break;
-        case 0xad: unimplemented_instr(state); break;
-        case 0xae: unimplemented_instr(state); break;
-        case 0xaf: unimplemented_instr(state); break;
+        case 0xa8:
+        {
+            xra_x(state, state->b);
+        }
+            break;
+        case 0xa9:
+        {
+            xra_x(state, state->c);
+        }
+            break;
+        case 0xaa:
+        {
+            xra_x(state, state->d);
+        }
+            break;
+        case 0xab:
+        {
+            xra_x(state, state->e);
+        }
+            break;
+        case 0xac:
+        {
+            xra_x(state, state->h);
+        }
+            break;
+        case 0xad:
+        {
+            xra_x(state, state->l);
+        }
+            break;
+        case 0xae:
+        {
+            uint8_t m = read_hl(state);
+            xra_x(state, m);
+        }
+            break;
+        case 0xaf:
+        {
+            xra_x(state, state->a);
+        }
+            break;
         case 0xb0: unimplemented_instr(state); break;
         case 0xb1: unimplemented_instr(state); break;
         case 0xb2: unimplemented_instr(state); break;
@@ -697,6 +741,12 @@ void emulate_op(State8080 *state) {
         case 0xc5: unimplemented_instr(state); break;
         case 0xc6: 
         {
+            // The immediate form is the almost the 
+            // same except the source of the addend 
+            // is the byte after the instruction. 
+            // Since "opcode" is a pointer to the 
+            // current instruction in memory, 
+            // opcode[1] will be the immediately following byte.
             uint16_t answer = (uint16_t) state->a + (uint16_t) opcode[1];
             set_flags(state, answer, SET_ALL_FLAGS);
         }
