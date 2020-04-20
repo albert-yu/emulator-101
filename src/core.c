@@ -5,27 +5,52 @@
 #include "core.h"
 
 typedef struct condition_codes_t {
+    // zero: set if result is 0
     uint8_t     z:1;  // z occupies 1 bit in the struct
+
+    // sign: set if result is negative
     uint8_t     s:1;
+
+    // parity: set if number of 1 bits in the
+    // result is even
     uint8_t     p:1;
-    uint8_t     cy:1;
+
+    // carry: set if last addition operation
+    // resulted in a carry or if the last 
+    // subtraction operation required a borrow
+    uint8_t     cy:1; // not to be confused with C register
+
+    // auxiliary carry: used for binary-coded
+    // decimal arithmetic
     uint8_t     ac:1;
+
+    // padding so that the struct occupies exactly
+    // 8 bits
     uint8_t     pad:3;
 } ConditionCodes;
 
 typedef struct state8080_t {
-    uint8_t     a;
-    uint8_t     b;
-    uint8_t     c;
-    uint8_t     d;
-    uint8_t     e;
-    uint8_t     h;
-    uint8_t     l;
-    uint16_t    sp;
-    uint16_t    pc;
-    uint8_t     *memory;
-    struct      condition_codes_t      cc;
-    uint8_t     int_enable;
+    // registers (7 of them)
+    uint8_t             a;
+    uint8_t             b;
+    uint8_t             c;
+    uint8_t             d;
+    uint8_t             e;
+    uint8_t             h;
+    uint8_t             l;
+
+    // stack pointer
+    uint16_t            sp;
+
+    // program counter
+    uint16_t            pc;
+
+    uint8_t             *memory;
+
+    // status flags
+    ConditionCodes      cc;
+
+    uint8_t             int_enable;
 } State8080;
 
 
@@ -59,7 +84,43 @@ uint8_t carry(uint16_t answer) {
 
 uint8_t auxcarry(uint16_t answer) {
     // skip implementation because Space Invaders doesn't use it
+    // TODO: do this
     return 0;  
+}
+
+
+// combine with bitwise OR
+// to set flags 
+#define SET_Z_FLAG  1 << 7
+#define SET_S_FLAG  1 << 6
+#define SET_P_FLAG  1 << 5
+#define SET_CY_FLAG 1 << 4
+#define SET_AC_FLAG 1 << 3
+
+/*
+ * Set the specified flags according to the answer received by
+ * arithmetic
+ * flagstoset - from left to right, the z, s, p, cy, and ac flags (should
+ * set flag if set to 1)
+ */
+void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
+    // remove trailing bits
+    uint8_t cleaned = flagstoset & 0b11111000;
+    if (cleaned & SET_Z_FLAG) {
+        state->cc.z = zero(answer);
+    }
+    if (cleaned & SET_S_FLAG) {
+        state->cc.s = sign(answer);
+    }
+    if (cleaned & SET_P_FLAG) {
+        state->cc.p = parity(answer);
+    }
+    if (cleaned & SET_CY_FLAG) {
+        state->cc.cy = carry(answer);
+    }
+    if (cleaned & SET_AC_FLAG) {
+        state->cc.ac = auxcarry(answer); 
+    }
 }
 
 void emulate_op(State8080 *state) {
@@ -124,9 +185,11 @@ void emulate_op(State8080 *state) {
         case 0x09: unimplemented_instr(state); break;
         case 0x0a: unimplemented_instr(state); break;
         case 0x0b: unimplemented_instr(state); break;
-        case 0x0c: 
+        case 0x0c: // INR c
         {
             uint16_t answer = ((uint16_t) state->c) + 1; 
+            state->c = (uint8_t) answer;
+            // TODO: what to do with flags Z, S, P, AC?
         }
             
             break;
