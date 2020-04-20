@@ -244,6 +244,16 @@ void ora_x(State8080 *state, uint8_t x) {
 }
 
 /*
+ * Combines two 8 bit values into a single
+ * 16 bit value
+ */
+uint16_t get16bitval(uint8_t left, uint8_t right) {
+    uint16_t result;
+    result = (left << 8) | right;
+    return result;
+}
+
+/*
  * Reads the value in memory pointed to by
  * the HL register pair
  */
@@ -275,14 +285,25 @@ void emulate_op(State8080 *state) {
             break;
 
         case 0x02: unimplemented_instr(state); break;
-        case 0x03: unimplemented_instr(state); break;
+        case 0x03:   // INX B
+        {
+            // BC <- BC + 1 
+            uint16_t bc;
+            bc = get16bitval(state->b, state->c);
+            bc += 1;
+
+            // values to write back
+            uint8_t b, c;
+            b = bc >> 8;   // left 8 bits
+            c = bc & 0xff; // right 8 bits
+            state->b = b;
+            state->c = c;
+            // no flags set
+        }
+            break;
         case 0x04: 
         {
             uint16_t answer = (uint16_t) state->b + 1;
-            // state->cc.z = zero(answer);
-            // state->cc.s = sign(answer);
-            // state->cc.p = parity(answer); // 1 (true) if even, 0 otherwise
-            // state->cc.ac = auxcarry(answer); 
             uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
             set_flags(state, answer, flags);
             state->b = answer & 0xff;  // b <- b + 1
