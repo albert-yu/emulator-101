@@ -310,7 +310,7 @@ void emulate_op(State8080 *state) {
         }
             break;
 
-        case 0x05: 
+        case 0x05:
         {
             uint8_t answer = state->b - 1;
             uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
@@ -357,7 +357,19 @@ void emulate_op(State8080 *state) {
         case 0x10: unimplemented_instr(state); break;
         case 0x11: unimplemented_instr(state); break;
         case 0x12: unimplemented_instr(state); break;
-        case 0x13: unimplemented_instr(state); break;
+        case 0x13:
+        {
+            uint16_t de;
+            de = get16bitval(state->d, state->e);
+            de += 1;
+
+            uint8_t d, e;
+            d = de >> 8;
+            e = de & 0xff;
+            state->d = d;
+            state->e = e;
+        }
+            break;
         case 0x14: unimplemented_instr(state); break;
         case 0x15: unimplemented_instr(state); break;
         case 0x16: unimplemented_instr(state); break;
@@ -373,7 +385,17 @@ void emulate_op(State8080 *state) {
         case 0x20: unimplemented_instr(state); break;
         case 0x21: unimplemented_instr(state); break;
         case 0x22: unimplemented_instr(state); break;
-        case 0x23: unimplemented_instr(state); break;
+        case 0x23:
+        {
+            uint16_t hl = get16bitval(state->h, state->l);
+            hl += 1;
+            uint8_t h, l;
+            h = hl >> 8;
+            l = hl & 0xff;
+            state->h = h;
+            state->l = l;
+        }
+            break;
         case 0x24: unimplemented_instr(state); break;
         case 0x25: unimplemented_instr(state); break;
         case 0x26: unimplemented_instr(state); break;
@@ -389,7 +411,12 @@ void emulate_op(State8080 *state) {
         case 0x30: unimplemented_instr(state); break;
         case 0x31: unimplemented_instr(state); break;
         case 0x32: unimplemented_instr(state); break;
-        case 0x33: unimplemented_instr(state); break;
+        case 0x33:  // INX SP: SP <- SP + 1
+        {
+            // stack pointer is already 16 bits
+            state->sp = state->sp + 1; 
+        }
+            break;
         case 0x34: unimplemented_instr(state); break;
         case 0x35: unimplemented_instr(state); break;
         case 0x36: unimplemented_instr(state); break;
