@@ -143,10 +143,12 @@ void emulate_op(State8080 *state) {
         case 0x04: 
         {
             uint16_t answer = (uint16_t) state->b + 1;
-            state->cc.z = zero(answer);
-            state->cc.s = sign(answer);
-            state->cc.p = parity(answer); // 1 (true) if even, 0 otherwise
-            state->cc.ac = auxcarry(answer); 
+            // state->cc.z = zero(answer);
+            // state->cc.s = sign(answer);
+            // state->cc.p = parity(answer); // 1 (true) if even, 0 otherwise
+            // state->cc.ac = auxcarry(answer); 
+            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+            set_flags(state, answer, flags);
             state->b = answer & 0xff;  // b <- b + 1
         }
             break;
@@ -154,10 +156,8 @@ void emulate_op(State8080 *state) {
         case 0x05: 
         {
             uint8_t answer = state->b - 1;
-            state->cc.z = zero(answer);
-            state->cc.s = sign(answer);
-            state->cc.p = parity(answer);
-            state->cc.ac = auxcarry(answer); 
+            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+            set_flags(state, answer, flags);
             state->b = answer & 0xff;
         }           
             break;
@@ -189,7 +189,8 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer = ((uint16_t) state->c) + 1; 
             state->c = (uint8_t) answer;
-            // TODO: what to do with flags Z, S, P, AC?
+            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+            set_flags(state, answer, flags);
         }
             
             break;
