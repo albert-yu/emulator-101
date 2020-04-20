@@ -163,6 +163,29 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
   }
 }
 
+/*
+ * Performs an add and stores the result in A
+ * (instructions 0x80 to 0x87)
+ */
+void add_x(State8080 *state, uint8_t x) {
+    uint16_t a = (uint16_t) state->a;
+    uint16_t answer = a + (uint16_t) x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
+ * Performs an add carry
+ * ADC X: A <- A + X + CY
+ */
+void adc_x(State8080 *state, uint8_t x) {
+    uint16_t a = (uint16_t) state->a;
+    uint8_t cy = state->cc.cy;
+    uint16_t answer = a + cy + x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
 
@@ -372,53 +395,35 @@ void emulate_op(State8080 *state) {
             break;
         case 0x80:  // ADD B
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->b);
         }            
             break;
 
         case 0x81:  // ADD C
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->c);
         }
             break;
 
-        case 0x82:
+        case 0x82:  // ADD D
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->d;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->d);
         } 
             break;
 
         case 0x83:  // ADD E
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->e;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->e);
         } 
             break;
         case 0x84:  // ADD H
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->h;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->h);
         } 
             break;
         case 0x85:  // ADD L
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->l;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, state->l);
         }
             break;
         case 0x86:  // ADD M
@@ -430,23 +435,20 @@ void emulate_op(State8080 *state) {
             uint16_t offset = (state->h << 8) | (state->l);
             // get value in memory
             uint8_t m = state->memory[offset];
-
-            // add to current value of A
-            uint16_t answer = (uint16_t) state->a + m;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags);
-            state->a = answer & 0xff;
+            add_x(state, m);
         }
             break;
         case 0x87:  // ADD A
         {
-            uint8_t a = state->a;
-            uint16_t answer = a + a;
-            uint8_t flags = SET_ALL_FLAGS;
-            set_flags(state, answer, flags); 
+            add_x(state, state->a);
         }
             break;
-        case 0x88: unimplemented_instr(state); break;
+        case 0x88:  // ADC B (A <- A + B + CY)
+        {
+            uint8_t b = state->b;
+            adc_x(state, b);
+        }
+            break;
         case 0x89: unimplemented_instr(state); break;
         case 0x8a: unimplemented_instr(state); break;
         case 0x8b: unimplemented_instr(state); break;
