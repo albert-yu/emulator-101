@@ -135,7 +135,7 @@ uint8_t auxcarry(uint16_t answer) {
 #define SET_P_FLAG  1 << 5
 #define SET_CY_FLAG 1 << 4
 #define SET_AC_FLAG 1 << 3
-#define SET_ALL_FLAGS 0xff
+#define SET_ALL_FLAGS (SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_CY_FLAG | SET_AC_FLAG)
 
 /*
  * Set the specified flags according to the answer received by
@@ -438,7 +438,14 @@ void emulate_op(State8080 *state) {
             state->a = answer & 0xff;
         }
             break;
-        case 0x87: unimplemented_instr(state); break;
+        case 0x87:  // ADD A
+        {
+            uint8_t a = state->a;
+            uint16_t answer = a + a;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags); 
+        }
+            break;
         case 0x88: unimplemented_instr(state); break;
         case 0x89: unimplemented_instr(state); break;
         case 0x8a: unimplemented_instr(state); break;
