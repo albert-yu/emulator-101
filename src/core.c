@@ -165,6 +165,7 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
 
 /*
  * Performs an add and stores the result in A
+ * ADD X: A <- A + X
  * (instructions 0x80 to 0x87)
  */
 void add_x(State8080 *state, uint8_t x) {
@@ -182,6 +183,29 @@ void adc_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint8_t cy = state->cc.cy;
     uint16_t answer = a + cy + x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
+ * Performs a sub and stores the result in A
+ * SUB X: A <- A - X
+ */
+void sub_x(State8080 *state, uint8_t x) {
+    uint16_t a = (uint16_t) state->a;
+    uint16_t answer = a - (uint16_t) x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
+ * Performs a sub carry
+ * SBB X: A <- A - X - CY
+ */
+void sbb_x(State8080 *state, uint8_t x) {
+    uint16_t a = (uint16_t) state->a;
+    uint8_t cy = state->cc.cy;
+    uint16_t answer = a - x - cy;
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
@@ -489,23 +513,93 @@ void emulate_op(State8080 *state) {
             uint8_t m = read_hl(state);
             adc_x(state, m);
         }
-        case 0x8f: unimplemented_instr(state); break;
-        case 0x90: unimplemented_instr(state); break;
-        case 0x91: unimplemented_instr(state); break;
-        case 0x92: unimplemented_instr(state); break;
-        case 0x93: unimplemented_instr(state); break;
-        case 0x94: unimplemented_instr(state); break;
-        case 0x95: unimplemented_instr(state); break;
-        case 0x96: unimplemented_instr(state); break;
-        case 0x97: unimplemented_instr(state); break;
-        case 0x98: unimplemented_instr(state); break;
-        case 0x99: unimplemented_instr(state); break;
-        case 0x9a: unimplemented_instr(state); break;
-        case 0x9b: unimplemented_instr(state); break;
-        case 0x9c: unimplemented_instr(state); break;
-        case 0x9d: unimplemented_instr(state); break;
-        case 0x9e: unimplemented_instr(state); break;
-        case 0x9f: unimplemented_instr(state); break;
+        case 0x8f: 
+        {
+            adc_x(state, state->a);
+        }
+            break;
+        case 0x90:  // SUB B
+        {
+            sub_x(state, state->b);
+        }
+            break;
+        case 0x91:
+        {
+            sub_x(state, state->c);
+        }
+            break;
+        case 0x92:
+        {
+            sub_x(state, state->d);
+        }
+            break;
+        case 0x93:
+        {
+            sub_x(state, state->e);
+        }
+            break;
+        case 0x94:
+        {
+            sub_x(state, state->h);
+        }
+            break;
+        case 0x95:
+        {
+            sub_x(state, state->l);
+        }
+            break;
+        case 0x96:  // SUB (HL)
+        {
+            uint8_t m = read_hl(state);
+            sub_x(state, m);
+        }
+            break;
+        case 0x97:  // SUB A
+        {
+            sub_x(state, state->a);
+        }
+            break;
+        case 0x98:  // SBB B
+        {
+            sbb_x(state, state->b);
+        }
+            break;
+        case 0x99:
+        {
+            sbb_x(state, state->c);
+        }
+            break;
+        case 0x9a:
+        {
+            sbb_x(state, state->d);
+        }
+            break;
+        case 0x9b:
+        {
+            sbb_x(state, state->e);
+        }
+            break;
+        case 0x9c:
+        {
+            sbb_x(state, state->h);
+        }
+            break;
+        case 0x9d:
+        {
+            sbb_x(state, state->l);
+        }
+            break;
+        case 0x9e:
+        {
+            uint8_t m = read_hl(state);
+            sbb_x(state, m);
+        }
+            break;
+        case 0x9f:
+        {
+            sbb_x(state, state->a);
+        }
+            break;
         case 0xa0: unimplemented_instr(state); break;
         case 0xa1: unimplemented_instr(state); break;
         case 0xa2: unimplemented_instr(state); break;
@@ -556,7 +650,12 @@ void emulate_op(State8080 *state) {
             break;
         case 0xc4: unimplemented_instr(state); break;
         case 0xc5: unimplemented_instr(state); break;
-        case 0xc6: unimplemented_instr(state); break;
+        case 0xc6: 
+        {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) opcode[1];
+            set_flags(state, answer, SET_ALL_FLAGS);
+        }
+            break;
         case 0xc7: unimplemented_instr(state); break;
         case 0xc8: unimplemented_instr(state); break;
         case 0xc9: unimplemented_instr(state); break;
