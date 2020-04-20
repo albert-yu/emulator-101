@@ -4,7 +4,11 @@
 #include "disassembler.h"
 
 int main(int argc, char **argv) {
-    printf("foo\n");
+    printf("disassembling\n");
+
+    if (argv) {
+        disassemble8080file(argv[0]);
+    }
     return 0;
 }
 
