@@ -792,6 +792,9 @@ void emulate_op(State8080 *state) {
             // opcode[1] will be the immediately following byte.
             uint16_t answer = (uint16_t) state->a + (uint16_t) opcode[1];
             set_flags(state, answer, SET_ALL_FLAGS);
+
+            // instruction is of size 2
+            state->pc += 1;
         }
             break;
         case 0xc7: unimplemented_instr(state); break;
@@ -809,7 +812,16 @@ void emulate_op(State8080 *state) {
         case 0xd3: unimplemented_instr(state); break;
         case 0xd4: unimplemented_instr(state); break;
         case 0xd5: unimplemented_instr(state); break;
-        case 0xd6: unimplemented_instr(state); break;
+        case 0xd6:   // SUI D8
+        {
+            uint8_t data = opcode[1];
+            uint16_t answer = (uint16_t) state->a - (uint16_t) data;
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+            
+            state->pc += 1;
+        } 
+            break;
         case 0xd7: unimplemented_instr(state); break;
         case 0xd8: unimplemented_instr(state); break;
         case 0xd9: unimplemented_instr(state); break;
