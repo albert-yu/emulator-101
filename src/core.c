@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct condition_codes_t
-{
+#include "core.h"
+
+typedef struct condition_codes_t {
     uint8_t     z:1;  // z occupies 1 bit in the struct
     uint8_t     s:1;
     uint8_t     p:1;
@@ -12,8 +13,7 @@ typedef struct condition_codes_t
     uint8_t     pad:3;
 } ConditionCodes;
 
-typedef struct state8080_t
-{
+typedef struct state8080_t {
     uint8_t     a;
     uint8_t     b;
     uint8_t     c;
@@ -29,51 +29,43 @@ typedef struct state8080_t
 } State8080;
 
 
-void unimplemented_instr(State8080 *state)
-{
+void unimplemented_instr(State8080 *state) {
     printf("Error: Unimplemented instruction\n");
     exit(1);
 }
 
 // Flags
 
-uint8_t zero(uint16_t answer)
-{
+uint8_t zero(uint16_t answer) {
     // set to 1 if answer is 0, 0 otherwise
     return ((answer & 0xff) == 0);
 }
 
-uint8_t sign(uint16_t answer)
-{
+uint8_t sign(uint16_t answer) {
     // set to 1 when bit 7 of the math instruction is set
     return ((answer & 0x80) == 0);
 }
 
-uint8_t parity(uint16_t answer)
-{
+uint8_t parity(uint16_t answer) {
     uint8_t ans8bit = answer & 0xff;
     // 1 (true) if even, 0 otherwise
     return ((ans8bit & 0x01) == 0); 
 }
 
-uint8_t carry(uint16_t answer)
-{
+uint8_t carry(uint16_t answer) {
     // set to 1 when instruction resulted in a carry or borrow into the high order bit
     return (answer > 0xff); 
 }
 
-uint8_t auxcarry(uint16_t answer)
-{
+uint8_t auxcarry(uint16_t answer) {
     // skip implementation because Space Invaders doesn't use it
     return 0;  
 }
 
-void emulate_op(State8080 *state)
-{
+void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
 
-    switch(*opcode)
-    {
+    switch(*opcode) {
         case 0x00:  // NOP
             break;
 
@@ -448,7 +440,3 @@ void emulate_op(State8080 *state)
     state->pc += 1;
 }
 
-int main()
-{
-    return 0;
-}

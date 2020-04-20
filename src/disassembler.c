@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "disassembler.h"
+
 int disassemble8080op(unsigned char *codebuffer, int pc);
 
 int disassemble8080file(char* filename) {
