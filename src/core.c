@@ -211,6 +211,18 @@ void sbb_x(State8080 *state, uint8_t x) {
 }
 
 /*
+ * ANA X: A <- A & A
+ */
+void ana_x(State8080 *state, uint8_t x) {
+    // using 16 bits, even though
+    // bitwise AND shouldn't add a bit
+    uint16_t answer;
+    answer = (uint16_t) state->a & x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
  * Reads that value in memory pointed to by
  * the HL register pair
  */
@@ -600,14 +612,47 @@ void emulate_op(State8080 *state) {
             sbb_x(state, state->a);
         }
             break;
-        case 0xa0: unimplemented_instr(state); break;
-        case 0xa1: unimplemented_instr(state); break;
-        case 0xa2: unimplemented_instr(state); break;
-        case 0xa3: unimplemented_instr(state); break;
-        case 0xa4: unimplemented_instr(state); break;
-        case 0xa5: unimplemented_instr(state); break;
-        case 0xa6: unimplemented_instr(state); break;
-        case 0xa7: unimplemented_instr(state); break;
+        case 0xa0:  // ANA B
+        {
+            ana_x(state, state->b);
+        }
+            break;
+        case 0xa1:
+        {
+            ana_x(state, state->c);
+        }
+            break;
+        case 0xa2:
+        {
+            ana_x(state, state->d);
+        }
+            break;
+        case 0xa3:
+        {
+            ana_x(state, state->e);
+        }
+            break;
+        case 0xa4:
+        {
+            ana_x(state, state->h);
+        }
+            break;
+        case 0xa5:
+        {
+            ana_x(state, state->l);
+        }
+            break;
+        case 0xa6:
+        {
+            uint8_t m = read_hl(state);
+            ana_x(state, m);
+        }
+            break;
+        case 0xa7:
+        {
+            ana_x(state, state->a);
+        }
+            break;
         case 0xa8: unimplemented_instr(state); break;
         case 0xa9: unimplemented_instr(state); break;
         case 0xaa: unimplemented_instr(state); break;
