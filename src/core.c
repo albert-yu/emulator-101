@@ -253,6 +253,44 @@ uint16_t get16bitval(uint8_t left, uint8_t right) {
     return result;
 }
 
+/**
+ * Adds the `val` to the 16-bit number stored by `left_ptr`
+ * and `right_ptr` collectively and stores it back in
+ * the two pointers. Also returns the result as 32 bits.
+ */
+uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
+    uint8_t left, right;
+    left = *left_ptr;
+    right = *right_ptr;
+    uint16_t summand;
+    summand = get16bitval(left, right);
+    uint32_t result = summand + val;
+    *left_ptr = result >> 8;
+    *right_ptr = result & 0xff;
+    return result;
+}
+
+/*
+ * INX XY: XY <- XY + 1
+ */
+void inx(uint8_t *left_ptr, uint8_t *right_ptr) {
+    tworeg_add(left_ptr, right_ptr, 1);
+}
+
+/*
+ * DAD XY: HL <- HL + XY
+ * and sets CY flag to 1 if result needs carry
+ */
+void dad(State8080 *state, uint8_t *x, uint8_t *y) {
+    uint8_t *dest_left, *dest_right; 
+    dest_left = &(state->h);
+    dest_right = &(state->l);
+    uint16_t val_to_add;
+    val_to_add = get16bitval(*x, *y);
+    uint32_t result = tworeg_add(dest_left, dest_right, val_to_add);
+    state->cc.cy = result > 0xffff;
+}
+
 /*
  * Reads the value in memory pointed to by
  * the HL register pair
