@@ -103,10 +103,17 @@ uint8_t sign(uint16_t answer) {
     return ((answer & 0x80) == 0);
 }
 
+/*
+ * Returns 0 if number of bits is even and 1 o.w.
+ */
 uint8_t parity(uint16_t answer) {
+    uint8_t parity = 0;
     uint8_t ans8bit = answer & 0xff;
-    // 1 (true) if even, 0 otherwise
-    return ((ans8bit & 0x01) == 0); 
+    while (ans8bit) {
+        parity = !parity;
+        ans8bit = ans8bit & (ans8bit - 1);
+    }
+    return parity;
 }
 
 uint8_t carry(uint16_t answer) {
@@ -414,7 +421,23 @@ void emulate_op(State8080 *state) {
             state->a = answer & 0xff;
         }
             break;
-        case 0x86: unimplemented_instr(state); break;
+        case 0x86:  // ADD M
+        {
+            // Note: the addend is the byte pointed to by the address stored
+            // in the HL register pair
+
+            // get the address
+            uint16_t offset = (state->h << 8) | (state->l);
+            // get value in memory
+            uint8_t m = state->memory[offset];
+
+            // add to current value of A
+            uint16_t answer = (uint16_t) state->a + m;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
+            state->a = answer & 0xff;
+        }
+            break;
         case 0x87: unimplemented_instr(state); break;
         case 0x88: unimplemented_instr(state); break;
         case 0x89: unimplemented_instr(state); break;
