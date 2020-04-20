@@ -186,6 +186,22 @@ void adc_x(State8080 *state, uint8_t x) {
     state->a = answer & 0xff;
 }
 
+/*
+ * Reads that value in memory pointed to by
+ * the HL register pair
+ */
+uint8_t read_hl(State8080 *state) {
+    // Note: the addend is the byte pointed to by the address stored
+    // in the HL register pair
+
+    // get the address
+    uint16_t offset = (state->h << 8) | (state->l);
+
+    // get value in memory
+    uint8_t m = state->memory[offset];
+    return m;
+}
+
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
 
@@ -428,13 +444,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x86:  // ADD M
         {
-            // Note: the addend is the byte pointed to by the address stored
-            // in the HL register pair
-
-            // get the address
-            uint16_t offset = (state->h << 8) | (state->l);
-            // get value in memory
-            uint8_t m = state->memory[offset];
+            uint8_t m = read_hl(state);
             add_x(state, m);
         }
             break;
@@ -449,12 +459,36 @@ void emulate_op(State8080 *state) {
             adc_x(state, b);
         }
             break;
-        case 0x89: unimplemented_instr(state); break;
-        case 0x8a: unimplemented_instr(state); break;
-        case 0x8b: unimplemented_instr(state); break;
-        case 0x8c: unimplemented_instr(state); break;
-        case 0x8d: unimplemented_instr(state); break;
-        case 0x8e: unimplemented_instr(state); break;
+        case 0x89:  // ADC C
+        {
+            adc_x(state, state->c);
+        }
+            break;
+        case 0x8a:  // ADC D
+        {
+            adc_x(state, state->d);
+        }
+            break;
+        case 0x8b:  // ADC E
+        {
+            adc_x(state, state->e);
+        }
+            break;
+        case 0x8c:  // ADC H 
+        {
+            adc_x(state, state->h);
+        }
+            break;
+        case 0x8d:  // ADC L
+        {
+            adc_x(state, state->l);
+        }
+            break;
+        case 0x8e:
+        {
+            uint8_t m = read_hl(state);
+            adc_x(state, m);
+        }
         case 0x8f: unimplemented_instr(state); break;
         case 0x90: unimplemented_instr(state); break;
         case 0x91: unimplemented_instr(state); break;
