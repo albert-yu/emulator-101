@@ -273,15 +273,16 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 /*
  * INX XY: XY <- XY + 1
  */
-void inx(uint8_t *left_ptr, uint8_t *right_ptr) {
+void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
     tworeg_add(left_ptr, right_ptr, 1);
+    // INX does not set the carry bit
 }
 
 /*
  * DAD XY: HL <- HL + XY
  * and sets CY flag to 1 if result needs carry
  */
-void dad(State8080 *state, uint8_t *x, uint8_t *y) {
+void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     uint8_t *dest_left, *dest_right; 
     dest_left = &(state->h);
     dest_right = &(state->l);
@@ -331,18 +332,22 @@ void emulate_op(State8080 *state) {
             break;
         case 0x03:   // INX B
         {
-            // BC <- BC + 1 
-            uint16_t bc;
-            bc = get16bitval(state->b, state->c);
-            bc += 1;
+            // // BC <- BC + 1 
+            // uint16_t bc;
+            // bc = get16bitval(state->b, state->c);
+            // bc += 1;
 
-            // values to write back
-            uint8_t b, c;
-            b = bc >> 8;   // left 8 bits
-            c = bc & 0xff; // right 8 bits
-            state->b = b;
-            state->c = c;
-            // no flags set
+            // // values to write back
+            // uint8_t b, c;
+            // b = bc >> 8;   // left 8 bits
+            // c = bc & 0xff; // right 8 bits
+            // state->b = b;
+            // state->c = c;
+            // // no flags set
+            uint8_t *b, *c;
+            b = &(state->b);
+            c = &(state->c);
+            inx_xy(b, c);
         }
             break;
         case 0x04: 
@@ -385,16 +390,20 @@ void emulate_op(State8080 *state) {
             break;
         case 0x09:  // DAD B: HL = HL + BC
         {
-            uint32_t answer;
-            uint16_t hl, bc;
-            hl = get16bitval(state->h, state->l);
-            bc = get16bitval(state->b, state->c);
-            answer = hl + bc;
-            state->cc.cy = answer > 0xffff;
+            uint8_t *b_reg_ptr, *c_reg_ptr;
+            b_reg_ptr = &(state->b);
+            c_reg_ptr = &(state->c);
+            dad_xy(state, b_reg_ptr, c_reg_ptr);
+            // uint32_t answer;
+            // uint16_t hl, bc;
+            // hl = get16bitval(state->h, state->l);
+            // bc = get16bitval(state->b, state->c);
+            // answer = hl + bc;
+            // state->cc.cy = answer > 0xffff;
 
-            // store answer in H and L
-            state->h = answer >> 8;
-            state->l = answer & 0xff;
+            // // store answer in H and L
+            // state->h = answer >> 8;
+            // state->l = answer & 0xff;
         }
             break;
         case 0x0a: unimplemented_instr(state); break;
@@ -416,15 +425,11 @@ void emulate_op(State8080 *state) {
         case 0x12: unimplemented_instr(state); break;
         case 0x13:
         {
-            uint16_t de;
-            de = get16bitval(state->d, state->e);
-            de += 1;
-
-            uint8_t d, e;
-            d = de >> 8;
-            e = de & 0xff;
-            state->d = d;
-            state->e = e;
+            // pointers to registers
+            uint8_t *d, *e;
+            d = &(state->b);
+            e = &(state->c);
+            inx_xy(d, e);
         }
             break;
         case 0x14: unimplemented_instr(state); break;
@@ -434,16 +439,20 @@ void emulate_op(State8080 *state) {
         case 0x18: unimplemented_instr(state); break;
         case 0x19:  // DAD D: HL = HL + DE
         {
-            uint32_t answer;
-            uint16_t hl, de;
-            hl = get16bitval(state->h, state->l);
-            de = get16bitval(state->d, state->e);
-            answer = hl + de;
-            state->cc.cy = answer > 0xffff;
+            uint8_t *d_reg_ptr, *e_reg_ptr;
+            d_reg_ptr = &(state->d);
+            e_reg_ptr = &(state->e);
+            dad_xy(state, d_reg_ptr, e_reg_ptr);
+            // uint32_t answer;
+            // uint16_t hl, de;
+            // hl = get16bitval(state->h, state->l);
+            // de = get16bitval(state->d, state->e);
+            // answer = hl + de;
+            // state->cc.cy = answer > 0xffff;
 
-            // store answer in H and L
-            state->h = answer >> 8;
-            state->l = answer & 0xff;
+            // // store answer in H and L
+            // state->h = answer >> 8;
+            // state->l = answer & 0xff;
         }
             break;
         case 0x1a: unimplemented_instr(state); break;
@@ -457,13 +466,10 @@ void emulate_op(State8080 *state) {
         case 0x22: unimplemented_instr(state); break;
         case 0x23:
         {
-            uint16_t hl = get16bitval(state->h, state->l);
-            hl += 1;
-            uint8_t h, l;
-            h = hl >> 8;
-            l = hl & 0xff;
-            state->h = h;
-            state->l = l;
+            uint8_t *h_ptr, *l_ptr;
+            h_ptr = &(state->h);
+            l_ptr = &(state->l);
+            inx_xy(h_ptr, l_ptr);
         }
             break;
         case 0x24: unimplemented_instr(state); break;
@@ -473,15 +479,10 @@ void emulate_op(State8080 *state) {
         case 0x28: unimplemented_instr(state); break;
         case 0x29:  // DAD H
         {
-            uint32_t answer;
-            uint16_t hl;
-            hl = get16bitval(state->h, state->l);
-            answer = hl + hl;
-            state->cc.cy = answer > 0xffff;
-
-            // store answer in H and L
-            state->h = answer >> 8;
-            state->l = answer & 0xff;
+            uint8_t *h_reg_ptr, *l_reg_ptr;
+            h_reg_ptr = &(state->h);
+            l_reg_ptr = &(state->l);
+            dad_xy(state, h_reg_ptr, l_reg_ptr);
         }
             break;
         case 0x2a: unimplemented_instr(state); break;
@@ -504,16 +505,15 @@ void emulate_op(State8080 *state) {
         case 0x36: unimplemented_instr(state); break;
         case 0x37: unimplemented_instr(state); break;
         case 0x38: unimplemented_instr(state); break;
-        case 0x39:
+        case 0x39:  // DAD SP
         {
+            // uglier implementation
             uint32_t answer;
-            uint16_t hl = get16bitval(state->h, state->l);
-            answer = hl + state->sp;
+            uint8_t *h_reg_ptr, *l_reg_ptr;
+            h_reg_ptr = &(state->h);
+            l_reg_ptr = &(state->l);
+            answer = tworeg_add(h_reg_ptr, l_reg_ptr, state->sp);
             state->cc.cy = answer > 0xffff;
-
-            // store answer in H and L
-            state->h = answer >> 8;
-            state->l = answer & 0xff;
         }
             break;
         case 0x3a: unimplemented_instr(state); break;
