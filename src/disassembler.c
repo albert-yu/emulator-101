@@ -3,12 +3,11 @@
 
 int disassemble8080op(unsigned char *codebuffer, int pc);
 
-int main(int argc, char** argv)
-{
-    FILE *f = fopen(argv[1], "rb");
+int disassemble8080file(char* filename) {
+    FILE *f = fopen(filename, "rb");
     if (f == NULL)
     {
-        printf("Error: couldn't open %s\n", argv[1]);
+        printf("Error: couldn't open %s\n", filename);
         exit(1);
     }
 
@@ -39,8 +38,7 @@ int main(int argc, char** argv)
  * Returns the size of the operation in bytes
  * http://www.emulator101.com/reference/8080-by-opcode.html
  */
-int disassemble8080op(unsigned char *codebuffer, int pc)
-{
+int disassemble8080op(unsigned char *codebuffer, int pc) {
     unsigned char *code = &codebuffer[pc]; // pointer to the pc-th element in the codebuffer array
     int opbytes = 1;  // size of operation to be returned
     printf("%04x ", pc); // formatted as hexadecimal integer
