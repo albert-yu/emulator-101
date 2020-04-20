@@ -234,6 +234,16 @@ void xra_x(State8080 *state, uint8_t x) {
 }
 
 /*
+ * Bitwise OR
+ * ORA X: A <- A | X
+ */
+void ora_x(State8080 *state, uint8_t x) {
+    uint16_t answer = (uint16_t) state->a | x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+    state->a = answer & 0xff;
+}
+
+/*
  * Reads the value in memory pointed to by
  * the HL register pair
  */
@@ -705,14 +715,47 @@ void emulate_op(State8080 *state) {
             xra_x(state, state->a);
         }
             break;
-        case 0xb0: unimplemented_instr(state); break;
-        case 0xb1: unimplemented_instr(state); break;
-        case 0xb2: unimplemented_instr(state); break;
-        case 0xb3: unimplemented_instr(state); break;
-        case 0xb4: unimplemented_instr(state); break;
-        case 0xb5: unimplemented_instr(state); break;
-        case 0xb6: unimplemented_instr(state); break;
-        case 0xb7: unimplemented_instr(state); break;
+        case 0xb0:
+        {
+            ora_x(state, state->b);
+        }
+            break;
+        case 0xb1:
+        {
+            ora_x(state, state->c);
+        }
+            break;
+        case 0xb2:
+        {
+            ora_x(state, state->d);
+        }
+            break;
+        case 0xb3:
+        {
+            ora_x(state, state->e);
+        }
+            break;
+        case 0xb4:
+        {
+            ora_x(state, state->h);
+        }
+            break;
+        case 0xb5:
+        {
+            ora_x(state, state->l);
+        }
+            break;
+        case 0xb6:
+        {
+            uint8_t m = read_hl(state);
+            ora_x(state, m);
+        }
+            break;
+        case 0xb7:
+        {
+            ora_x(state, state->a);
+        }
+            break;
         case 0xb8: unimplemented_instr(state); break;
         case 0xb9: unimplemented_instr(state); break;
         case 0xba: unimplemented_instr(state); break;
