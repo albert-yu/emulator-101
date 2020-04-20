@@ -128,6 +128,7 @@ uint8_t auxcarry(uint16_t answer) {
 #define SET_P_FLAG  1 << 5
 #define SET_CY_FLAG 1 << 4
 #define SET_AC_FLAG 1 << 3
+#define SET_ALL_FLAGS 0xff
 
 /*
  * Set the specified flags according to the answer received by
@@ -152,7 +153,7 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     }
     if (cleaned & SET_AC_FLAG) {
         state->cc.ac = auxcarry(answer); 
-    }
+  }
 }
 
 void emulate_op(State8080 *state) {
@@ -220,9 +221,9 @@ void emulate_op(State8080 *state) {
         case 0x0c: // INR c
         {
             uint16_t answer = ((uint16_t) state->c) + 1; 
-            state->c = (uint8_t) answer;
             uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
             set_flags(state, answer, flags);
+            state->c = answer & 0xff; // same as (uint8_t)answer?
         }
             
             break;
@@ -360,43 +361,59 @@ void emulate_op(State8080 *state) {
         case 0x7c: unimplemented_instr(state); break;
         case 0x7d: unimplemented_instr(state); break;
         case 0x7e: unimplemented_instr(state); break;
-        case 0x7f: unimplemented_instr(state); break;
+        case 0x7f:  // MOV A,A
+            break;
         case 0x80:  // ADD B
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;    
-            state->cc.z = zero(answer);    
-            state->cc.s = sign(answer);    
-            state->cc.cy = carry(answer);    
-            state->cc.p = parity(answer); 
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
             state->a = answer & 0xff;
         }            
             break;
 
         case 0x81:  // ADD C
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;    
-            state->cc.z = zero(answer);    
-            state->cc.s = sign(answer);    
-            state->cc.cy = carry(answer);    
-            state->cc.p = parity(answer);    
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
             state->a = answer & 0xff;
         }
             break;
 
         case 0x82:
         {
-            uint16_t answer = (uint16_t) state->a + (uint16_t) state->d;    
-            state->cc.z = zero(answer);    
-            state->cc.s = sign(answer);    
-            state->cc.cy = carry(answer);    
-            state->cc.p = parity(answer & 0xff);    
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->d;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
             state->a = answer & 0xff;
         } 
             break;
 
-        case 0x83: unimplemented_instr(state); break;
-        case 0x84: unimplemented_instr(state); break;
-        case 0x85: unimplemented_instr(state); break;
+        case 0x83:  // ADD E
+        {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->e;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
+            state->a = answer & 0xff;
+        } 
+            break;
+        case 0x84:  // ADD H
+        {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->h;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
+            state->a = answer & 0xff;
+        } 
+            break;
+        case 0x85:  // ADD L
+        {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->l;
+            uint8_t flags = SET_ALL_FLAGS;
+            set_flags(state, answer, flags);
+            state->a = answer & 0xff;
+        }
+            break;
         case 0x86: unimplemented_instr(state); break;
         case 0x87: unimplemented_instr(state); break;
         case 0x88: unimplemented_instr(state); break;
