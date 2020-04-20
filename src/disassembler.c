@@ -31,6 +31,8 @@ int disassemble8080file(char* filename) {
         printf("\n");
     }
 
+    free(buffer);
+
     return 0;
 }
 
