@@ -276,7 +276,7 @@ void emulate_op(State8080 *state) {
         case 0x00:  // NOP
             break;
 
-        case 0x01: 
+        case 0x01:  // LXI B,D16
         {
             state->c = opcode[1];  // c <- byte 2
             state->b = opcode[2];  // b <- byte 3
@@ -284,7 +284,13 @@ void emulate_op(State8080 *state) {
         }
             break;
 
-        case 0x02: unimplemented_instr(state); break;
+        case 0x02:  // STAX B: (BC) <- A
+        {
+            // A is only 8 bits, so need to clear out B
+            state->b = 0;
+            state->c = state->a;
+        }
+            break;
         case 0x03:   // INX B
         {
             // BC <- BC + 1 
@@ -331,7 +337,7 @@ void emulate_op(State8080 *state) {
             // get left-most bit
             uint8_t leftmost = state->a >> 7;
             state->cc.cy = leftmost;
-            // Set right-most bit to whatever the left-most bit is
+            // set right-most bit to whatever the left-most bit is
             state->a = state->a << 1;
             state->a = state->a | leftmost;
         }
@@ -339,7 +345,20 @@ void emulate_op(State8080 *state) {
 
         case 0x08:  // NOP
             break;
-        case 0x09: unimplemented_instr(state); break;
+        case 0x09:  // DAD B: HL = HL + BC
+        {
+            uint32_t answer;
+            uint16_t hl, bc;
+            hl = get16bitval(state->h, state->l);
+            bc = get16bitval(state->b, state->c);
+            answer = hl + bc;
+            state->cc.cy = answer > 0xffff;
+
+            // store answer in H and L
+            state->h = answer >> 8;
+            state->l = answer & 0xff;
+        }
+            break;
         case 0x0a: unimplemented_instr(state); break;
         case 0x0b: unimplemented_instr(state); break;
         case 0x0c: // INR c
@@ -375,7 +394,20 @@ void emulate_op(State8080 *state) {
         case 0x16: unimplemented_instr(state); break;
         case 0x17: unimplemented_instr(state); break;
         case 0x18: unimplemented_instr(state); break;
-        case 0x19: unimplemented_instr(state); break;
+        case 0x19:  // DAD D: HL = HL + DE
+        {
+            uint32_t answer;
+            uint16_t hl, de;
+            hl = get16bitval(state->h, state->l);
+            de = get16bitval(state->d, state->e);
+            answer = hl + de;
+            state->cc.cy = answer > 0xffff;
+
+            // store answer in H and L
+            state->h = answer >> 8;
+            state->l = answer & 0xff;
+        }
+            break;
         case 0x1a: unimplemented_instr(state); break;
         case 0x1b: unimplemented_instr(state); break;
         case 0x1c: unimplemented_instr(state); break;
@@ -401,7 +433,19 @@ void emulate_op(State8080 *state) {
         case 0x26: unimplemented_instr(state); break;
         case 0x27: unimplemented_instr(state); break;
         case 0x28: unimplemented_instr(state); break;
-        case 0x29: unimplemented_instr(state); break;
+        case 0x29:  // DAD H
+        {
+            uint32_t answer;
+            uint16_t hl;
+            hl = get16bitval(state->h, state->l);
+            answer = hl + hl;
+            state->cc.cy = answer > 0xffff;
+
+            // store answer in H and L
+            state->h = answer >> 8;
+            state->l = answer & 0xff;
+        }
+            break;
         case 0x2a: unimplemented_instr(state); break;
         case 0x2b: unimplemented_instr(state); break;
         case 0x2c: unimplemented_instr(state); break;
@@ -422,7 +466,18 @@ void emulate_op(State8080 *state) {
         case 0x36: unimplemented_instr(state); break;
         case 0x37: unimplemented_instr(state); break;
         case 0x38: unimplemented_instr(state); break;
-        case 0x39: unimplemented_instr(state); break;
+        case 0x39:
+        {
+            uint32_t answer;
+            uint16_t hl = get16bitval(state->h, state->l);
+            answer = hl + state->sp;
+            state->cc.cy = answer > 0xffff;
+
+            // store answer in H and L
+            state->h = answer >> 8;
+            state->l = answer & 0xff;
+        }
+            break;
         case 0x3a: unimplemented_instr(state); break;
         case 0x3b: unimplemented_instr(state); break;
         case 0x3c: unimplemented_instr(state); break;
