@@ -534,7 +534,13 @@ void emulate_op(State8080 *state) {
             // state->l = answer & 0xff;
         }
             break;
-        case 0x1a: unimplemented_instr(state); break;
+        case 0x1a:  // LDAX D
+        {
+            uint16_t offset = read_addr(&state->d, &state->e);
+            uint8_t memval = state->memory[offset];
+            state->a = memval;
+        }
+            break;
         case 0x1b:
         {
             dcx_xy(&state->d, &state->e);
