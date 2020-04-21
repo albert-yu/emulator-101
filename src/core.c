@@ -103,6 +103,11 @@ uint8_t sign(uint16_t answer) {
     return ((answer & 0x80) == 0);
 }
 
+uint8_t sign32(uint32_t answer) {
+    // set to 1 when bit 15 of the math instruction is set
+    return ((answer & 0x8000) == 0);
+}
+
 /*
  * Returns 0 if number of bits is even and 1 o.w.
  */
@@ -121,7 +126,17 @@ uint8_t carry(uint16_t answer) {
     return (answer > 0xff); 
 }
 
+uint8_t carry32(uint32_t answer) {
+    return (answer > 0xffff);
+}
+
 uint8_t auxcarry(uint16_t answer) {
+    // skip implementation because Space Invaders doesn't use it
+    // TODO: do this
+    return 0;  
+}
+
+uint8_t auxcarry32(uint32_t answer) {
     // skip implementation because Space Invaders doesn't use it
     // TODO: do this
     return 0;  
@@ -160,6 +175,40 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     }
     if (cleaned & SET_AC_FLAG) {
         state->cc.ac = auxcarry(answer); 
+  }
+}
+
+/*
+ * Same as set_flags, except for a 32-bit answer
+ * (adding/subtracting two 16-bit ints)
+ */
+void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
+    // remove trailing bits
+    uint8_t cleaned = flagstoset & 0b11111000;
+
+    // split into left and right
+    uint16_t left, right;
+    left = answer >> 16;
+    right = answer & 0xffff;
+    if (cleaned & SET_Z_FLAG) {
+        // should be 0 if both left and
+        // right are 0
+        state->cc.z = (zero(left) | zero(right)) == 0;
+    }
+    if (cleaned & SET_S_FLAG) {
+        state->cc.s = sign32(answer);
+    }
+    if (cleaned & SET_P_FLAG) {
+        // both odd => combined even
+        // both even => combined even
+        // even and odd => combined odd
+        state->cc.p = (parity(left) ^ parity(right)) == 0;
+    }
+    if (cleaned & SET_CY_FLAG) {
+        state->cc.cy = carry32(answer);
+    }
+    if (cleaned & SET_AC_FLAG) {
+        state->cc.ac = auxcarry32(answer); 
   }
 }
 
