@@ -469,7 +469,13 @@ void emulate_op(State8080 *state) {
             dad_xy(state, &state->b, &state->c);
         }
             break;
-        case 0x0a: unimplemented_instr(state); break;
+        case 0x0a:  // LDAX B: A <- (BC)
+        {
+            uint16_t offset = read_addr(&state->b, &state->c);
+            uint8_t memval = state->memory[offset];
+            state->a = memval;
+        }
+            break;
         case 0x0b:  // DCX B: BC <- BC - 1
         {
             dcx_xy(&state->b, &state->c);
