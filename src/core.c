@@ -271,6 +271,17 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 }
 
 /*
+ * Emulates INR instruction
+ * INR X: X <- X + 1
+ */
+void inr_x(State8080 *state, uint8_t *ptr) {
+    uint16_t answer = (uint16_t) *ptr + 1;
+    uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+    set_flags(state, answer, flags);
+    *ptr = answer & 0xff;
+}
+
+/*
  * INX XY: XY <- XY + 1
  */
 void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
@@ -292,6 +303,15 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     state->cc.cy = result > 0xffff;
 }
 
+
+/*
+ * Returns the address stored in HL register
+ * pair
+ */
+uint16_t read_hl_addr(State8080 *state) {
+    return (state->h << 8) | (state->l);
+}
+
 /*
  * Reads the value in memory pointed to by
  * the HL register pair
@@ -301,7 +321,7 @@ uint8_t read_hl(State8080 *state) {
     // in the HL register pair
 
     // get the address
-    uint16_t offset = (state->h << 8) | (state->l);
+    uint16_t offset = read_hl_addr(state);
 
     // get value in memory
     uint8_t m = state->memory[offset];
@@ -352,10 +372,11 @@ void emulate_op(State8080 *state) {
             break;
         case 0x04: 
         {
-            uint16_t answer = (uint16_t) state->b + 1;
-            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
-            set_flags(state, answer, flags);
-            state->b = answer & 0xff;  // b <- b + 1
+            // uint16_t answer = (uint16_t) state->b + 1;
+            // uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+            // set_flags(state, answer, flags);
+            // state->b = answer & 0xff;  // b <- b + 1
+            inr_x(state, &(state->b));
         }
             break;
 
@@ -410,10 +431,7 @@ void emulate_op(State8080 *state) {
         case 0x0b: unimplemented_instr(state); break;
         case 0x0c: // INR c
         {
-            uint16_t answer = ((uint16_t) state->c) + 1; 
-            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
-            set_flags(state, answer, flags);
-            state->c = answer & 0xff; // same as (uint8_t)answer?
+            inr_x(state, &(state->c));
         }
             
             break;
@@ -432,7 +450,11 @@ void emulate_op(State8080 *state) {
             inx_xy(d, e);
         }
             break;
-        case 0x14: unimplemented_instr(state); break;
+        case 0x14:  // INR D
+        {
+            inr_x(state, &(state->d));
+        }
+            break;
         case 0x15: unimplemented_instr(state); break;
         case 0x16: unimplemented_instr(state); break;
         case 0x17: unimplemented_instr(state); break;
@@ -457,7 +479,11 @@ void emulate_op(State8080 *state) {
             break;
         case 0x1a: unimplemented_instr(state); break;
         case 0x1b: unimplemented_instr(state); break;
-        case 0x1c: unimplemented_instr(state); break;
+        case 0x1c:
+        {
+            inr_x(state, &(state->e));
+        }
+            break;
         case 0x1d: unimplemented_instr(state); break;
         case 0x1e: unimplemented_instr(state); break;
         case 0x1f: unimplemented_instr(state); break;
@@ -472,7 +498,11 @@ void emulate_op(State8080 *state) {
             inx_xy(h_ptr, l_ptr);
         }
             break;
-        case 0x24: unimplemented_instr(state); break;
+        case 0x24:  // INR H
+        {
+            inr_x(state, &(state->h));
+        }
+            break;
         case 0x25: unimplemented_instr(state); break;
         case 0x26: unimplemented_instr(state); break;
         case 0x27: unimplemented_instr(state); break;
@@ -487,7 +517,10 @@ void emulate_op(State8080 *state) {
             break;
         case 0x2a: unimplemented_instr(state); break;
         case 0x2b: unimplemented_instr(state); break;
-        case 0x2c: unimplemented_instr(state); break;
+        case 0x2c:  // INR L
+        {
+            inr_x(state, &(state->l));
+        }
         case 0x2d: unimplemented_instr(state); break;
         case 0x2e: unimplemented_instr(state); break;
         case 0x2f: unimplemented_instr(state); break;
@@ -500,7 +533,15 @@ void emulate_op(State8080 *state) {
             state->sp = state->sp + 1; 
         }
             break;
-        case 0x34: unimplemented_instr(state); break;
+        case 0x34:
+        {
+            // need to get the pointer
+            // to update memory in correct place
+            uint16_t offset = read_hl_addr(state);
+            uint8_t *m_ptr = &(state->memory[offset]);
+            inr_x(state, m_ptr);
+        }
+            break;
         case 0x35: unimplemented_instr(state); break;
         case 0x36: unimplemented_instr(state); break;
         case 0x37: unimplemented_instr(state); break;
@@ -518,7 +559,11 @@ void emulate_op(State8080 *state) {
             break;
         case 0x3a: unimplemented_instr(state); break;
         case 0x3b: unimplemented_instr(state); break;
-        case 0x3c: unimplemented_instr(state); break;
+        case 0x3c:  // INR A
+        {
+            inr_x(state, &(state->a));
+        }
+            break;
         case 0x3d: unimplemented_instr(state); break;
         case 0x3e: unimplemented_instr(state); break;
         case 0x3f: unimplemented_instr(state); break;
