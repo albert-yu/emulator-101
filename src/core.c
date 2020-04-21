@@ -301,6 +301,14 @@ void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
 }
 
 /*
+ * DCX XY: XY <- XY + 1
+ */
+void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
+    tworeg_add(left_ptr, right_ptr, -1);
+    // DCX does not set the carry bit
+}
+
+/*
  * DAD XY: HL <- HL + XY
  * and sets CY flag to 1 if result needs carry
  */
@@ -314,13 +322,20 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     state->cc.cy = result > 0xffff;
 }
 
+/*
+ * Returns the 16 bit address pointed to by
+ * two pointers to 8 bit integers
+ */
+uint16_t read_addr(uint8_t *lptr, uint8_t *rptr) {
+   return get16bitval(*lptr, *rptr);
+}
 
 /*
  * Returns the address stored in HL register
  * pair
  */
 uint16_t read_hl_addr(State8080 *state) {
-    return (state->h << 8) | (state->l);
+    return read_addr(&(state->h), &(state->l));
 }
 
 /*
@@ -356,9 +371,10 @@ void emulate_op(State8080 *state) {
 
         case 0x02:  // STAX B: (BC) <- A
         {
-            // A is only 8 bits, so need to clear out B
-            state->b = 0;
-            state->c = state->a;
+            // set the value of memory with address formed by
+            // register pair BC to A
+            uint16_t offset = read_addr(&(state->b), &(state->c));
+            state->memory[offset] = state->a;
         }
             break;
         case 0x03:   // INX B
