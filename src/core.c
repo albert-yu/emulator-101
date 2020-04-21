@@ -1092,7 +1092,17 @@ void emulate_op(State8080 *state) {
         case 0xcb: unimplemented_instr(state); break;
         case 0xcc: unimplemented_instr(state); break;
         case 0xcd: unimplemented_instr(state); break;
-        case 0xce: unimplemented_instr(state); break;
+        case 0xce:  // ACI D8: A <- A + data + CY
+        {
+            uint8_t data = opcode[1];
+            uint16_t a, answer;
+            a = (uint16_t) state->a;
+            answer = a + data + state->cc.cy;
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+            state->pc += 1;
+        }
+            break;
         case 0xcf: unimplemented_instr(state); break;
         case 0xd0: unimplemented_instr(state); break;
         case 0xd1: unimplemented_instr(state); break;
