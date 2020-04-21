@@ -451,14 +451,13 @@ void emulate_op(State8080 *state) {
         }           
             break;
 
-        case 0x07:  // A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
+        case 0x07:  // RLC: A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
         {
             // get left-most bit
             uint8_t leftmost = state->a >> 7;
             state->cc.cy = leftmost;
-            // set right-most bit to whatever the left-most bit is
-            state->a = state->a << 1;
-            state->a = state->a | leftmost;
+            // set right-most bit to whatever the left-most bit was
+            state->a = (state->a << 1) | leftmost;
         }
             break;
 
@@ -492,8 +491,21 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->c);
         }
             break;
-        case 0x0e: unimplemented_instr(state); break;
-        case 0x0f: unimplemented_instr(state); break;
+        case 0x0e:  // MVI C,D8: C <- byte 2
+        {
+            state->c = opcode[1];
+            state->pc += 1;
+        }
+            break;
+        case 0x0f:  // RRC: A = A >> 1; bit 7 = prev bit 0; CY = prev bit 0
+        {
+            uint8_t rightmost = state->a & 1;
+            // and set CY flag
+            state->cc.cy = rightmost;
+            // set left-most bit to what the right-most bit was
+            state->a = (state->a >> 1) | (rightmost << 7);
+        }
+            break;
         case 0x10: unimplemented_instr(state); break;
         case 0x11: unimplemented_instr(state); break;
         case 0x12: unimplemented_instr(state); break;
@@ -522,16 +534,6 @@ void emulate_op(State8080 *state) {
             d_reg_ptr = &state->d;
             e_reg_ptr = &state->e;
             dad_xy(state, d_reg_ptr, e_reg_ptr);
-            // uint32_t answer;
-            // uint16_t hl, de;
-            // hl = get16bitval(state->h, state->l);
-            // de = get16bitval(state->d, state->e);
-            // answer = hl + de;
-            // state->cc.cy = answer > 0xffff;
-
-            // // store answer in H and L
-            // state->h = answer >> 8;
-            // state->l = answer & 0xff;
         }
             break;
         case 0x1a:  // LDAX D
