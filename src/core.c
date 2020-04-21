@@ -555,10 +555,12 @@ void emulate_op(State8080 *state) {
             break;
         case 0x17:  // RAL: A = A << 1; bit 0 = prev CY; CY = prev bit 7
         {
-            // I think this rotates the accumulator
-            // left and instead of appending the left-
-            // most bit to the right, use the value
-            // in the carry flag
+            // Rotate Accumulator Left Through Carry
+            // CY A
+            // 0  10110101
+            // =>
+            // CY A
+            // 1  01101010
             uint8_t leftmost = state->a >> 7;
             uint8_t prev_cy = state->cc.cy;
 
@@ -599,8 +601,26 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->e);
         }
             break;
-        case 0x1e: unimplemented_instr(state); break;
-        case 0x1f: unimplemented_instr(state); break;
+        case 0x1e:  // E <- byte 2
+        {
+            state->e = opcode[1];
+            state->pc += 1;
+        }
+            break;
+        case 0x1f:  // RAR
+        {
+            // Rotate Accumulator Right Through Carry
+            // A        CY
+            // 01101010 1
+            // =>
+            // A        CY
+            // 10110101 0
+            uint8_t rightmost = state->a & 1;
+            uint8_t prev_cy = state->cc.cy;
+            state->cc.cy = rightmost;
+            state->a = (state->a >> 1) | (prev_cy << 7);
+        }
+            break;
         case 0x20: unimplemented_instr(state); break;
         case 0x21: unimplemented_instr(state); break;
         case 0x22: unimplemented_instr(state); break;
