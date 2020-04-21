@@ -518,8 +518,19 @@ void emulate_op(State8080 *state) {
         case 0x10: 
             unused_opcode(state);
             break;
-        case 0x11: unimplemented_instr(state); break;
-        case 0x12: unimplemented_instr(state); break;
+        case 0x11:  // D <- byte 3, E <- byte 2
+        { 
+            state->d = opcode[2];
+            state->e = opcode[1];
+            state->pc += 2;
+        }
+            break;
+        case 0x12:  // STAX D: (DE) <- A
+        {
+            uint16_t offset = read_addr(&state->d, &state->e);
+            state->memory[offset] = state->a;
+        }
+            break;
         case 0x13:
         {
             // pointers to registers
@@ -536,9 +547,28 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->d);
         }
             break;
-        case 0x16: unimplemented_instr(state); break;
-        case 0x17: unimplemented_instr(state); break;
-        case 0x18: unimplemented_instr(state); break;
+        case 0x16:  // MVI D,D8: D <- byte 2
+        {
+            state->d = opcode[1];
+            state->pc += 1;
+        }
+            break;
+        case 0x17:  // RAL: A = A << 1; bit 0 = prev CY; CY = prev bit 7
+        {
+            // I think this rotates the accumulator
+            // left and instead of appending the left-
+            // most bit to the right, use the value
+            // in the carry flag
+            uint8_t leftmost = state->a >> 7;
+            uint8_t prev_cy = state->cc.cy;
+
+            state->cc.cy = leftmost;
+            state->a = (state->a << 1) | prev_cy;
+        }
+            break;
+        case 0x18:
+            unused_opcode(state);
+            break;
         case 0x19:  // DAD D: HL = HL + DE
         {
             uint8_t *d_reg_ptr, *e_reg_ptr;
