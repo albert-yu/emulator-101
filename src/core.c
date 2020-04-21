@@ -91,6 +91,12 @@ void unimplemented_instr(State8080 *state) {
     exit(1);
 }
 
+void unused_opcode(State8080 *state) {
+    uint8_t opcode = state->memory[state->pc];
+    printf("Error: unused opcode 0x%x\n", opcode);
+    exit(1);
+}
+
 // Flags
 
 uint8_t zero(uint16_t answer) {
@@ -461,7 +467,8 @@ void emulate_op(State8080 *state) {
         }
             break;
 
-        case 0x08:  // NOP
+        case 0x08:
+            unused_opcode(state);
             break;
         case 0x09:  // DAD B: HL = HL + BC
         {
@@ -499,6 +506,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0x0f:  // RRC: A = A >> 1; bit 7 = prev bit 0; CY = prev bit 0
         {
+            // rotating bits right
+            // e.g. 10011000 => 01001100
             uint8_t rightmost = state->a & 1;
             // and set CY flag
             state->cc.cy = rightmost;
@@ -506,7 +515,9 @@ void emulate_op(State8080 *state) {
             state->a = (state->a >> 1) | (rightmost << 7);
         }
             break;
-        case 0x10: unimplemented_instr(state); break;
+        case 0x10: 
+            unused_opcode(state);
+            break;
         case 0x11: unimplemented_instr(state); break;
         case 0x12: unimplemented_instr(state); break;
         case 0x13:
