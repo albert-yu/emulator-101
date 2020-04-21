@@ -621,9 +621,26 @@ void emulate_op(State8080 *state) {
             state->a = (state->a >> 1) | (prev_cy << 7);
         }
             break;
-        case 0x20: unimplemented_instr(state); break;
-        case 0x21: unimplemented_instr(state); break;
-        case 0x22: unimplemented_instr(state); break;
+        case 0x20:
+            unused_opcode(state);
+            break;
+        case 0x21:  // LXI H,D16: H <- byte 3, L <- byte 2
+        {
+            state->h = opcode[2];
+            state->l = opcode[1];
+            state->pc += 2;
+        }
+            break;
+        case 0x22:  // SHLD adr: (adr) <-L; (adr+1)<-H
+        {
+            // the following to opcodes form an address
+            // when put together
+            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            state->memory[addr] = state->l;
+            state->memory[addr + 1] = state->h;
+            state->pc += 2;
+        }
+            break;
         case 0x23:
         {
             uint8_t *h_ptr, *l_ptr;
