@@ -271,11 +271,22 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 }
 
 /*
- * Emulates INR instruction
+ * Emulates INR (decrement register) instruction
  * INR X: X <- X + 1
  */
 void inr_x(State8080 *state, uint8_t *ptr) {
     uint16_t answer = (uint16_t) *ptr + 1;
+    uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
+    set_flags(state, answer, flags);
+    *ptr = answer & 0xff;
+}
+
+/*
+ * Emulates DCR (increment register) instruction
+ * INR X: X <- X + 1
+ */
+void dcr_x(State8080 *state, uint8_t *ptr) {
+    uint16_t answer = (uint16_t) *ptr - 1;
     uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
     set_flags(state, answer, flags);
     *ptr = answer & 0xff;
@@ -382,10 +393,7 @@ void emulate_op(State8080 *state) {
 
         case 0x05:
         {
-            uint8_t answer = state->b - 1;
-            uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
-            set_flags(state, answer, flags);
-            state->b = answer & 0xff;
+            dcr_x(state, &(state->b)); 
         }           
             break;
 
@@ -429,13 +437,17 @@ void emulate_op(State8080 *state) {
             break;
         case 0x0a: unimplemented_instr(state); break;
         case 0x0b: unimplemented_instr(state); break;
-        case 0x0c: // INR c
+        case 0x0c:  // INR C
         {
             inr_x(state, &(state->c));
         }
             
             break;
-        case 0x0d: unimplemented_instr(state); break;
+        case 0x0d:  // DCR C
+        {
+            dcr_x(state, &(state->c));
+        }
+            break;
         case 0x0e: unimplemented_instr(state); break;
         case 0x0f: unimplemented_instr(state); break;
         case 0x10: unimplemented_instr(state); break;
@@ -455,7 +467,11 @@ void emulate_op(State8080 *state) {
             inr_x(state, &(state->d));
         }
             break;
-        case 0x15: unimplemented_instr(state); break;
+        case 0x15:
+        {
+            dcr_x(state, &(state->d));
+        }
+            break;
         case 0x16: unimplemented_instr(state); break;
         case 0x17: unimplemented_instr(state); break;
         case 0x18: unimplemented_instr(state); break;
@@ -484,7 +500,11 @@ void emulate_op(State8080 *state) {
             inr_x(state, &(state->e));
         }
             break;
-        case 0x1d: unimplemented_instr(state); break;
+        case 0x1d:
+        {
+            dcr_x(state, &(state->e));
+        }
+            break;
         case 0x1e: unimplemented_instr(state); break;
         case 0x1f: unimplemented_instr(state); break;
         case 0x20: unimplemented_instr(state); break;
@@ -503,7 +523,11 @@ void emulate_op(State8080 *state) {
             inr_x(state, &(state->h));
         }
             break;
-        case 0x25: unimplemented_instr(state); break;
+        case 0x25:
+        {
+            dcr_x(state, &(state->h));
+        }
+            break;
         case 0x26: unimplemented_instr(state); break;
         case 0x27: unimplemented_instr(state); break;
         case 0x28: unimplemented_instr(state); break;
@@ -521,7 +545,12 @@ void emulate_op(State8080 *state) {
         {
             inr_x(state, &(state->l));
         }
-        case 0x2d: unimplemented_instr(state); break;
+            break;
+        case 0x2d:
+        {
+            dcr_x(state, &(state->l));
+        }
+            break;
         case 0x2e: unimplemented_instr(state); break;
         case 0x2f: unimplemented_instr(state); break;
         case 0x30: unimplemented_instr(state); break;
@@ -542,7 +571,13 @@ void emulate_op(State8080 *state) {
             inr_x(state, m_ptr);
         }
             break;
-        case 0x35: unimplemented_instr(state); break;
+        case 0x35:
+        {
+            uint16_t offset = read_hl_addr(state);
+            uint8_t *m_ptr = &(state->memory[offset]);
+            dcr_x(state, m_ptr);
+        }
+            break;
         case 0x36: unimplemented_instr(state); break;
         case 0x37: unimplemented_instr(state); break;
         case 0x38: unimplemented_instr(state); break;
@@ -564,7 +599,11 @@ void emulate_op(State8080 *state) {
             inr_x(state, &(state->a));
         }
             break;
-        case 0x3d: unimplemented_instr(state); break;
+        case 0x3d:
+        {
+            dcr_x(state, &(state->a));
+        }
+            break;
         case 0x3e: unimplemented_instr(state); break;
         case 0x3f: unimplemented_instr(state); break;
         case 0x40: unimplemented_instr(state); break;
