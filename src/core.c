@@ -713,7 +713,18 @@ void emulate_op(State8080 *state) {
             dad_xy(state, h_reg_ptr, l_reg_ptr);
         }
             break;
-        case 0x2a: unimplemented_instr(state); break;
+        case 0x2a:  // LHLD adr
+        {
+            // get address (16 bits)
+            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint8_t val, val2;
+            val = state->memory[addr];
+            val2 = state->memory[addr + 1]; 
+            state->l = val;
+            state->h = val2;
+            state->pc += 2;
+        }
+            break;
         // page 4-8 of the manual
         case 0x2b:  // DCX H: HL <- HL - 1
         {
@@ -730,7 +741,13 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->l);
         }
             break;
-        case 0x2e: unimplemented_instr(state); break;
+        case 0x2e:  // MVI L,D8
+        {
+            // L <- byte 2
+            state->l = opcode[1];
+            state->pc += 1;
+        }
+            break;
         case 0x2f: unimplemented_instr(state); break;
         case 0x30: unimplemented_instr(state); break;
         case 0x31: unimplemented_instr(state); break;
