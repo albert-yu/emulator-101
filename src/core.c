@@ -659,9 +659,52 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->h);
         }
             break;
-        case 0x26: unimplemented_instr(state); break;
-        case 0x27: unimplemented_instr(state); break;
-        case 0x28: unimplemented_instr(state); break;
+        case 0x26:  // MVI H,D8
+        {
+            state->h = opcode[1];
+            state->pc += 1;
+        }
+            break;
+        case 0x27:  // DAA - decimal adjust accumulator
+        // The eight-bit number in the accumulator
+        // is adjusted to form two four-bi 
+        // Binary-Coded-Decimal digits by the
+        // following process:
+        // 1. If the value of the least significant
+        // 4 bits of the accumulator is greater
+        // than 9 or if the AC flag is set, 6 is
+        // added to the accumulator.
+        // 2. If the value of the most significant
+        // 4 bits of the accumulator is now greater
+        // than 9, or if the CY flag is set, 6 is
+        // added to the most significant 4 bits
+        // of the accumulator.
+        {
+            uint8_t least4, most4;
+            uint16_t answer;
+            // 1.
+            least4 = state->a & 0xf;
+            if (least4 > 9 || state->cc.ac) {
+                answer = state->a + 6;
+                // set flags of intermediate result
+                set_flags(state, answer, SET_ALL_FLAGS);
+                state->a = answer & 0xff;
+            }
+            // 2.
+            most4 = state->a >> 4;
+            if (most4 > 9 || state->cc.cy) {
+                most4 += 6;
+            }
+            // put most and least sig. 4 digits back
+            // together
+            answer = (most4 << 4) | least4;
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+        }
+            break;
+        case 0x28: 
+            unused_opcode(state); 
+            break;
         case 0x29:  // DAD H
         {
             uint8_t *h_reg_ptr, *l_reg_ptr;
@@ -671,6 +714,7 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0x2a: unimplemented_instr(state); break;
+        // page 4-8 of the manual
         case 0x2b:  // DCX H: HL <- HL - 1
         {
             dcx_xy(&state->h, &state->l);
@@ -1133,12 +1177,9 @@ void emulate_op(State8080 *state) {
         case 0xc0: unimplemented_instr(state); break;
         case 0xc1: unimplemented_instr(state); break;
         case 0xc2: 
-            if (state->cc.z == 0)
-            {
+            if (state->cc.z == 0) {
                 state->pc = (opcode[2] << 8 | opcode[1]);
-            }
-            else
-            {
+            } else {
                 // branch not taken
                 state->pc += 2;
             }
@@ -1213,7 +1254,15 @@ void emulate_op(State8080 *state) {
         case 0xe3: unimplemented_instr(state); break;
         case 0xe4: unimplemented_instr(state); break;
         case 0xe5: unimplemented_instr(state); break;
-        case 0xe6: unimplemented_instr(state); break;
+        case 0xe6:  // ANI D8
+        {
+            uint16_t answer;
+            answer = (uint16_t) state->a & opcode[1];
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+            state->pc += 1;
+        }
+            break;
         case 0xe7: unimplemented_instr(state); break;
         case 0xe8: unimplemented_instr(state); break;
         case 0xe9: unimplemented_instr(state); break;
@@ -1229,7 +1278,15 @@ void emulate_op(State8080 *state) {
         case 0xf3: unimplemented_instr(state); break;
         case 0xf4: unimplemented_instr(state); break;
         case 0xf5: unimplemented_instr(state); break;
-        case 0xf6: unimplemented_instr(state); break;
+        case 0xf6:  // ORI D8
+        {
+            uint16_t answer;
+            answer = (uint16_t) state->a | opcode[1];
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+            state->pc += 1;
+        }
+            break;
         case 0xf7: unimplemented_instr(state); break;
         case 0xf8: unimplemented_instr(state); break;
         case 0xf9: unimplemented_instr(state); break;
