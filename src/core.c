@@ -748,10 +748,37 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0x2f: unimplemented_instr(state); break;
-        case 0x30: unimplemented_instr(state); break;
-        case 0x31: unimplemented_instr(state); break;
-        case 0x32: unimplemented_instr(state); break;
+        case 0x2f:  // CMA: A <- !A
+        {
+            // complement accumulator
+            state->a = ~state->a;
+            // no flags affected
+        }
+            break;
+        case 0x30:
+            unused_opcode(state);
+            break;
+        case 0x31:  // LXI SP, D16
+        {
+            // SP.hi <- byte 3, SP>lo <- byte 2
+            // SP is 16 bits
+            // I think hi = most significant bits
+            uint8_t byte2, byte3;
+            byte3 = opcode[2];
+            byte2 = opcode[1];
+            state->sp = (byte3 << 8) | byte2; 
+            state->pc += 2;
+        }
+            break;
+        case 0x32:  // STA adr
+        {
+            // (adr) <- A
+            // store accumulator direct
+            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            state->memory[addr] = state->a;
+            state->pc += 2;
+        }
+            break;
         case 0x33:  // INX SP: SP <- SP + 1
         {
             // stack pointer is already 16 bits
