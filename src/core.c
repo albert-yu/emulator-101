@@ -320,12 +320,40 @@ void ret(State8080 *state) {
 }
 
 /*
+ * Pops content off the stack into 
+ * registers r1 and r2.
+ * The register pair r1 and r2 should be 
+ * specified in alphabetical order
+ * (e.g. r1 = B, r2 = C)
+ */
+void pop(State8080 *state, uint8_t *r1, uint8_t *r2) {
+    // TODO: check this
+    uint16_t sp_addr;
+    sp_addr = state->sp;
+    *r2 = state->memory[sp_addr];
+    *r1 = state->memory[sp_addr + 1];
+
+    // increment stack pointer
+    state->sp += 2;
+}
+
+/*
+ * Pushes contents onto the stack
+ */
+void push_x(State8080 *state, uint8_t x1, uint8_t x2) {
+    uint16_t sp_addr = state->sp;
+    state->memory[sp_addr - 1] = x1;
+    state->memory[sp_addr - 2] = x2;
+    state->sp -= 2;
+}
+
+/*
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
  * (instructions 0x80 to 0x87)
  */
 void add_x(State8080 *state, uint8_t x) {
-    int16_t a = (uint16_t) state->a;
+    uint16_t a = (uint16_t) state->a;
     uint16_t answer = a + (uint16_t) x;
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
@@ -1542,14 +1570,7 @@ void emulate_op(State8080 *state) {
         {
             // pop the stack into
             // registers B and C
-            // TODO: check this
-            uint16_t sp_addr;
-            sp_addr = state->sp;
-            state->c = state->memory[sp_addr];
-            state->b = state->memory[sp_addr + 1];
-
-            // increment stack pointer
-            state->sp += 2;
+            pop(state, &state->b, &state->c);
         }
             break;
         case 0xc2:  // JNZ adr
