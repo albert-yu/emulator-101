@@ -137,15 +137,32 @@ uint8_t carry32(uint32_t answer) {
 }
 
 uint8_t auxcarry(uint16_t answer) {
-    // skip implementation because Space Invaders doesn't use it
-    // TODO: do this
-    return 0;  
+    // From the manual:
+    // If the instruction caused a
+    // carry out of bit 3 and into
+    // bit 4 of the resulting value,
+    // the auxiliary carry is set;
+    // otherwise it is reset. This
+    // flag is affected by single
+    // precision additions,
+    // subtractions, increments,
+    // decrements, comparisons, and
+    // log- ical operations, but is
+    // principally used with
+    // additions and increments
+    // preceding a DAA (Decimal
+    // Adjust Accumulator)
+    // instruction.
+    uint8_t last8, cleaned;
+    last8 = answer & 0xff;
+    // zero out first three bits
+    //                  76543210
+    cleaned = last8 & 0b00011111; 
+    return cleaned > 0xff;  
 }
 
 uint8_t auxcarry32(uint32_t answer) {
-    // skip implementation because Space Invaders doesn't use it
-    // TODO: do this
-    return 0;  
+    return auxcarry(answer & 0xffff);  
 }
 
 
@@ -785,7 +802,7 @@ void emulate_op(State8080 *state) {
             state->sp = state->sp + 1; 
         }
             break;
-        case 0x34:
+        case 0x34:  // INR M
         {
             // need to get the pointer
             // to update memory in correct place
@@ -801,7 +818,8 @@ void emulate_op(State8080 *state) {
             dcr_x(state, m_ptr);
         }
             break;
-        case 0x36: unimplemented_instr(state); break;
+        case 0x36:  // (HL) <- byte 2
+            break;
         case 0x37: unimplemented_instr(state); break;
         case 0x38: unimplemented_instr(state); break;
         case 0x39:  // DAD SP
