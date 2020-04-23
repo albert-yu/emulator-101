@@ -1,4 +1,3 @@
-#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -40,7 +39,8 @@ void print_state(State8080 *state) {
 
 
 void unimplemented_instr(State8080 *state) {
-    printf("Error: Unimplemented instruction\n");
+    uint8_t opcode = state->memory[state->pc];
+    printf("Error: Unimplemented instruction %x\n", opcode);
     exit(1);
 }
 
