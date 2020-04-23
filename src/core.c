@@ -4,54 +4,6 @@
 
 #include "core.h"
 
-typedef struct condition_codes_t {
-    // zero: set if result is 0
-    uint8_t     z:1;  // z occupies 1 bit in the struct
-
-    // sign: set if result is negative
-    uint8_t     s:1;
-
-    // parity: set if number of 1 bits in the
-    // result is even
-    uint8_t     p:1;
-
-    // carry: set if last addition operation
-    // resulted in a carry or if the last 
-    // subtraction operation required a borrow
-    uint8_t     cy:1; // not to be confused with C register
-
-    // auxiliary carry: used for binary-coded
-    // decimal arithmetic
-    uint8_t     ac:1;
-
-    // padding so that the struct occupies exactly
-    // 8 bits
-    uint8_t     pad:3;
-} ConditionCodes;
-
-typedef struct state8080_t {
-    // registers (7 of them)
-    uint8_t             a;
-    uint8_t             b;
-    uint8_t             c;
-    uint8_t             d;
-    uint8_t             e;
-    uint8_t             h;
-    uint8_t             l;
-
-    // stack pointer
-    uint16_t            sp;
-
-    // program counter
-    uint16_t            pc;
-
-    uint8_t             *memory;
-
-    // status flags
-    ConditionCodes      cc;
-
-    uint8_t             int_enable;
-} State8080;
 
 /*
  * Print out the state for debugging
@@ -86,10 +38,12 @@ void print_state(State8080 *state) {
     printf("\n");
 }
 
+
 void unimplemented_instr(State8080 *state) {
     printf("Error: Unimplemented instruction\n");
     exit(1);
 }
+
 
 void unused_opcode(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
@@ -97,22 +51,26 @@ void unused_opcode(State8080 *state) {
     exit(1);
 }
 
-// Flags
+
+// Flags ----------------------------------
 
 uint8_t zero(uint16_t answer) {
     // set to 1 if answer is 0, 0 otherwise
     return ((answer & 0xff) == 0);
 }
 
+
 uint8_t sign(uint16_t answer) {
     // set to 1 when bit 7 of the math instruction is set
     return ((answer & 0x80) == 0);
 }
 
+
 uint8_t sign32(uint32_t answer) {
     // set to 1 when bit 15 of the math instruction is set
     return ((answer & 0x8000) == 0);
 }
+
 
 /*
  * Returns 0 if number of bits is even and 1 o.w.
@@ -127,14 +85,20 @@ uint8_t parity(uint16_t answer) {
     return parity;
 }
 
+
+/*
+ * Returns 1 when instruction resulted 
+ * in a carry or borrow into the high order bit
+ */
 uint8_t carry(uint16_t answer) {
-    // set to 1 when instruction resulted in a carry or borrow into the high order bit
     return (answer > 0xff); 
 }
+
 
 uint8_t carry32(uint32_t answer) {
     return (answer > 0xffff);
 }
+
 
 uint8_t auxcarry(uint16_t answer) {
     // From the manual:
@@ -161,6 +125,7 @@ uint8_t auxcarry(uint16_t answer) {
     return cleaned > 0xff;  
 }
 
+
 uint8_t auxcarry32(uint32_t answer) {
     return auxcarry(answer & 0xffff);  
 }
@@ -175,11 +140,12 @@ uint8_t auxcarry32(uint32_t answer) {
 #define SET_AC_FLAG (1 << 3)
 #define SET_ALL_FLAGS (SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_CY_FLAG | SET_AC_FLAG)
 
+
 /*
  * Set the specified flags according to the answer received by
  * arithmetic
- * flagstoset - from left to right, the z, s, p, cy, and ac flags (should
- * set flag if set to 1)
+ * flagstoset - from left to right, the z, s, p, cy, 
+ * and ac flags (should set flag if set to 1)
  */
 void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     // remove trailing bits
@@ -200,6 +166,7 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
         state->cc.ac = auxcarry(answer); 
   }
 }
+
 
 /*
  * Same as set_flags, except for a 32-bit answer
@@ -235,6 +202,7 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
   }
 }
 
+
 /*
  * JMP to address specified
  * in bytes 2 and 3
@@ -243,6 +211,7 @@ void jmp(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
     state->pc = (opcode[2] << 8 | opcode[1]);
 }
+
 
 /*
  * If cond, JMP adr
@@ -255,6 +224,7 @@ void jmp_cond(State8080 *state, uint8_t cond) {
         state->pc += 2;
     }
 }
+
 
 /*
  * Call specified target address (need for RST)
@@ -285,6 +255,7 @@ void call_adr(State8080 *state, uint16_t adr) {
     state->pc = adr;
 }
 
+
 /*
  * CALL address specified by following
  * two bytes
@@ -297,27 +268,6 @@ void call(State8080 *state) {
     subr = (opcode[2] << 8) | opcode[1];
 
     call_adr(state, subr);
-    // // get return address
-    // // to pick up where left
-    // // off
-    // uint16_t sp_addr, ret_addr;
-    // sp_addr = state->sp;
-    // ret_addr = sp_addr + 2;
-    // uint8_t hi_addr, lo_addr;
-    // hi_addr = (ret_addr >> 8) & 0xff;
-    // lo_addr = ret_addr & 0xff;
-
-    // // push return address onto the stack
-    // state->memory[sp_addr - 1] = hi_addr; 
-    // state->memory[sp_addr - 2] = lo_addr;
-
-    // // decrement stack pointer
-    // state->sp -= 2;
-
-
-    // set program counter to
-    // subroutine address
-    // state->pc = subr;
 }
 
 /*
@@ -333,6 +283,7 @@ void call_cond(State8080 *state, uint8_t cond) {
         state->pc += 2;
     }
 }
+
 
 /*
  * RET instruction
@@ -350,6 +301,7 @@ void ret(State8080 *state) {
     // increment stack pointer
     state->sp += 2;
 }
+
 
 /*
  * Pops content off the stack into 
@@ -369,6 +321,7 @@ void pop(State8080 *state, uint8_t *r1, uint8_t *r2) {
     state->sp += 2;
 }
 
+
 /*
  * Pushes contents onto the stack.
  * Like pop(...), should specify registers
@@ -382,6 +335,7 @@ void push_x(State8080 *state, uint8_t x1, uint8_t x2) {
     state->sp -= 2;
 }
 
+
 /*
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
@@ -393,6 +347,7 @@ void add_x(State8080 *state, uint8_t x) {
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
+
 
 /*
  * Performs an add carry
@@ -406,6 +361,7 @@ void adc_x(State8080 *state, uint8_t x) {
     state->a = answer & 0xff;
 }
 
+
 /*
  * Performs a sub and stores the result in A
  * SUB X: A <- A - X
@@ -416,6 +372,7 @@ void sub_x(State8080 *state, uint8_t x) {
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
+
 
 /*
  * Performs a sub carry
@@ -428,6 +385,7 @@ void sbb_x(State8080 *state, uint8_t x) {
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
+
 
 /*
  * Bitwise AND
@@ -445,6 +403,7 @@ void ana_x(State8080 *state, uint8_t x) {
     state->a = answer & 0xff;
 }
 
+
 /*
  * Bitwise XOR
  * XRA X: A <- A ^ X
@@ -459,6 +418,7 @@ void xra_x(State8080 *state, uint8_t x) {
     state->cc.cy = 0;
     state->a = answer & 0xff;
 }
+
 
 /*
  * Bitwise OR
@@ -475,6 +435,7 @@ void ora_x(State8080 *state, uint8_t x) {
     state->a = answer & 0xff;
 }
 
+
 /*
  * Swaps p1 with q1, p2 with q2
  */
@@ -488,6 +449,7 @@ void swp_ptrs(uint8_t *p1, uint8_t *p2, uint8_t *q1, uint8_t *q2) {
     *q2 = tmp;
 }
 
+
 /*
  * Combines two 8 bit values into a single
  * 16 bit value
@@ -497,6 +459,7 @@ uint16_t get16bitval(uint8_t left, uint8_t right) {
     result = (left << 8) | right;
     return result;
 }
+
 
 /*
  * Compare register
@@ -512,6 +475,7 @@ void cmp_x(State8080 *state, uint8_t x) {
     set_flags(state, answer, SET_ALL_FLAGS - SET_CY_FLAG);
     state->cc.cy = state->a < x;
 }
+
 
 /*
  * Adds the `val` to the 16-bit number stored by `left_ptr`
@@ -530,8 +494,9 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
     return result;
 }
 
+
 /*
- * Emulates INR (decrement register) instruction
+ * Emulates INR (increment register) instruction
  * INR X: X <- X + 1
  */
 void inr_x(State8080 *state, uint8_t *ptr) {
@@ -541,9 +506,10 @@ void inr_x(State8080 *state, uint8_t *ptr) {
     *ptr = answer & 0xff;
 }
 
+
 /*
- * Emulates DCR (increment register) instruction
- * INR X: X <- X + 1
+ * Emulates DCR (decrement register) instruction
+ * DCR X: X <- X - 1
  */
 void dcr_x(State8080 *state, uint8_t *ptr) {
     uint16_t answer = (uint16_t) *ptr - 1;
@@ -551,6 +517,7 @@ void dcr_x(State8080 *state, uint8_t *ptr) {
     set_flags(state, answer, flags);
     *ptr = answer & 0xff;
 }
+
 
 /*
  * INX XY: XY <- XY + 1
@@ -560,13 +527,15 @@ void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
     // INX does not set the carry bit
 }
 
+
 /*
- * DCX XY: XY <- XY + 1
+ * DCX XY: XY <- XY - 1
  */
 void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
     tworeg_add(left_ptr, right_ptr, -1);
     // DCX does not set the carry bit
 }
+
 
 /*
  * DAD XY: HL <- HL + XY
@@ -582,6 +551,7 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     state->cc.cy = result > 0xffff;
 }
 
+
 /*
  * Returns the 16 bit address pointed to by
  * two pointers to 8 bit integers
@@ -590,6 +560,7 @@ uint16_t read_addr(uint8_t *lptr, uint8_t *rptr) {
    return get16bitval(*lptr, *rptr);
 }
 
+
 /*
  * Returns the address stored in HL register
  * pair
@@ -597,6 +568,7 @@ uint16_t read_addr(uint8_t *lptr, uint8_t *rptr) {
 uint16_t read_hl_addr(State8080 *state) {
     return read_addr(&(state->h), &(state->l));
 }
+
 
 /*
  * Reads the value in memory pointed to by
@@ -614,6 +586,7 @@ uint8_t read_hl(State8080 *state) {
     return m;
 }
 
+
 /*
  * Sets the memory addressed by HL to `val`
  */
@@ -621,6 +594,7 @@ void set_hl(State8080 *state, uint8_t val) {
     uint16_t offset = read_hl_addr(state);
     state->memory[offset] = val;
 }
+
 
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
