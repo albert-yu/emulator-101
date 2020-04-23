@@ -2005,7 +2005,11 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xf7: unimplemented_instr(state); break;
+        case 0xf7:  // RST 6 (CALL $30)
+        {
+            call_adr(state, 0x30);
+        }
+            break;
         case 0xf8:  // RM
         {
             // if minus, RET
@@ -2014,8 +2018,17 @@ void emulate_op(State8080 *state) {
             }
         }
             break;
-        case 0xf9: unimplemented_instr(state); break;
-        case 0xfa: unimplemented_instr(state); break;
+        case 0xf9:  // SPHL: SP = HL
+        {
+            state->sp = get16bitval(state->h, state->l);
+        }
+            break;
+        case 0xfa:  // JM
+        {
+            // jump if sign is negative (sign = 1)
+            jmp_cond(state, state->cc.s);
+        }
+            break;
         case 0xfb: unimplemented_instr(state); break;
         case 0xfc:  // CM adr
         {
@@ -2031,7 +2044,11 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xff: unimplemented_instr(state); break;
+        case 0xff:
+        {
+            call_adr(state, 0x38);
+        }
+            break;
     }
 
     state->pc += 1;
