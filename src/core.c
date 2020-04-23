@@ -811,7 +811,7 @@ void emulate_op(State8080 *state) {
             inr_x(state, m_ptr);
         }
             break;
-        case 0x35:
+        case 0x35:  // DCR M
         {
             uint16_t offset = read_hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
@@ -819,9 +819,22 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0x36:  // (HL) <- byte 2
+        {
+            uint8_t byte2 = opcode[1];
+            uint16_t offset = read_hl_addr(state);
+            state->memory[offset] = byte2;
+            state->pc += 1;
+        }
             break;
-        case 0x37: unimplemented_instr(state); break;
-        case 0x38: unimplemented_instr(state); break;
+        case 0x37:  // STC
+        {
+            // set carry flag to 1
+            state->cc.cy = 1;
+        }
+            break;
+        case 0x38: 
+            unused_opcode(state); 
+            break;
         case 0x39:  // DAD SP
         {
             // uglier implementation
@@ -833,7 +846,14 @@ void emulate_op(State8080 *state) {
             state->cc.cy = answer > 0xffff;
         }
             break;
-        case 0x3a: unimplemented_instr(state); break;
+        case 0x3a:  // LDA adr
+        {
+            // A <- (adr)
+            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint8_t val = state->memory[addr];
+            state->a = val;
+        }
+            break;
         case 0x3b:  // DCX SP
         {
             uint16_t curr_sp = state->sp;
