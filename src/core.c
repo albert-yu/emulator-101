@@ -1923,7 +1923,12 @@ void emulate_op(State8080 *state) {
             jmp_cond(state, state->cc.s == 0);
         }
             break;
-        case 0xf3: unimplemented_instr(state); break;
+        case 0xf3:  // DI
+        {
+            // disable interrupts
+            state->int_enable = 0;
+        }
+            break;
         case 0xf4:   // CP adr
         {
             uint8_t pos = !state->cc.s;
@@ -2003,7 +2008,12 @@ void emulate_op(State8080 *state) {
             jmp_cond(state, state->cc.s);
         }
             break;
-        case 0xfb: unimplemented_instr(state); break;
+        case 0xfb:  // EI
+        {
+            // enable interrupts
+            state->int_enable = 1;
+        }
+            break;
         case 0xfc:  // CM adr
         {
             // if minus, call

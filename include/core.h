@@ -49,6 +49,7 @@ typedef struct state8080_t {
     // status flags
     ConditionCodes      cc;
 
+    // 1 if interrupt enabled
     uint8_t             int_enable;
 } State8080;
 
