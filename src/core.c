@@ -1925,16 +1925,16 @@ void emulate_op(State8080 *state) {
             state->cc.cy = sp_val & 1;
 
             // (P) <- ((SP))2
-            state->cc.p = sp_val & (1 << 2);
+            state->cc.p = (sp_val & (1 << 2)) > 0;
 
             // (AC) <- ((SP))4
-            state->cc.ac = sp_val & (1 << 4);
+            state->cc.ac = (sp_val & (1 << 4)) > 0;
 
             // (Z) <- ((SP))6
-            state->cc.z = sp_val & (1 << 6);
+            state->cc.z = (sp_val & (1 << 6)) > 0;
 
             // (S) <- ((SP))7
-            state->cc.s = sp_val & (1 << 7);
+            state->cc.s = (sp_val & (1 << 7)) > 0;
 
             // (A) <- ((SP) +1)
             state->a = state->memory[sp_addr + 1];
@@ -1943,7 +1943,12 @@ void emulate_op(State8080 *state) {
             state->sp += 2;
         }
             break;
-        case 0xf2: unimplemented_instr(state); break;
+        case 0xf2:  // JP adr
+        {
+            // if positive, JMP
+            jmp_cond(state, state->cc.s == 0);
+        }
+            break;
         case 0xf3: unimplemented_instr(state); break;
         case 0xf4:   // CP adr
         {
@@ -1951,7 +1956,42 @@ void emulate_op(State8080 *state) {
             call_cond(state, pos);
         }
             break;
-        case 0xf5: unimplemented_instr(state); break;
+        case 0xf5:  // PUSH PSW
+        {
+            uint16_t sp_adr = state->sp;
+            
+            // ((SP) - 1) <- A
+            state->memory[sp_adr - 1] = state->a;
+
+            uint8_t sp_flags = 0;
+
+            // ((SP) - 2)0 <- CY
+            sp_flags += state->cc.cy; 
+
+            // (........)1 <- 1
+            sp_flags += (1 << 1);
+
+            // (........)2 <- P
+            sp_flags += (state->cc.p << 2);
+
+            // (........)3 <- 0
+ 
+            // (........)4 <- AC
+            sp_flags += (state->cc.ac << 4);
+
+            // (........)5 <- 0
+
+            // (........)6 <- Z
+            sp_flags += (state->cc.z << 6);
+
+            // (........)7 <- S
+            sp_flags += (state->cc.s << 7);
+            state->memory[sp_adr - 2] = sp_flags;
+
+            // (SP) <- (SP) - 2
+            state->sp -= 2;
+        } 
+            break;
         case 0xf6:  // ORI D8
         {
             uint16_t answer;
