@@ -236,7 +236,8 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
 }
 
 /*
- * JMP adr
+ * JMP to address specified
+ * in bytes 2 and 3
  */
 void jmp(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
@@ -472,6 +473,19 @@ void ora_x(State8080 *state, uint8_t x) {
     state->cc.ac = 0;
     state->cc.cy = 0;
     state->a = answer & 0xff;
+}
+
+/*
+ * Swaps p1 with q1, p2 with q2
+ */
+void swp_ptrs(uint8_t *p1, uint8_t *p2, uint8_t *q1, uint8_t *q2) {
+    uint8_t tmp;
+    tmp = *p1;
+    *p1 = *q1;
+    *q1 = tmp;
+    tmp = *p2;
+    *p2 = *q2;
+    *q2 = tmp;
 }
 
 /*
@@ -1643,7 +1657,11 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xc7: unimplemented_instr(state); break;
+        case 0xc7:  // RST 0
+        {
+            call_adr(state, 0);
+        }
+            break;
         case 0xc8:  // RZ
         {
             // if Z, RET
@@ -1688,7 +1706,11 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xcf: unimplemented_instr(state); break;
+        case 0xcf: // RST 8
+        {
+            call_adr(state, 8);
+        }
+            break;
         case 0xd0:  // RNC
         {
             // if not carry, return
@@ -1697,8 +1719,17 @@ void emulate_op(State8080 *state) {
             }
         } 
             break;
-        case 0xd1: unimplemented_instr(state); break;
-        case 0xd2: unimplemented_instr(state); break;
+        case 0xd1:
+        {
+            pop(state, &state->d, &state->e);
+        }
+            break;
+        case 0xd2:  // JNC adr
+        {
+            // if not carry, jmp
+            jmp_cond(state, !state->cc.cy);
+        }
+            break;
         case 0xd3: unimplemented_instr(state); break;
         case 0xd4:
         {
@@ -1706,7 +1737,11 @@ void emulate_op(State8080 *state) {
             call_cond(state, nocarry);
         }
             break;
-        case 0xd5: unimplemented_instr(state); break;
+        case 0xd5:  // PUSH D
+        {
+            push_x(state, state->d, state->e);
+        }
+            break;
         case 0xd6:   // SUI D8
         {
             uint8_t data = opcode[1];
@@ -1717,7 +1752,12 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         } 
             break;
-        case 0xd7: unimplemented_instr(state); break;
+        case 0xd7:  // CALL 10 (16 in decimal)
+        {
+            // 0, 8, 16, 24, 32, 40, 48, and 56
+            call_adr(state, 16);
+        }
+            break;
         case 0xd8:  // RC
         {
             if (state->cc.cy) {
@@ -1725,8 +1765,14 @@ void emulate_op(State8080 *state) {
             }
         }
             break;
-        case 0xd9: unimplemented_instr(state); break;
-        case 0xda: unimplemented_instr(state); break;
+        case 0xd9:
+            unused_opcode(state);
+            break;
+        case 0xda:
+        {
+            jmp_cond(state, state->cc.cy);
+        }
+            break;
         case 0xdb: unimplemented_instr(state); break;
         case 0xdc:  // CC adr
         {
@@ -1736,8 +1782,21 @@ void emulate_op(State8080 *state) {
         case 0xdd:
             unused_opcode(state); 
             break;
-        case 0xde: unimplemented_instr(state); break;
-        case 0xdf: unimplemented_instr(state); break;
+        case 0xde:  // SBI D8
+        {
+            uint16_t answer, a;
+            a = (uint16_t) state->a;
+            answer = a - opcode[1] - state->cc.cy;
+            set_flags(state, answer, SET_ALL_FLAGS);
+            state->a = answer & 0xff;
+            state->pc += 2;
+        }
+            break;
+        case 0xdf:
+        {
+            call_adr(state, 24);
+        }
+            break;
         case 0xe0:  // RPO
         {
             // if parity odd, RET
@@ -1746,16 +1805,37 @@ void emulate_op(State8080 *state) {
             }
         }
             break;
-        case 0xe1: unimplemented_instr(state); break;
-        case 0xe2: unimplemented_instr(state); break;
-        case 0xe3: unimplemented_instr(state); break;
+        case 0xe1:  // POP H
+        {
+            pop(state, &state->h, &state->l);
+        }
+            break;
+        case 0xe2:  // JPO adr
+        {
+            jmp_cond(state, !state->cc.p);
+        }
+            break;
+        case 0xe3:  // XTHL
+        {
+            // L <-> (SP); H <-> (SP+1)
+            uint16_t sp = state->sp;
+            uint8_t *sp_h, *sp_l;
+            sp_h = &state->memory[sp + 1];
+            sp_l = &state->memory[sp]; 
+            swp_ptrs(&state->l, &state->h, sp_l, sp_h);
+        }
+            break;
         case 0xe4:  // CPO adr
         {
             uint8_t odd = !state->cc.p;
             call_cond(state, odd);
         }
             break;
-        case 0xe5: unimplemented_instr(state); break;
+        case 0xe5:  // PUSH H
+        {
+            push_x(state, state->h, state->l);
+        }
+            break;
         case 0xe6:  // ANI D8
         {
             uint16_t answer;
@@ -1769,7 +1849,12 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xe7: unimplemented_instr(state); break;
+        case 0xe7:
+        {
+            // decimal value = 32
+            call_adr(state, 0x20);
+        }
+            break;
         case 0xe8:  // RPE
         {
             if (state->cc.p) {
