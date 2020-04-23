@@ -338,6 +338,20 @@ uint16_t get16bitval(uint8_t left, uint8_t right) {
     return result;
 }
 
+/*
+ * Compare register
+ * (A) - (r)
+ * The content of register or memory location  (x) 
+ * is subtracted from accumulator.
+ * The accumulator remains unchanged. All flags are set.
+ * Z flag is set to 1 if (A) = (r). CY set to 1 if (A) < (r).
+ */
+void cmp_x(State8080 *state, uint8_t x) {
+    uint16_t answer;
+    answer = state->a - x;
+    set_flags(state, answer, SET_ALL_FLAGS);
+}
+
 /**
  * Adds the `val` to the 16-bit number stored by `left_ptr`
  * and `right_ptr` collectively and stores it back in
@@ -1391,14 +1405,46 @@ void emulate_op(State8080 *state) {
             ora_x(state, state->a);
         }
             break;
-        case 0xb8: unimplemented_instr(state); break;
-        case 0xb9: unimplemented_instr(state); break;
-        case 0xba: unimplemented_instr(state); break;
-        case 0xbb: unimplemented_instr(state); break;
-        case 0xbc: unimplemented_instr(state); break;
-        case 0xbd: unimplemented_instr(state); break;
-        case 0xbe: unimplemented_instr(state); break;
-        case 0xbf: unimplemented_instr(state); break;
+        case 0xb8:  // CMP B
+        {
+            cmp_x(state, state->b);
+        }
+            break;
+        case 0xb9:
+        {
+            cmp_x(state, state->c);
+        }
+            break;
+        case 0xba:
+        {
+            cmp_x(state, state->d);
+        }
+            break;
+        case 0xbb:
+        {
+            cmp_x(state, state->e);
+        }
+            break;
+        case 0xbc:
+        {
+            cmp_x(state, state->h);
+        }
+            break;
+        case 0xbd:
+        {
+            cmp_x(state, state->l);
+        }
+            break;
+        case 0xbe:
+        {
+            cmp_x(state, read_hl(state));
+        }
+            break;
+        case 0xbf:
+        {
+            cmp_x(state, state->a);
+        }
+            break;
         case 0xc0: unimplemented_instr(state); break;
         case 0xc1: unimplemented_instr(state); break;
         case 0xc2: 
