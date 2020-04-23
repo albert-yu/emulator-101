@@ -1916,7 +1916,33 @@ void emulate_op(State8080 *state) {
                 ret(state);
             }
         }
-        case 0xf1: unimplemented_instr(state); break;
+        case 0xf1:  // POP PSW
+        {
+            uint16_t sp_addr = state->sp;
+            uint8_t sp_val = state->memory[sp_addr];
+
+            // (CY) <- ((SP))O
+            state->cc.cy = sp_val & 1;
+
+            // (P) <- ((SP))2
+            state->cc.p = sp_val & (1 << 2);
+
+            // (AC) <- ((SP))4
+            state->cc.ac = sp_val & (1 << 4);
+
+            // (Z) <- ((SP))6
+            state->cc.z = sp_val & (1 << 6);
+
+            // (S) <- ((SP))7
+            state->cc.s = sp_val & (1 << 7);
+
+            // (A) <- ((SP) +1)
+            state->a = state->memory[sp_addr + 1];
+
+            // (SP) <- (SP) + 2
+            state->sp += 2;
+        }
+            break;
         case 0xf2: unimplemented_instr(state); break;
         case 0xf3: unimplemented_instr(state); break;
         case 0xf4:   // CP adr
