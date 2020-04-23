@@ -348,11 +348,12 @@ uint16_t get16bitval(uint8_t left, uint8_t right) {
  */
 void cmp_x(State8080 *state, uint8_t x) {
     uint16_t answer;
-    answer = state->a - x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    answer = (uint16_t) state->a - (uint16_t) x;
+    set_flags(state, answer, SET_ALL_FLAGS - SET_CY_FLAG);
+    state->cc.cy = state->a < x;
 }
 
-/**
+/*
  * Adds the `val` to the 16-bit number stored by `left_ptr`
  * and `right_ptr` collectively and stores it back in
  * the two pointers. Also returns the result as 32 bits.
@@ -467,7 +468,6 @@ void emulate_op(State8080 *state) {
     switch(*opcode) {
         case 0x00:  // NOP
             break;
-
         case 0x01:  // LXI B,D16
         {
             state->c = opcode[1];  // c <- byte 2
@@ -475,7 +475,6 @@ void emulate_op(State8080 *state) {
             state->pc += 2;  // advance two more bytes
         }
             break;
-
         case 0x02:  // STAX B: (BC) <- A
         {
             // set the value of memory with address formed by
@@ -1585,7 +1584,12 @@ void emulate_op(State8080 *state) {
         case 0xfb: unimplemented_instr(state); break;
         case 0xfc: unimplemented_instr(state); break;
         case 0xfd: unimplemented_instr(state); break;
-        case 0xfe: unimplemented_instr(state); break;
+        case 0xfe:  // CPI byte
+        {
+            cmp_x(state, opcode[1]);
+            state->pc += 1;
+        }
+            break;
         case 0xff: unimplemented_instr(state); break;
     }
 
