@@ -71,16 +71,21 @@ int load_and_run(char *filename) {
 
     while (state.pc < fsize)
     {
-        // print_state(&state);
+        printf("Emulator state:\n");
+        print_state(&state);
+        printf("Instructions executed: %zu\n", instr_count);
+
+        printf("Press enter to continue\n"); 
+        getchar();
         emulate_op(&state);
 
-        // inspect memory location
-        // at 20c0
-        uint16_t mem_loc = 0x20c0;
-        uint8_t val = state.memory[mem_loc];
-        if (val == 0 && instr_count > 40000) {
-            printf("IS ZERO\n");
-        }
+        // // inspect memory location
+        // // at 20c0
+        // uint16_t mem_loc = 0x20c0;
+        // uint8_t val = state.memory[mem_loc];
+        // if (val == 0 && instr_count > 40000) {
+        //     printf("IS ZERO\n");
+        // }
         instr_count++;
     }
 

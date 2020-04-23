@@ -11,17 +11,17 @@ void print_state(State8080 *state) {
     printf("\n");
     // in hex
     printf("Registers:\n");
-    printf("A: 0x%x\n", state->a);
-    printf("B: 0x%x\n", state->b);
-    printf("C: 0x%x\n", state->c);
-    printf("D: 0x%x\n", state->d);
-    printf("E: 0x%x\n", state->e);
-    printf("H: 0x%x\n", state->h);
-    printf("L: 0x%x\n", state->l);
+    printf("A: 0x%02x\n", state->a);
+    printf("B: 0x%02x\n", state->b);
+    printf("C: 0x%02x\n", state->c);
+    printf("D: 0x%02x\n", state->d);
+    printf("E: 0x%02x\n", state->e);
+    printf("H: 0x%02x\n", state->h);
+    printf("L: 0x%02x\n", state->l);
     printf("\n");
 
-    printf("SP: 0x%x\n", state->sp);
-    printf("PC: 0x%x\n", state->pc);
+    printf("SP: 0x%04x\n", state->sp);
+    printf("PC: 0x%04x\n", state->pc);
 
     printf("Status flags:\n");
     printf("Z:  %d\n", state->cc.z);
@@ -203,12 +203,25 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
 
 
 /*
+ * Combines two 8 bit values into a single
+ * 16 bit value
+ */
+uint16_t get16bitval(uint8_t left, uint8_t right) {
+    uint16_t result;
+    result = (left << 8) | right;
+    return result;
+}
+
+
+/*
  * JMP to address specified
  * in bytes 2 and 3
  */
 void jmp(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
-    state->pc = (opcode[2] << 8 | opcode[1]);
+    uint16_t target_addr = get16bitval(opcode[2], opcode[1]);
+    // HACK: we'll add 1 at the end of the giant switch block
+    state->pc = target_addr - 1;
 }
 
 
@@ -250,8 +263,8 @@ void call_adr(State8080 *state, uint16_t adr) {
     state->sp -= 2;
 
     // set program counter to
-    // target address
-    state->pc = adr;
+    // target address - 1
+    state->pc = adr - 1;
 }
 
 
@@ -295,7 +308,8 @@ void ret(State8080 *state) {
     
     // set pc to return address pointed
     // to by stack
-    state->pc = (l_addr << 8) | r_addr;
+    uint16_t target_addr = get16bitval(l_addr, r_addr);
+    state->pc = target_addr - 1;
     
     // increment stack pointer
     state->sp += 2;
@@ -446,17 +460,6 @@ void swp_ptrs(uint8_t *p1, uint8_t *p2, uint8_t *q1, uint8_t *q2) {
     tmp = *p2;
     *p2 = *q2;
     *q2 = tmp;
-}
-
-
-/*
- * Combines two 8 bit values into a single
- * 16 bit value
- */
-uint16_t get16bitval(uint8_t left, uint8_t right) {
-    uint16_t result;
-    result = (left << 8) | right;
-    return result;
 }
 
 
@@ -950,7 +953,9 @@ void emulate_op(State8080 *state) {
             uint8_t byte2, byte3;
             byte3 = opcode[2];
             byte2 = opcode[1];
-            state->sp = (byte3 << 8) | byte2; 
+            uint16_t sp_addr = get16bitval(byte3, byte2); 
+            printf("sp_addr loaded: %x\n", sp_addr);
+            state->sp = sp_addr; 
             state->pc += 2;
         }
             break;
@@ -1851,7 +1856,7 @@ void emulate_op(State8080 *state) {
         case 0xe9:  // PCHL
         {
             // PC.hi <- H; PC.lo <- L
-            state->pc = get16bitval(state->h, state->l);
+            state->pc = get16bitval(state->h, state->l) - 1;
         }
             break;
         case 0xea:  // JPE adr
