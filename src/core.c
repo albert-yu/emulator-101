@@ -235,13 +235,27 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
   }
 }
 
+void ret(State8080 *state) {
+    uint16_t sp_addr = state->sp;
+    uint8_t r_addr, l_addr;
+    r_addr = state->memory[sp_addr];
+    l_addr = state->memory[sp_addr + 1];
+    
+    // set pc to return address pointed
+    // to by stack
+    state->pc = (l_addr << 8) | r_addr;
+    
+    // increment stack pointer
+    state->sp += 2;
+}
+
 /*
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
  * (instructions 0x80 to 0x87)
  */
 void add_x(State8080 *state, uint8_t x) {
-    uint16_t a = (uint16_t) state->a;
+    int16_t a = (uint16_t) state->a;
     uint16_t answer = a + (uint16_t) x;
     set_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
@@ -1445,7 +1459,15 @@ void emulate_op(State8080 *state) {
             cmp_x(state, state->a);
         }
             break;
-        case 0xc0: unimplemented_instr(state); break;
+        case 0xc0:  // RNZ
+        {
+            // if NZ, RET
+            uint8_t not_zero = !state->cc.z;
+            if (not_zero) {
+                ret(state);
+            }
+        }
+            break;
         case 0xc1: unimplemented_instr(state); break;
         case 0xc2: 
             if (state->cc.z == 0) {
@@ -1460,7 +1482,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0xc4: unimplemented_instr(state); break;
         case 0xc5: unimplemented_instr(state); break;
-        case 0xc6: 
+        case 0xc6:  // ADI D8
         {
             // The immediate form is the almost the 
             // same except the source of the addend 
@@ -1468,7 +1490,8 @@ void emulate_op(State8080 *state) {
             // Since "opcode" is a pointer to the 
             // current instruction in memory, 
             // opcode[1] will be the immediately following byte.
-            uint16_t answer = (uint16_t) state->a + (uint16_t) opcode[1];
+            uint16_t answer;
+            answer = (uint16_t) state->a + (uint16_t) opcode[1];
             set_flags(state, answer, SET_ALL_FLAGS);
 
             // instruction is of size 2
@@ -1476,8 +1499,19 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0xc7: unimplemented_instr(state); break;
-        case 0xc8: unimplemented_instr(state); break;
-        case 0xc9: unimplemented_instr(state); break;
+        case 0xc8:  // RZ
+        {
+            // if Z, RET
+            if (state->cc.z) {
+                ret(state);
+            }
+        }
+            break;
+        case 0xc9:  // RET
+        {
+            ret(state);
+        }
+            break;
         case 0xca: unimplemented_instr(state); break;
         case 0xcb: unimplemented_instr(state); break;
         case 0xcc: unimplemented_instr(state); break;
@@ -1494,7 +1528,14 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0xcf: unimplemented_instr(state); break;
-        case 0xd0: unimplemented_instr(state); break;
+        case 0xd0:  // RNC
+        {
+            // if not carry, return
+            if (!state->cc.cy) {
+                ret(state);
+            }
+        } 
+            break;
         case 0xd1: unimplemented_instr(state); break;
         case 0xd2: unimplemented_instr(state); break;
         case 0xd3: unimplemented_instr(state); break;
@@ -1511,7 +1552,13 @@ void emulate_op(State8080 *state) {
         } 
             break;
         case 0xd7: unimplemented_instr(state); break;
-        case 0xd8: unimplemented_instr(state); break;
+        case 0xd8:  // RC
+        {
+            if (state->cc.cy) {
+                ret(state);
+            }
+        }
+            break;
         case 0xd9: unimplemented_instr(state); break;
         case 0xda: unimplemented_instr(state); break;
         case 0xdb: unimplemented_instr(state); break;
@@ -1519,7 +1566,14 @@ void emulate_op(State8080 *state) {
         case 0xdd: unimplemented_instr(state); break;
         case 0xde: unimplemented_instr(state); break;
         case 0xdf: unimplemented_instr(state); break;
-        case 0xe0: unimplemented_instr(state); break;
+        case 0xe0:  // RPO
+        {
+            // if parity odd, RET
+            if (!state->cc.p) {
+                ret(state);
+            }
+        }
+            break;
         case 0xe1: unimplemented_instr(state); break;
         case 0xe2: unimplemented_instr(state); break;
         case 0xe3: unimplemented_instr(state); break;
@@ -1539,7 +1593,13 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0xe7: unimplemented_instr(state); break;
-        case 0xe8: unimplemented_instr(state); break;
+        case 0xe8:  // RPE
+        {
+            if (state->cc.p) {
+                ret(state);
+            }
+        }
+            break;
         case 0xe9: unimplemented_instr(state); break;
         case 0xea: unimplemented_instr(state); break;
         case 0xeb: unimplemented_instr(state); break;
