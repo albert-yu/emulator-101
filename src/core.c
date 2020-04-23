@@ -43,11 +43,11 @@ void unimplemented_instr(State8080 *state) {
 
 
 void unused_opcode(State8080 *state) {
-    uint8_t opcode = state->memory[state->pc];
-    printf("Error: unused opcode 0x%x\n", opcode);
-    printf("State at failure:\n");
-    print_state(state);
-    exit(1);
+    // uint8_t opcode = state->memory[state->pc];
+    // printf("Error: unused opcode 0x%x\n", opcode);
+    // printf("State at failure:\n");
+    // print_state(state);
+    // exit(1);
 }
 
 

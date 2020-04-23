@@ -65,7 +65,7 @@ int disassemble8080op(unsigned char *codebuffer, int pc) {
         case 0x0d: printf("DCR    C"); break;
         case 0x0e: printf("MVI    C,#$%02x", code[1]); opbytes = 2; break;
         case 0x0f: printf("RRC"); break;
-        case 0x10: printf("Invalid instruction: 0x10\n"); exit(1); break;
+        case 0x10: printf("NOP"); break;    
         case 0x11: printf("LXI    D, #$%02x%02x", code[2], code[1]); opbytes = 3; break;
         case 0x12: printf("STAX   D"); break;
         case 0x13: printf("INX    D"); break;
