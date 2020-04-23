@@ -268,6 +268,20 @@ void call(State8080 *state) {
 }
 
 /*
+ * CALL conditionally
+ * If cond is TRUE, then CALL
+ */
+void call_cond(State8080 *state, uint8_t cond) {
+    if (cond) {
+        call(state);
+    } else {
+        // otherwise, move onto
+        // next instruction
+        state->pc += 2;
+    }
+}
+
+/*
  * RET instruction
  */
 void ret(State8080 *state) {
@@ -1515,7 +1529,12 @@ void emulate_op(State8080 *state) {
         case 0xc3: 
             state->pc = (opcode[2] << 8 | opcode[1]);
             break;
-        case 0xc4: unimplemented_instr(state); break;
+        case 0xc4:
+        {
+            uint8_t notzero = !state->cc.z; 
+            call_cond(state, notzero);
+        }
+            break;
         case 0xc5: unimplemented_instr(state); break;
         case 0xc6:  // ADI D8
         {
@@ -1548,11 +1567,19 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0xca: unimplemented_instr(state); break;
-        case 0xcb: unimplemented_instr(state); break;
-        case 0xcc: unimplemented_instr(state); break;
+        case 0xcb:
+        {
+            unused_opcode(state);
+        }
+            break;
+        case 0xcc:  // CZ
+        {
+            call_cond(state, state->cc.z);
+        }
+            break;
         case 0xcd:  // CALL adr
         {
-            
+            call(state); 
         }
             break;
         case 0xce:  // ACI D8: A <- A + data + CY
@@ -1578,7 +1605,12 @@ void emulate_op(State8080 *state) {
         case 0xd1: unimplemented_instr(state); break;
         case 0xd2: unimplemented_instr(state); break;
         case 0xd3: unimplemented_instr(state); break;
-        case 0xd4: unimplemented_instr(state); break;
+        case 0xd4:
+        {
+            uint8_t nocarry = !state->cc.cy;
+            call_cond(state, nocarry);
+        }
+            break;
         case 0xd5: unimplemented_instr(state); break;
         case 0xd6:   // SUI D8
         {
@@ -1601,8 +1633,14 @@ void emulate_op(State8080 *state) {
         case 0xd9: unimplemented_instr(state); break;
         case 0xda: unimplemented_instr(state); break;
         case 0xdb: unimplemented_instr(state); break;
-        case 0xdc: unimplemented_instr(state); break;
-        case 0xdd: unimplemented_instr(state); break;
+        case 0xdc:  // CC adr
+        {
+            call_cond(state, state->cc.cy);
+        }
+            break;
+        case 0xdd:
+            unused_opcode(state); 
+            break;
         case 0xde: unimplemented_instr(state); break;
         case 0xdf: unimplemented_instr(state); break;
         case 0xe0:  // RPO
@@ -1616,7 +1654,12 @@ void emulate_op(State8080 *state) {
         case 0xe1: unimplemented_instr(state); break;
         case 0xe2: unimplemented_instr(state); break;
         case 0xe3: unimplemented_instr(state); break;
-        case 0xe4: unimplemented_instr(state); break;
+        case 0xe4:  // CPO adr
+        {
+            uint8_t odd = !state->cc.p;
+            call_cond(state, odd);
+        }
+            break;
         case 0xe5: unimplemented_instr(state); break;
         case 0xe6:  // ANI D8
         {
@@ -1642,8 +1685,15 @@ void emulate_op(State8080 *state) {
         case 0xe9: unimplemented_instr(state); break;
         case 0xea: unimplemented_instr(state); break;
         case 0xeb: unimplemented_instr(state); break;
-        case 0xec: unimplemented_instr(state); break;
-        case 0xed: unimplemented_instr(state); break;
+        case 0xec:  // CPE adr
+        {
+            // call address if parity even
+            call_cond(state, state->cc.p);
+        }
+            break;
+        case 0xed:
+            unused_opcode(state);
+            break;
         case 0xee:  // XRI D8
         {
             uint16_t answer;
@@ -1668,7 +1718,12 @@ void emulate_op(State8080 *state) {
         case 0xf1: unimplemented_instr(state); break;
         case 0xf2: unimplemented_instr(state); break;
         case 0xf3: unimplemented_instr(state); break;
-        case 0xf4: unimplemented_instr(state); break;
+        case 0xf4:   // CP adr
+        {
+            uint8_t pos = !state->cc.s;
+            call_cond(state, pos);
+        }
+            break;
         case 0xf5: unimplemented_instr(state); break;
         case 0xf6:  // ORI D8
         {
@@ -1695,7 +1750,13 @@ void emulate_op(State8080 *state) {
         case 0xf9: unimplemented_instr(state); break;
         case 0xfa: unimplemented_instr(state); break;
         case 0xfb: unimplemented_instr(state); break;
-        case 0xfc: unimplemented_instr(state); break;
+        case 0xfc:  // CM adr
+        {
+            // if minus, call
+            uint8_t minus = state->cc.s;
+            call_cond(state, minus);
+        }
+            break;
         case 0xfd: unimplemented_instr(state); break;
         case 0xfe:  // CPI byte
         {
