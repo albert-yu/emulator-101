@@ -1704,7 +1704,15 @@ void emulate_op(State8080 *state) {
             jmp_cond(state, !state->cc.cy);
         }
             break;
-        case 0xd3: unimplemented_instr(state); break;
+        case 0xd3:  // OUT D8
+        {
+            // TODO: implement along
+            // with IN D8
+
+            // skip over data byte
+            state->pc += 1;
+        }
+            break;
         case 0xd4:
         {
             uint8_t nocarry = !state->cc.cy;
@@ -1747,7 +1755,12 @@ void emulate_op(State8080 *state) {
             jmp_cond(state, state->cc.cy);
         }
             break;
-        case 0xdb: unimplemented_instr(state); break;
+        case 0xdb:  // IN D8
+        {
+            // skip over data byte
+            state->pc++;
+        }
+            break;
         case 0xdc:  // CC adr
         {
             call_cond(state, state->cc.cy);
