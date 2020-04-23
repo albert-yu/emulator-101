@@ -852,6 +852,7 @@ void emulate_op(State8080 *state) {
             uint16_t addr = get16bitval(opcode[1], opcode[2]);
             uint8_t val = state->memory[addr];
             state->a = val;
+            state->pc += 2;
         }
             break;
         case 0x3b:  // DCX SP
