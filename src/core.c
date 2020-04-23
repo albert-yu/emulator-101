@@ -1057,16 +1057,36 @@ void emulate_op(State8080 *state) {
         case 0x75:
             set_hl(state, state->l);
             break;
-        case 0x76: unimplemented_instr(state); break;
-        case 0x77: unimplemented_instr(state); break;
-        case 0x78: unimplemented_instr(state); break;
-        case 0x79: unimplemented_instr(state); break;
-        case 0x7a: unimplemented_instr(state); break;
-        case 0x7b: unimplemented_instr(state); break;
-        case 0x7c: unimplemented_instr(state); break;
-        case 0x7d: unimplemented_instr(state); break;
-        case 0x7e: unimplemented_instr(state); break;
+        case 0x76: 
+            // HLT (Halt) instruction
+            unimplemented_instr(state); 
+            break;
+        case 0x77:
+            set_hl(state, state->a);
+            break;
+        case 0x78:
+            state->a = state->b;
+            break;
+        case 0x79:
+            state->a = state->c;
+            break;
+        case 0x7a:
+            state->a = state->d;
+            break;
+        case 0x7b:
+            state->a = state->e;
+            break;
+        case 0x7c:
+            state->a = state->h;
+            break;
+        case 0x7d:
+            state->a = state->l;
+            break;
+        case 0x7e:
+            state->a = read_hl(state);
+            break;
         case 0x7f:  // MOV A,A
+            state->a = state->a;
             break;
         case 0x80:  // ADD B
         {
