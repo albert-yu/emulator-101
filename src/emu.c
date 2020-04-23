@@ -67,11 +67,21 @@ int load_and_run(char *filename) {
     fclose(f);
 
     printf("fsize: %d\n", fsize);
+    size_t instr_count = 0;
 
     while (state.pc < fsize)
     {
-        print_state(&state);
+        // print_state(&state);
         emulate_op(&state);
+
+        // inspect memory location
+        // at 20c0
+        uint16_t mem_loc = 0x20c0;
+        uint8_t val = state.memory[mem_loc];
+        if (val == 0 && instr_count > 40000) {
+            printf("IS ZERO\n");
+        }
+        instr_count++;
     }
 
     free(state.memory);
