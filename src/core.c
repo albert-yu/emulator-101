@@ -1085,7 +1085,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0x76: 
             // HLT (Halt) instruction
-            unimplemented_instr(state); 
+            printf("Halting execution...\n");
+            exit(0);
             break;
         case 0x77:
             set_hl(state, state->a);
