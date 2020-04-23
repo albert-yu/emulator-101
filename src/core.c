@@ -1862,9 +1862,26 @@ void emulate_op(State8080 *state) {
             }
         }
             break;
-        case 0xe9: unimplemented_instr(state); break;
-        case 0xea: unimplemented_instr(state); break;
-        case 0xeb: unimplemented_instr(state); break;
+        case 0xe9:  // PCHL
+        {
+            // PC.hi <- H; PC.lo <- L
+            state->pc = get16bitval(state->h, state->l);
+        }
+            break;
+        case 0xea:  // JPE adr
+        {
+            // jmp if even
+            jmp_cond(state, state->cc.p);
+        }
+            break;
+        case 0xeb:  // XCHG
+        {
+            // H <-> D; L <-> E
+            swp_ptrs(
+                &state->h, &state->l, 
+                &state->d, &state->e);
+        }
+            break;
         case 0xec:  // CPE adr
         {
             // call address if parity even
@@ -1887,7 +1904,11 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xef:  unimplemented_instr(state); break;
+        case 0xef:  // RST
+        {
+            call_adr(state, 0x28);
+        }
+            break;
         case 0xf0:  // RP
         {
             // if positive, RET
