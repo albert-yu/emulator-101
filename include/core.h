@@ -54,6 +54,17 @@ typedef struct state8080_t {
 } State8080;
 
 
+/*
+ * Prints out the current state
+ */
 void print_state(State8080 *state);
+
+
+/*
+ * Given the state, emulates the opcode
+ * pointed to by the program counter
+ * and moves onto the next instruction
+ */
+void emulate_op(State8080 *state);
 
 #endif
