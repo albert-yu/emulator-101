@@ -235,10 +235,18 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
   }
 }
 
+void jmp(State8080 *state) {
+    uint8_t *opcode = &state->memory[state->pc];
+    state->pc = (opcode[2] << 8 | opcode[1]);
+}
+
 /*
  * CALL adr
  */
 void call(State8080 *state) {
+    // get opcode
+    uint8_t *opcode = &state->memory[state->pc];
+
     // get return address
     // to pick up where left
     // off
@@ -258,8 +266,6 @@ void call(State8080 *state) {
 
     // get subroutine address
     uint16_t subr;
-    // get opcode
-    uint8_t *opcode = &state->memory[state->pc];
     subr = (opcode[2] << 8) | opcode[1];
 
     // set program counter to
@@ -1517,8 +1523,21 @@ void emulate_op(State8080 *state) {
             }
         }
             break;
-        case 0xc1: unimplemented_instr(state); break;
-        case 0xc2: 
+        case 0xc1:  // POP B
+        {
+            // pop the stack into
+            // registers B and C
+            // TODO: check this
+            uint16_t sp_addr;
+            sp_addr = state->sp;
+            state->c = state->memory[sp_addr];
+            state->b = state->memory[sp_addr + 1];
+
+            // increment stack pointer
+            state->sp += 2;
+        }
+            break;
+        case 0xc2:
             if (state->cc.z == 0) {
                 state->pc = (opcode[2] << 8 | opcode[1]);
             } else {
@@ -1526,8 +1545,8 @@ void emulate_op(State8080 *state) {
                 state->pc += 2;
             }
             break;
-        case 0xc3: 
-            state->pc = (opcode[2] << 8 | opcode[1]);
+        case 0xc3:  // JMP adr
+            jmp(state);
             break;
         case 0xc4:
         {
