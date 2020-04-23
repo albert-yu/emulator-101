@@ -11,19 +11,17 @@ void print_state(State8080 *state) {
     printf("\n");
     // in hex
     printf("Registers:\n");
-    printf("A: %x\n", state->a);
-    printf("B: %x\n", state->b);
-    printf("C: %x\n", state->c);
-    printf("D: %x\n", state->d);
-    printf("E: %x\n", state->e);
-    printf("H: %x\n", state->h);
-    printf("L: %x\n", state->l);
+    printf("A: 0x%x\n", state->a);
+    printf("B: 0x%x\n", state->b);
+    printf("C: 0x%x\n", state->c);
+    printf("D: 0x%x\n", state->d);
+    printf("E: 0x%x\n", state->e);
+    printf("H: 0x%x\n", state->h);
+    printf("L: 0x%x\n", state->l);
     printf("\n");
 
-    printf("Stack pointer: %x\n", state->sp);
-    printf("Program counter: %x\n", state->pc);
-
-    // TODO: print memory dump
+    printf("SP: 0x%x\n", state->sp);
+    printf("PC: 0x%x\n", state->pc);
 
     printf("Status flags:\n");
     printf("Z:  %d\n", state->cc.z);
@@ -32,7 +30,6 @@ void print_state(State8080 *state) {
     printf("CY: %d\n", state->cc.cy);
     printf("AC: %d\n", state->cc.ac);
     printf("\n");
-    // TODO: figure out what this is
     printf("Int enable: %d\n", state->int_enable);
     printf("\n");
 }
@@ -48,6 +45,8 @@ void unimplemented_instr(State8080 *state) {
 void unused_opcode(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
     printf("Error: unused opcode 0x%x\n", opcode);
+    printf("State at failure:\n");
+    print_state(state);
     exit(1);
 }
 

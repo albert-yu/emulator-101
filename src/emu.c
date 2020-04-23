@@ -28,27 +28,51 @@ int load_and_run(char *filename) {
         exit(1);
     }
 
+    // declare ConditionCodes struct
+    ConditionCodes cc;
+    cc.z = 0;
+    cc.s = 0;
+    cc.p = 0;
+    cc.cy = 0;
+    cc.ac = 0;
+
     // declare State8080 struct
     State8080 state;
+    state.a = 0;
+    state.b = 0;
+    state.c = 0;
+    state.d = 0;
+    state.e = 0;
+    state.h = 0;
+    state.l = 0;
+
+    state.sp = 0;
+    state.pc = 0;
+    state.int_enable = 0;
     // 16-bit address has a maximum of
     // 2^15 addressable 8-bit chunks
     size_t max_size = 1 << 15;
     state.memory = (uint8_t*) malloc(max_size * sizeof(*state.memory));
+
+    state.cc = cc;
 
     // get the file size and read it into a memory buffer
     fseek(f, 0L, SEEK_END);
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
 
-    uint8_t *buffer = state.memory;
+    // uint8_t *buffer = state.memory;
 
-    fread(buffer, fsize, 1, f);
+    fread(state.memory, fsize, 1, f);
     fclose(f);
 
-    while (1)
+    printf("fsize: %d\n", fsize);
+    printf("state.pc %d\n", state.pc);
+
+    while (state.pc < fsize)
     {
-        emulate_op(&state);
         print_state(&state);
+        emulate_op(&state);
     }
 
     free(state.memory);
