@@ -1618,8 +1618,14 @@ void emulate_op(State8080 *state) {
             state->pc += 1;
         }
             break;
-        case 0xef: unimplemented_instr(state); break;
-        case 0xf0: unimplemented_instr(state); break;
+        case 0xef:  unimplemented_instr(state); break;
+        case 0xf0:  // RP
+        {
+            // if positive, RET
+            if (state->cc.s == 0) {
+                ret(state);
+            }
+        }
         case 0xf1: unimplemented_instr(state); break;
         case 0xf2: unimplemented_instr(state); break;
         case 0xf3: unimplemented_instr(state); break;
@@ -1639,7 +1645,14 @@ void emulate_op(State8080 *state) {
         }
             break;
         case 0xf7: unimplemented_instr(state); break;
-        case 0xf8: unimplemented_instr(state); break;
+        case 0xf8:  // RM
+        {
+            // if minus, RET
+            if (state->cc.s) {
+                ret(state);
+            }
+        }
+            break;
         case 0xf9: unimplemented_instr(state); break;
         case 0xfa: unimplemented_instr(state); break;
         case 0xfb: unimplemented_instr(state); break;
