@@ -235,9 +235,24 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
   }
 }
 
+/*
+ * JMP adr
+ */
 void jmp(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
     state->pc = (opcode[2] << 8 | opcode[1]);
+}
+
+/*
+ * If cond, JMP adr
+ */
+void jmp_cond(State8080 *state, uint8_t cond) {
+    if (cond) {
+        jmp(state);
+    } else {
+        // branch not taken
+        state->pc += 2;
+    }
 }
 
 /*
@@ -1537,18 +1552,16 @@ void emulate_op(State8080 *state) {
             state->sp += 2;
         }
             break;
-        case 0xc2:
-            if (state->cc.z == 0) {
-                state->pc = (opcode[2] << 8 | opcode[1]);
-            } else {
-                // branch not taken
-                state->pc += 2;
-            }
+        case 0xc2:  // JNZ adr
+        {
+            uint8_t notzero = state->cc.z == 0;
+            jmp_cond(state, notzero);
+        }
             break;
         case 0xc3:  // JMP adr
             jmp(state);
             break;
-        case 0xc4:
+        case 0xc4:  // CNZ adr
         {
             uint8_t notzero = !state->cc.z; 
             call_cond(state, notzero);
