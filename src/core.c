@@ -256,36 +256,67 @@ void jmp_cond(State8080 *state, uint8_t cond) {
 }
 
 /*
- * CALL adr
+ * Call specified target address (need for RST)
  */
-void call(State8080 *state) {
-    // get opcode
-    uint8_t *opcode = &state->memory[state->pc];
-
+void call_adr(State8080 *state, uint16_t adr) {
     // get return address
     // to pick up where left
     // off
-    uint16_t ret_addr;
-    ret_addr = state->pc + 2;
+    uint16_t sp_addr, ret_addr;
+    sp_addr = state->sp;
+    ret_addr = sp_addr + 2;
+
+    // split return address
+    // into two parts
     uint8_t hi_addr, lo_addr;
     hi_addr = (ret_addr >> 8) & 0xff;
     lo_addr = ret_addr & 0xff;
 
     // push return address onto the stack
-    uint16_t sp_addr = state->sp;
     state->memory[sp_addr - 1] = hi_addr; 
     state->memory[sp_addr - 2] = lo_addr;
 
     // decrement stack pointer
     state->sp -= 2;
 
+    // set program counter to
+    // target address
+    state->pc = adr;
+}
+
+/*
+ * CALL address specified by following
+ * two bytes
+ */
+void call(State8080 *state) {
+    // get opcode
+    uint8_t *opcode = &state->memory[state->pc];
     // get subroutine address
     uint16_t subr;
     subr = (opcode[2] << 8) | opcode[1];
 
+    call_adr(state, subr);
+    // // get return address
+    // // to pick up where left
+    // // off
+    // uint16_t sp_addr, ret_addr;
+    // sp_addr = state->sp;
+    // ret_addr = sp_addr + 2;
+    // uint8_t hi_addr, lo_addr;
+    // hi_addr = (ret_addr >> 8) & 0xff;
+    // lo_addr = ret_addr & 0xff;
+
+    // // push return address onto the stack
+    // state->memory[sp_addr - 1] = hi_addr; 
+    // state->memory[sp_addr - 2] = lo_addr;
+
+    // // decrement stack pointer
+    // state->sp -= 2;
+
+
     // set program counter to
     // subroutine address
-    state->pc = subr;
+    // state->pc = subr;
 }
 
 /*
@@ -338,9 +369,12 @@ void pop(State8080 *state, uint8_t *r1, uint8_t *r2) {
 }
 
 /*
- * Pushes contents onto the stack
+ * Pushes contents onto the stack.
+ * Like pop(...), should specify registers
+ * in alphabetical order.
  */
 void push_x(State8080 *state, uint8_t x1, uint8_t x2) {
+    // TODO: check this also
     uint16_t sp_addr = state->sp;
     state->memory[sp_addr - 1] = x1;
     state->memory[sp_addr - 2] = x2;
@@ -1588,7 +1622,11 @@ void emulate_op(State8080 *state) {
             call_cond(state, notzero);
         }
             break;
-        case 0xc5: unimplemented_instr(state); break;
+        case 0xc5:
+        {
+            push_x(state, state->b, state->c);
+        }
+            break;
         case 0xc6:  // ADI D8
         {
             // The immediate form is the almost the 
@@ -1619,13 +1657,17 @@ void emulate_op(State8080 *state) {
             ret(state);
         }
             break;
-        case 0xca: unimplemented_instr(state); break;
+        case 0xca:  // JZ adr
+        {
+            jmp_cond(state, state->cc.z);
+        }
+            break;
         case 0xcb:
         {
             unused_opcode(state);
         }
             break;
-        case 0xcc:  // CZ
+        case 0xcc:  // CZ adr
         {
             call_cond(state, state->cc.z);
         }
