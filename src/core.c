@@ -235,6 +235,41 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
   }
 }
 
+/*
+ * CALL adr
+ */
+void call(State8080 *state) {
+    // get return address
+    // to pick up where left
+    // off
+    uint16_t ret_addr;
+    ret_addr = state->pc + 2;
+    uint8_t hi_addr, lo_addr;
+    hi_addr = (ret_addr >> 8) & 0xff;
+    lo_addr = ret_addr & 0xff;
+
+    // push return address onto the stack
+    uint16_t sp_addr = state->sp;
+    state->memory[sp_addr - 1] = hi_addr; 
+    state->memory[sp_addr - 2] = lo_addr;
+
+    // decrement stack pointer
+    state->sp -= 2;
+
+    // get subroutine address
+    uint16_t subr;
+    // get opcode
+    uint8_t *opcode = &state->memory[state->pc];
+    subr = (opcode[2] << 8) | opcode[1];
+
+    // set program counter to
+    // subroutine address
+    state->pc = subr;
+}
+
+/*
+ * RET instruction
+ */
 void ret(State8080 *state) {
     uint16_t sp_addr = state->sp;
     uint8_t r_addr, l_addr;
@@ -1515,7 +1550,11 @@ void emulate_op(State8080 *state) {
         case 0xca: unimplemented_instr(state); break;
         case 0xcb: unimplemented_instr(state); break;
         case 0xcc: unimplemented_instr(state); break;
-        case 0xcd: unimplemented_instr(state); break;
+        case 0xcd:  // CALL adr
+        {
+            
+        }
+            break;
         case 0xce:  // ACI D8: A <- A + data + CY
         {
             uint8_t data = opcode[1];
