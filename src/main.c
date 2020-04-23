@@ -5,7 +5,8 @@
 
 int main(int argc, char **argv) {
     if (argv) {
-        load_and_run(argv[0]);
+        disassemble8080file(argv[0]);
+        // load_and_run(argv[0]);
     }
     return 0;
 }

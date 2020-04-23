@@ -46,7 +46,7 @@ int load_and_run(char *filename) {
     state.h = 0;
     state.l = 0;
 
-    state.sp = 0;
+    state.sp = 0xffff;
     state.pc = 0;
     state.int_enable = 0;
     // 16-bit address has a maximum of
@@ -67,7 +67,6 @@ int load_and_run(char *filename) {
     fclose(f);
 
     printf("fsize: %d\n", fsize);
-    printf("state.pc %d\n", state.pc);
 
     while (state.pc < fsize)
     {
