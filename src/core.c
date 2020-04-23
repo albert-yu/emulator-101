@@ -872,9 +872,24 @@ void emulate_op(State8080 *state) {
             dcr_x(state, &state->a);
         }
             break;
-        case 0x3e: unimplemented_instr(state); break;
-        case 0x3f: unimplemented_instr(state); break;
-        case 0x40: unimplemented_instr(state); break;
+        case 0x3e:  // MVI A,D8
+        {
+            // A <- byte 2
+            uint8_t byte2 = opcode[1];
+            state->a = byte2;
+            state->pc += 1;
+        }
+            break;
+        case 0x3f:  // CMC: CY = !CY
+        {
+            state->cc.cy = ~state->cc.cy;
+        }
+            break;
+        case 0x40:  // MOV B,B
+            // I think this is redundant, but including
+            // it here anyway
+            state->b = state->b;
+            break;
         case 0x41:  // MOV B,C
             state->b = state->c; 
             break;
