@@ -2034,7 +2034,9 @@ void emulate_op(State8080 *state) {
             call_cond(state, minus);
         }
             break;
-        case 0xfd: unimplemented_instr(state); break;
+        case 0xfd:
+            unused_opcode(state);
+            break;
         case 0xfe:  // CPI byte
         {
             cmp_x(state, opcode[1]);
