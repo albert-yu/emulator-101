@@ -168,11 +168,11 @@ uint8_t auxcarry32(uint32_t answer) {
 
 // combine with bitwise OR
 // to set flags 
-#define SET_Z_FLAG  1 << 7
-#define SET_S_FLAG  1 << 6
-#define SET_P_FLAG  1 << 5
-#define SET_CY_FLAG 1 << 4
-#define SET_AC_FLAG 1 << 3
+#define SET_Z_FLAG  (1 << 7)
+#define SET_S_FLAG  (1 << 6)
+#define SET_P_FLAG  (1 << 5)
+#define SET_CY_FLAG (1 << 4)
+#define SET_AC_FLAG (1 << 3)
 #define SET_ALL_FLAGS (SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_CY_FLAG | SET_AC_FLAG)
 
 /*
@@ -291,7 +291,10 @@ void ana_x(State8080 *state, uint8_t x) {
     // bitwise AND shouldn't add a bit
     uint16_t answer;
     answer = (uint16_t) state->a & x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_flags(state, answer,
+        SET_ALL_FLAGS - SET_CY_FLAG);
+    // CY flag is cleared
+    state->cc.cy = 0;
     state->a = answer & 0xff;
 }
 
@@ -301,7 +304,12 @@ void ana_x(State8080 *state, uint8_t x) {
  */
 void xra_x(State8080 *state, uint8_t x) {
     uint16_t answer = (uint16_t) state->a ^ x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_flags(state, answer, 
+        SET_ALL_FLAGS - SET_CY_FLAG - SET_AC_FLAG);
+
+    // AC and CY flags cleared
+    state->cc.ac = 0;
+    state->cc.cy = 0;
     state->a = answer & 0xff;
 }
 
@@ -311,7 +319,12 @@ void xra_x(State8080 *state, uint8_t x) {
  */
 void ora_x(State8080 *state, uint8_t x) {
     uint16_t answer = (uint16_t) state->a | x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_flags(state, answer, 
+        SET_ALL_FLAGS - SET_CY_FLAG - SET_AC_FLAG);
+
+    // AC and CY flags cleared
+    state->cc.ac = 0;
+    state->cc.cy = 0;
     state->a = answer & 0xff;
 }
 
@@ -1470,7 +1483,11 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a & opcode[1];
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_flags(state, answer,
+                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
+            // CY and AC flags are cleared
+            state->cc.cy = 0;
+            state->cc.ac = 0;
             state->a = answer & 0xff;
             state->pc += 1;
         }
@@ -1482,7 +1499,19 @@ void emulate_op(State8080 *state) {
         case 0xeb: unimplemented_instr(state); break;
         case 0xec: unimplemented_instr(state); break;
         case 0xed: unimplemented_instr(state); break;
-        case 0xee: unimplemented_instr(state); break;
+        case 0xee:  // XRI D8
+        {
+            uint16_t answer;
+            answer = (uint16_t) state->a ^ opcode[1];
+            set_flags(state, answer,
+                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
+            // CY and AC flags are cleared
+            state->cc.cy = 0;
+            state->cc.ac = 0;
+            state->a = answer & 0xff;
+            state->pc += 1;
+        }
+            break;
         case 0xef: unimplemented_instr(state); break;
         case 0xf0: unimplemented_instr(state); break;
         case 0xf1: unimplemented_instr(state); break;
@@ -1494,7 +1523,11 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a | opcode[1];
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_flags(state, answer,
+                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
+            // CY and AC flags are cleared
+            state->cc.cy = 0;
+            state->cc.ac = 0;
             state->a = answer & 0xff;
             state->pc += 1;
         }
