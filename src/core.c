@@ -426,6 +426,14 @@ uint8_t read_hl(State8080 *state) {
     return m;
 }
 
+/*
+ * Sets the memory addressed by HL to `val`
+ */
+void set_hl(State8080 *state, uint8_t val) {
+    uint16_t offset = read_hl_addr(state);
+    state->memory[offset] = val;
+}
+
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
 
@@ -905,64 +913,150 @@ void emulate_op(State8080 *state) {
         case 0x45: 
             state->b = state->l;
             break;
-        case 0x46: 
-        // 8-bit H and 8-bit L registers can be used as 
-        // one 16-bit HL register pair. When used as a 
-        // pair the L register contains low-order byte. 
-        // HL register usually contains a data pointer 
-        // used to reference memory addresses.
-            // state->b = state->m;
-            unimplemented_instr(state);
+        case 0x46:  // B <- (HL)
+            state->b = read_hl(state);
             break;
         case 0x47: 
             state->b = state->a;
             break;
-        case 0x48: unimplemented_instr(state); break;
-        case 0x49: unimplemented_instr(state); break;
-        case 0x4a: unimplemented_instr(state); break;
-        case 0x4b: unimplemented_instr(state); break;
-        case 0x4c: unimplemented_instr(state); break;
-        case 0x4d: unimplemented_instr(state); break;
-        case 0x4e: unimplemented_instr(state); break;
-        case 0x4f: unimplemented_instr(state); break;
-        case 0x50: unimplemented_instr(state); break;
-        case 0x51: unimplemented_instr(state); break;
-        case 0x52: unimplemented_instr(state); break;
-        case 0x53: unimplemented_instr(state); break;
-        case 0x54: unimplemented_instr(state); break;
-        case 0x55: unimplemented_instr(state); break;
-        case 0x56: unimplemented_instr(state); break;
-        case 0x57: unimplemented_instr(state); break;
-        case 0x58: unimplemented_instr(state); break;
-        case 0x59: unimplemented_instr(state); break;
-        case 0x5a: unimplemented_instr(state); break;
-        case 0x5b: unimplemented_instr(state); break;
-        case 0x5c: unimplemented_instr(state); break;
-        case 0x5d: unimplemented_instr(state); break;
-        case 0x5e: unimplemented_instr(state); break;
-        case 0x5f: unimplemented_instr(state); break;
-        case 0x60: unimplemented_instr(state); break;
-        case 0x61: unimplemented_instr(state); break;
-        case 0x62: unimplemented_instr(state); break;
-        case 0x63: unimplemented_instr(state); break;
-        case 0x64: unimplemented_instr(state); break;
-        case 0x65: unimplemented_instr(state); break;
-        case 0x66: unimplemented_instr(state); break;
-        case 0x67: unimplemented_instr(state); break;
-        case 0x68: unimplemented_instr(state); break;
-        case 0x69: unimplemented_instr(state); break;
-        case 0x6a: unimplemented_instr(state); break;
-        case 0x6b: unimplemented_instr(state); break;
-        case 0x6c: unimplemented_instr(state); break;
-        case 0x6d: unimplemented_instr(state); break;
-        case 0x6e: unimplemented_instr(state); break;
-        case 0x6f: unimplemented_instr(state); break;
-        case 0x70: unimplemented_instr(state); break;
-        case 0x71: unimplemented_instr(state); break;
-        case 0x72: unimplemented_instr(state); break;
-        case 0x73: unimplemented_instr(state); break;
-        case 0x74: unimplemented_instr(state); break;
-        case 0x75: unimplemented_instr(state); break;
+        case 0x48:
+            state->c = state->b;
+            break;
+        case 0x49:
+            state->c = state->c;
+            break;
+        case 0x4a:
+            state->c = state->d;
+            break;
+        case 0x4b:
+            state->c = state->e;
+            break;
+        case 0x4c:
+            state->c = state->h;
+            break;
+        case 0x4d:
+            state->c = state->l;
+            break;
+        case 0x4e:
+            state->c = read_hl(state);
+            break;
+        case 0x4f:
+            state->c = state->a;
+            break;
+        case 0x50:
+            state->d = state->b;
+            break;
+        case 0x51:
+            state->d = state->c;
+            break;
+        case 0x52:
+            state->d = state->d;
+            break;
+        case 0x53:
+            state->d = state->e;
+            break;
+        case 0x54:
+            state->d = state->h;
+            break;
+        case 0x55:
+            state->d = state->l;
+            break;
+        case 0x56:
+            state->d = read_hl(state);
+            break;
+        case 0x57:
+            state->d = state->a;
+            break;
+        case 0x58:  // MOV E,B
+            state->e = state->b;
+            break;
+        case 0x59:
+            state->e = state->c;
+            break;
+        case 0x5a:
+            state->e = state->d;
+            break;
+        case 0x5b:
+            state->e = state->e;
+            break;
+        case 0x5c:
+            state->e = state->h;
+            break;
+        case 0x5d:
+            state->e = state->l;
+            break;
+        case 0x5e:
+            state->e = read_hl(state);
+            break;
+        case 0x5f:
+            state->e = state->a;
+            break;
+        case 0x60:  // MOV H,B
+            state->h = state->b;
+            break;
+        case 0x61:
+            state->h = state->c;
+            break;
+        case 0x62:
+            state->h = state->d;
+            break;
+        case 0x63:
+            state->h = state->e;
+            break;
+        case 0x64:
+            state->h = state->h;
+            break;
+        case 0x65:
+            state->h = state->l;
+            break;
+        case 0x66:
+            state->h = read_hl(state);
+            break;
+        case 0x67:
+            state->h = state->a;
+            break;
+        case 0x68:
+            state->l = state->b;
+            break;
+        case 0x69:
+            state->l = state->c;
+            break;
+        case 0x6a:
+            state->l = state->d;
+            break;
+        case 0x6b:
+            state->l = state->e;
+            break;
+        case 0x6c:
+            state->l = state->h;
+            break;
+        case 0x6d:
+            state->l = state->l;
+            break;
+        case 0x6e:
+            state->l = read_hl(state);
+            break;
+        case 0x6f:
+            state->l = state->a;
+            break;
+        case 0x70: // MOV M,B
+            set_hl(state, state->b);
+            break;
+        case 0x71:
+            set_hl(state, state->c);
+            break;
+        case 0x72:
+            set_hl(state, state->d);
+            break;
+        case 0x73:
+            set_hl(state, state->e);
+            break;
+        case 0x74:
+            set_hl(state, state->h);
+            break;
+        case 0x75:
+            set_hl(state, state->l);
+            break;
         case 0x76: unimplemented_instr(state); break;
         case 0x77: unimplemented_instr(state); break;
         case 0x78: unimplemented_instr(state); break;
