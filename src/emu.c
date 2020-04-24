@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "core.h"
 #include "emu.h"
@@ -17,6 +18,25 @@ void state_free(State8080 *state) {
         }
         state = NULL;
     }
+}
+
+
+#define MAX_STEPS 100000
+
+/*
+ * Returns the number of instructions
+ * to advance
+ */
+size_t get_num_instrs(char *input) {
+    if (strlen(input) == 1) {
+        return 1;
+    }
+    // If the string starts with an 
+    // alphanumeric character or only 
+    // contains alphanumeric characters,
+    // 0 is returned.
+    size_t steps = (size_t) atoi(input); 
+    return steps < MAX_STEPS ? steps : MAX_STEPS; 
 }
 
 
@@ -46,7 +66,7 @@ int load_and_run(char *filename) {
     state.h = 0;
     state.l = 0;
 
-    state.sp = 0xffff;
+    state.sp = 0;
     state.pc = 0;
     state.int_enable = 0;
     // 16-bit address has a maximum of
@@ -68,17 +88,27 @@ int load_and_run(char *filename) {
 
     printf("fsize: %d\n", fsize);
     size_t instr_count = 0;
+    char user_in [20];
 
+    size_t instrs_to_advance = 0;
     while (state.pc < fsize)
     {
         printf("Emulator state:\n");
         print_state(&state);
         printf("Instructions executed: %zu\n", instr_count);
 
-        printf("Press enter to continue\n"); 
-        getchar();
+        if (instrs_to_advance == 0) {
+            printf("Press enter to advance one instruction, or\n"); 
+            printf("enter number of instructions to advance\n");
+            printf("and then press enter\n"); 
+            fgets(user_in, 20, stdin);
+            instrs_to_advance = get_num_instrs(user_in);
+             
+            printf("input: %zu\n", strlen(user_in));
+        }
         emulate_op(&state);
         instr_count++;
+        instrs_to_advance--;
     }
 
     free(state.memory);
