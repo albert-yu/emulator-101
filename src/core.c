@@ -61,13 +61,13 @@ uint8_t zero(uint16_t answer) {
 
 uint8_t sign(uint16_t answer) {
     // set to 1 when bit 7 of the math instruction is set
-    return ((answer & 0x80) == 0);
+    return ((answer & 0x80) > 0);
 }
 
 
 uint8_t sign32(uint32_t answer) {
     // set to 1 when bit 15 of the math instruction is set
-    return ((answer & 0x8000) == 0);
+    return ((answer & 0x8000) > 0);
 }
 
 
