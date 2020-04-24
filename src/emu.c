@@ -98,9 +98,10 @@ int load_and_run(char *filename) {
         printf("Instructions executed: %zu\n", instr_count);
 
         if (instrs_to_advance == 0) {
-            printf("Press enter to advance one instruction, or\n"); 
-            printf("enter number of instructions to advance\n");
-            printf("and then press enter\n"); 
+            printf(
+                "Press enter to advance one instruction, or " 
+                "enter number of instructions to advance "
+                "and then press enter: "); 
             fgets(user_in, 20, stdin);
             instrs_to_advance = get_num_instrs(user_in);
              
