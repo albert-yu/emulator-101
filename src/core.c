@@ -954,7 +954,6 @@ void emulate_op(State8080 *state) {
             byte3 = opcode[2];
             byte2 = opcode[1];
             uint16_t sp_addr = get16bitval(byte3, byte2); 
-            printf("sp_addr loaded: %x\n", sp_addr);
             state->sp = sp_addr; 
             state->pc += 2;
         }
