@@ -9,28 +9,28 @@
  */
 void print_state(State8080 *state) {
     printf("\n");
-    // in hex
-    printf("Registers:\n");
-    printf("A: 0x%02x\n", state->a);
-    printf("B: 0x%02x\n", state->b);
-    printf("C: 0x%02x\n", state->c);
-    printf("D: 0x%02x\n", state->d);
-    printf("E: 0x%02x\n", state->e);
-    printf("H: 0x%02x\n", state->h);
-    printf("L: 0x%02x\n", state->l);
+    printf("----------------------------------\n");
+    printf(" A    B    C    D    E    H    L  \n");
+    printf("0x%02x ", state->a);
+    printf("0x%02x ", state->b);
+    printf("0x%02x ", state->c);
+    printf("0x%02x ", state->d);
+    printf("0x%02x ", state->e);
+    printf("0x%02x ", state->h);
+    printf("0x%02x ", state->l);
     printf("\n");
-
-    printf("SP: 0x%04x\n", state->sp);
-    printf("PC: 0x%04x\n", state->pc);
-
-    printf("Status flags:\n");
-    printf("Z:  %d\n", state->cc.z);
-    printf("S:  %d\n", state->cc.s);
-    printf("P:  %d\n", state->cc.p);
-    printf("CY: %d\n", state->cc.cy);
-    printf("AC: %d\n", state->cc.ac);
-    printf("\n");
-    printf("Int enable: %d\n", state->int_enable);
+    printf("----------------------------------\n");
+    printf(" Z S P CY AC \n");
+    printf(" %d", state->cc.z);
+    printf(" %d", state->cc.s);
+    printf(" %d", state->cc.p);
+    printf(" %d", state->cc.cy);
+    printf("  %d", state->cc.ac);
+    printf("\n\n");
+    printf(" SP: 0x%04x\n", state->sp);
+    printf(" PC: 0x%04x\n", state->pc);
+    printf(" Interrupt enable: %d\n", state->int_enable);
+    printf("----------------------------------\n");
     printf("\n");
 }
 
