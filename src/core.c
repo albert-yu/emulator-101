@@ -75,13 +75,13 @@ uint8_t sign32(uint32_t answer) {
  * Returns 1 if number of bits is even and 0 o.w.
  */
 uint8_t parity(uint16_t answer) {
-    uint8_t parity = 0;
+    uint8_t p = 0;
     uint8_t ans8bit = answer & 0xff;
     while (ans8bit) {
-        parity = !parity;
+        p = !p;
         ans8bit = ans8bit & (ans8bit - 1);
     }
-    return !parity;
+    return !p;
 }
 
 
