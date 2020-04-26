@@ -91,7 +91,7 @@ int load_and_run(char *filename) {
     char user_in [20];
 
     size_t instrs_to_advance = 0;
-    while (1) {
+    while (state.pc < fsize) {
         printf("Emulator state:\n");
         print_state(&state);
         printf("Instructions executed: %zu\n", instr_count);
