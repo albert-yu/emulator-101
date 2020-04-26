@@ -560,7 +560,7 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     uint16_t val_to_add;
     val_to_add = get16bitval(*x, *y);
     uint32_t result = tworeg_add(dest_left, dest_right, val_to_add);
-    state->cc.cy = result > 0xffff;
+    state->cc.cy = ((result & 0xffff0000) > 0);
 }
 
 
