@@ -490,7 +490,7 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
     uint16_t summand;
     summand = get16bitval(left, right);
     uint32_t result = summand + val;
-    *left_ptr = result >> 8;
+    *left_ptr = (result & 0xff00) >> 8;
     *right_ptr = result & 0xff;
     return result;
 }
