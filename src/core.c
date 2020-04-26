@@ -302,13 +302,12 @@ void call_cond(State8080 *state, uint8_t cond) {
  */
 void ret(State8080 *state) {
     uint16_t sp_addr = state->sp;
-    uint8_t r_addr, l_addr;
-    r_addr = state->memory[sp_addr];
-    l_addr = state->memory[sp_addr + 1];
-    
+    uint8_t hi_addr, lo_addr;
+    lo_addr = state->memory[sp_addr];
+    hi_addr = state->memory[sp_addr + 1];
     // set pc to return address pointed
     // to by stack
-    uint16_t target_addr = get16bitval(l_addr, r_addr);
+    uint16_t target_addr = get16bitval(hi_addr, lo_addr);
     state->pc = target_addr - 1;
     
     // increment stack pointer

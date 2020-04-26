@@ -86,13 +86,12 @@ int load_and_run(char *filename) {
     fread(state.memory, fsize, 1, f);
     fclose(f);
 
-    printf("fsize: %d\n", fsize);
+    // printf("fsize: %d\n", fsize);
     size_t instr_count = 0;
     char user_in [20];
 
     size_t instrs_to_advance = 0;
-    while (state.pc < fsize)
-    {
+    while (1) {
         printf("Emulator state:\n");
         print_state(&state);
         printf("Instructions executed: %zu\n", instr_count);
@@ -104,13 +103,12 @@ int load_and_run(char *filename) {
                 "and then press enter: "); 
             fgets(user_in, 20, stdin);
             instrs_to_advance = get_num_instrs(user_in);
-             
-            printf("input: %zu\n", strlen(user_in));
         }
         emulate_op(&state);
         instr_count++;
         instrs_to_advance--;
     }
+    printf("LOOP EXITED.\n");
 
     free(state.memory);
 
