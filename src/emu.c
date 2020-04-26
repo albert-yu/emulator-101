@@ -109,6 +109,7 @@ int load_and_run(char *filename) {
         instrs_to_advance--;
     }
     printf("LOOP EXITED.\n");
+    print_state(&state);
 
     free(state.memory);
 
