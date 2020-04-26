@@ -75,13 +75,24 @@ uint8_t sign32(uint32_t answer) {
  * Returns 1 if number of bits is even and 0 o.w.
  */
 uint8_t parity(uint16_t answer) {
-    uint8_t p = 0;
-    uint8_t ans8bit = answer & 0xff;
-    while (ans8bit) {
-        p = !p;
-        ans8bit = ans8bit & (ans8bit - 1);
+    // uint8_t p = 0;
+    // uint8_t ans8bit = answer & 0xff;
+    // while (ans8bit) {
+    //     p = !p;
+    //     ans8bit = ans8bit & (ans8bit - 1);
+    // }
+    // return !p;
+    //
+    uint8_t x = answer & 0xff;
+    int size = 8;
+    int i;
+    int p = 0;
+    x = (x & ((1 << size) - 1));
+    for (i = 0; i < size; i++) {
+        if (x & 0x1) p++;
+        x = x >> 1;
     }
-    return !p;
+    return (0 == (p & 0x1));
 }
 
 
@@ -191,7 +202,7 @@ void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
         // both odd => combined even
         // both even => combined even
         // even and odd => combined odd
-        state->cc.p = (parity(left) ^ parity(right)) == 0;
+        state->cc.p = (parity(left) == parity(right));
     }
     if (cleaned & SET_CY_FLAG) {
         state->cc.cy = carry32(answer);
