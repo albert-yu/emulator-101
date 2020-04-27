@@ -288,7 +288,7 @@ void call(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
     // get subroutine address
     uint16_t subr;
-    subr = (opcode[2] << 8) | opcode[1];
+    subr = get16bitval(opcode[2], opcode[1]);
 
     call_adr(state, subr);
 }
@@ -830,9 +830,9 @@ void emulate_op(State8080 *state) {
             break;
         case 0x22:  // SHLD adr: (adr) <-L; (adr+1)<-H
         {
-            // the following to opcodes form an address
+            // the following two opcodes form an address
             // when put together
-            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint16_t addr = get16bitval(opcode[2], opcode[1]);
             state->memory[addr] = state->l;
             state->memory[addr + 1] = state->h;
             state->pc += 2;
@@ -910,7 +910,7 @@ void emulate_op(State8080 *state) {
         case 0x2a:  // LHLD adr
         {
             // get address (16 bits)
-            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint16_t addr = get16bitval(opcode[2], opcode[1]);
             uint8_t val, val2;
             val = state->memory[addr];
             val2 = state->memory[addr + 1]; 
