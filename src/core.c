@@ -281,7 +281,7 @@ void call_adr(State8080 *state, uint16_t adr) {
     // off
     uint16_t sp_addr, ret_addr;
     sp_addr = state->sp;
-    ret_addr = sp_addr + 2;
+    ret_addr = state->pc + 2;
 
     // split return address
     // into two parts
