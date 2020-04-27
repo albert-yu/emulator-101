@@ -782,7 +782,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x1a:  // LDAX D
         {
-            uint16_t offset = read_addr(&state->d, &state->e);
+            uint16_t offset = get16bitval(state->d, state->e);
             uint8_t memval = state->memory[offset];
             state->a = memval;
         }
@@ -842,12 +842,9 @@ void emulate_op(State8080 *state) {
             state->pc += 2;
         }
             break;
-        case 0x23:
+        case 0x23:  // INX H
         {
-            uint8_t *h_ptr, *l_ptr;
-            h_ptr = &state->h;
-            l_ptr = &state->l;
-            inx_xy(h_ptr, l_ptr);
+            inx_xy(&state->h, &state->l);
         }
             break;
         case 0x24:  // INR H
