@@ -62,7 +62,7 @@ uint8_t zero(uint16_t answer) {
 
 uint8_t sign(uint16_t answer) {
     // set to 1 when bit 7 of the math instruction is set
-    return ((answer & 0x80) > 0);
+    return ((answer & 0x80) == 0x80);
 }
 
 
@@ -73,7 +73,8 @@ uint8_t sign(uint16_t answer) {
 
 
 /*
- * Returns 1 if number of bits is even and 0 o.w.
+ * Returns 1 if number of set bits is even and 0 o.w.
+ * (only for lower 8 bits)
  */
 uint8_t parity(uint16_t answer) {
     // uint8_t p = 0;
@@ -204,39 +205,6 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
         state->cc.ac = 0; 
   }
 }
-/*
- * Same as set_arith_flags, except for a 32-bit answer
- * (adding/subtracting two 16-bit ints)
- */
-// void set_arith_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
-//     // remove trailing bits
-//     uint8_t cleaned = flagstoset & 0b11111000;
-// 
-//     // split into left and right
-//     uint16_t left, right;
-//     left = answer >> 16;
-//     right = answer & 0xffff;
-//     if (cleaned & SET_Z_FLAG) {
-//         // should be 0 if both left and
-//         // right are 0
-//         state->cc.z = (zero(left) | zero(right)) == 0;
-//     }
-//     if (cleaned & SET_S_FLAG) {
-//         state->cc.s = sign32(answer);
-//     }
-//     if (cleaned & SET_P_FLAG) {
-//         // both odd => combined even
-//         // both even => combined even
-//         // even and odd => combined odd
-//         state->cc.p = (parity(left) == parity(right));
-//     }
-//     if (cleaned & SET_CY_FLAG) {
-//         state->cc.cy = carry32(answer);
-//     }
-//     if (cleaned & SET_AC_FLAG) {
-//         state->cc.ac = auxcarry32(answer); 
-//   }
-// }
 
 
 /*
@@ -404,9 +372,10 @@ void sub_x(State8080 *state, uint8_t x) {
  * SBB X: A <- A - X - CY
  */
 void sbb_x(State8080 *state, uint8_t x) {
-    uint16_t a = (uint16_t) state->a;
-    uint8_t cy = state->cc.cy;
-    uint16_t answer = a - x - cy;
+    uint16_t a, cy, answer;
+    a = (uint16_t) state->a;
+    cy = (uint16_t) state->cc.cy;
+    answer = a - x - cy;
     set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
@@ -414,7 +383,7 @@ void sbb_x(State8080 *state, uint8_t x) {
 
 /*
  * Bitwise AND
- * ANA X: A <- A & A
+ * ANA X: A <- A & X
  */
 void ana_x(State8080 *state, uint8_t x) {
     // using 16 bits, even though
