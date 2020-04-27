@@ -1937,6 +1937,19 @@ void emulate_op(State8080 *state) {
 
             // (SP) <- (SP) + 2
             state->sp += 2;
+
+            // below is the implementation from
+            // the site...
+            // uint8_t psw = state->memory[sp_addr];
+
+            // state->cc.z = (0x01 == (psw & 0x01);
+            // state->cc.s = (0x02 == (psw & 0x02);
+            // state->cc.p = (0x04 == (psw & 0x04);
+            // state->cc.cy = (0x05 == (psw & 0x05);
+            // state->cc.ac = (0x10 == (psw & 0x10);
+            //
+            // I don't think it matters as long as
+            // the flags match when pushed and popped
         }
             break;
         case 0xf2:  // JP adr
@@ -1969,26 +1982,26 @@ void emulate_op(State8080 *state) {
             uint8_t sp_flags = 0;
 
             // ((SP) - 2)0 <- CY
-            sp_flags += state->cc.cy; 
+            sp_flags |= state->cc.cy; 
 
             // (........)1 <- 1
-            sp_flags += (1 << 1);
+            sp_flags |= (1 << 1);
 
             // (........)2 <- P
-            sp_flags += (state->cc.p << 2);
+            sp_flags |= (state->cc.p << 2);
 
             // (........)3 <- 0
  
             // (........)4 <- AC
-            sp_flags += (state->cc.ac << 4);
+            sp_flags |= (state->cc.ac << 4);
 
             // (........)5 <- 0
 
             // (........)6 <- Z
-            sp_flags += (state->cc.z << 6);
+            sp_flags |= (state->cc.z << 6);
 
             // (........)7 <- S
-            sp_flags += (state->cc.s << 7);
+            sp_flags |= (state->cc.s << 7);
             state->memory[sp_adr - 2] = sp_flags;
 
             // (SP) <- (SP) - 2
