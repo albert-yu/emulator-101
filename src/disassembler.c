@@ -26,7 +26,6 @@ int disassemble8080file(char* filename) {
 
     while (pc < fsize) {
         pc += disassemble8080op(buffer, pc);
-        printf("\n");
     }
 
     free(buffer);
@@ -301,6 +300,7 @@ int disassemble8080op(unsigned char *codebuffer, int pc) {
         case 0xff: printf("RST    7"); break;
     }
 
+    printf("\n");
     return opbytes;
 }
 

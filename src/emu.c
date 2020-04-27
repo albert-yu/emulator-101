@@ -104,6 +104,7 @@ int load_and_run(char *filename) {
             fgets(user_in, 20, stdin);
             instrs_to_advance = get_num_instrs(user_in);
         }
+        printf("\n\n");
         emulate_op(&state);
         instr_count++;
         instrs_to_advance--;
