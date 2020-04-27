@@ -353,17 +353,14 @@ void ret(State8080 *state) {
 
 /*
  * Pops content off the stack into 
- * registers r1 and r2.
- * The register pair r1 and r2 should be 
- * specified in alphabetical order
- * (e.g. r1 = B, r2 = C)
+ * registers `hi` and `lo`.
  */
-void pop(State8080 *state, uint8_t *r1, uint8_t *r2) {
+void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
     // TODO: check this
     uint16_t sp_addr;
     sp_addr = state->sp;
-    *r2 = state->memory[sp_addr];
-    *r1 = state->memory[sp_addr + 1];
+    *lo = state->memory[sp_addr];
+    *hi = state->memory[sp_addr + 1];
 
     // increment stack pointer
     state->sp += 2;
@@ -372,14 +369,12 @@ void pop(State8080 *state, uint8_t *r1, uint8_t *r2) {
 
 /*
  * Pushes contents onto the stack.
- * Like pop(...), should specify registers
- * in alphabetical order.
  */
-void push_x(State8080 *state, uint8_t x1, uint8_t x2) {
+void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
     // TODO: check this also
     uint16_t sp_addr = state->sp;
-    state->memory[sp_addr - 1] = x1;
-    state->memory[sp_addr - 2] = x2;
+    state->memory[sp_addr - 1] = hi;
+    state->memory[sp_addr - 2] = lo;
     state->sp -= 2;
 }
 
