@@ -86,7 +86,6 @@ int load_and_run(char *filename) {
     fread(state.memory, fsize, 1, f);
     fclose(f);
 
-    // printf("fsize: %d\n", fsize);
     size_t instr_count = 0;
     char user_in [20];
 
@@ -111,6 +110,7 @@ int load_and_run(char *filename) {
     }
     printf("LOOP EXITED.\n");
     print_state(&state);
+    printf("fsize: 0x%x\n", fsize);
 
     free(state.memory);
 
