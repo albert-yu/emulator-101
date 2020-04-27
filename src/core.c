@@ -1026,7 +1026,7 @@ void emulate_op(State8080 *state) {
         case 0x3a:  // LDA adr
         {
             // A <- (adr)
-            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint16_t addr = get16bitval(opcode[2], opcode[1]);
             uint8_t val = state->memory[addr];
             state->a = val;
             state->pc += 2;
