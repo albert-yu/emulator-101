@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "core.h"
+#include "disassembler.h"
 
 
 /*
@@ -253,20 +254,17 @@ uint16_t get16bitval(uint8_t left, uint8_t right) {
  * JMP to address specified
  * in bytes 2 and 3
  */
-void jmp(State8080 *state) {
-    uint8_t *opcode = &state->memory[state->pc];
-    uint16_t target_addr = get16bitval(opcode[2], opcode[1]);
-    // HACK: we'll add 1 at the end of the giant switch block
-    state->pc = target_addr;
+void jmp(State8080 *state, uint16_t adr) {
+    state->pc = adr;
 }
 
 
 /*
  * If cond, JMP adr
  */
-void jmp_cond(State8080 *state, uint8_t cond) {
+void jmp_cond(State8080 *state, uint16_t adr, uint8_t cond) {
     if (cond) {
-        jmp(state);
+        jmp(state, adr);
     } else {
         // branch not taken
         state->pc += 2;
@@ -616,6 +614,9 @@ void set_hl(State8080 *state, uint8_t val) {
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
     state->pc += 1;
+
+    // print out current instruction
+    disassemble8080op(state->memory, state->pc);
 
     switch(*opcode) {
         case 0x00:  // NOP
@@ -1611,11 +1612,15 @@ void emulate_op(State8080 *state) {
         case 0xc2:  // JNZ adr
         {
             uint8_t notzero = state->cc.z == 0;
-            jmp_cond(state, notzero);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, notzero);
         }
             break;
         case 0xc3:  // JMP adr
-            jmp(state);
+        {
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp(state, adr);
+        }
             break;
         case 0xc4:  // CNZ adr
         {
@@ -1664,7 +1669,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0xca:  // JZ adr
         {
-            jmp_cond(state, state->cc.z);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, state->cc.z);
         }
             break;
         case 0xcb:
@@ -1714,7 +1720,8 @@ void emulate_op(State8080 *state) {
         case 0xd2:  // JNC adr
         {
             // if not carry, jmp
-            jmp_cond(state, !state->cc.cy);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, !state->cc.cy);
         }
             break;
         case 0xd3:  // OUT D8
@@ -1765,7 +1772,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0xda:
         {
-            jmp_cond(state, state->cc.cy);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, state->cc.cy);
         }
             break;
         case 0xdb:  // IN D8
@@ -1812,7 +1820,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0xe2:  // JPO adr
         {
-            jmp_cond(state, !state->cc.p);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, !state->cc.p);
         }
             break;
         case 0xe3:  // XTHL
@@ -1871,7 +1880,8 @@ void emulate_op(State8080 *state) {
         case 0xea:  // JPE adr
         {
             // jmp if even
-            jmp_cond(state, state->cc.p);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, state->cc.p);
         }
             break;
         case 0xeb:  // XCHG
@@ -1946,7 +1956,8 @@ void emulate_op(State8080 *state) {
         case 0xf2:  // JP adr
         {
             // if positive, JMP
-            jmp_cond(state, state->cc.s == 0);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, state->cc.s == 0);
         }
             break;
         case 0xf3:  // DI
@@ -2031,7 +2042,8 @@ void emulate_op(State8080 *state) {
         case 0xfa:  // JM
         {
             // jump if sign is negative (sign = 1)
-            jmp_cond(state, state->cc.s);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            jmp_cond(state, adr, state->cc.s);
         }
             break;
         case 0xfb:  // EI
