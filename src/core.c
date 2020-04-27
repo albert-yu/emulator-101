@@ -982,8 +982,7 @@ void emulate_op(State8080 *state) {
         case 0x36:  // (HL) <- byte 2
         {
             uint8_t byte2 = opcode[1];
-            uint16_t offset = read_hl_addr(state);
-            state->memory[offset] = byte2;
+            set_hl(state, byte2);
             state->pc += 1;
         }
             break;
@@ -1002,7 +1001,7 @@ void emulate_op(State8080 *state) {
             uint32_t answer;
             answer = tworeg_add(
                 &state->h, &state->l, state->sp);
-            state->cc.cy = answer > 0xffff;
+            state->cc.cy = ((answer & 0xffff0000) != 0);
         }
             break;
         case 0x3a:  // LDA adr
