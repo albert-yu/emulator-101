@@ -1840,13 +1840,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0xe6:  // ANI D8
         {
-            uint16_t answer;
-            answer = (uint16_t) state->a & opcode[1];
-            set_arith_flags(state, answer,
-                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
-            // CY and AC flags are cleared
-            state->cc.cy = 0;
-            state->cc.ac = 0;
+            uint8_t answer = state->a & opcode[1];
+            set_logic_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
             state->pc += 1;
         }
