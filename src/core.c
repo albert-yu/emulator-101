@@ -347,9 +347,11 @@ void add_x(State8080 *state, uint8_t x) {
  * ADC X: A <- A + X + CY
  */
 void adc_x(State8080 *state, uint8_t x) {
-    uint16_t a = (uint16_t) state->a;
-    uint8_t cy = state->cc.cy;
-    uint16_t answer = a + cy + x;
+    uint16_t a, cy, x16, answer;
+    a = (uint16_t) state->a;
+    cy = (uint16_t) state->cc.cy;
+    x16 = (uint16_t) x;
+    answer = a + cy + x16;
     set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
@@ -372,10 +374,11 @@ void sub_x(State8080 *state, uint8_t x) {
  * SBB X: A <- A - X - CY
  */
 void sbb_x(State8080 *state, uint8_t x) {
-    uint16_t a, cy, answer;
+    uint16_t a, cy, x16, answer;
     a = (uint16_t) state->a;
     cy = (uint16_t) state->cc.cy;
-    answer = a - x - cy;
+    x16 = (uint16_t) x;
+    answer = a - x16 - cy;
     set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
