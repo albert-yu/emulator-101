@@ -574,20 +574,11 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
 
 
 /*
- * Returns the 16 bit address pointed to by
- * two pointers to 8 bit integers
- */
-uint16_t read_addr(uint8_t *lptr, uint8_t *rptr) {
-   return get16bitval(*lptr, *rptr);
-}
-
-
-/*
  * Returns the address stored in HL register
  * pair
  */
 uint16_t read_hl_addr(State8080 *state) {
-    return read_addr(&(state->h), &(state->l));
+    return get16bitval(state->h, state->l);
 }
 
 
@@ -634,7 +625,7 @@ void emulate_op(State8080 *state) {
         {
             // set the value of memory with address formed by
             // register pair BC to A
-            uint16_t offset = read_addr(&state->b, &state->c);
+            uint16_t offset = get16bitval(state->b, state->c);
             state->memory[offset] = state->a;
         }
             break;
@@ -683,7 +674,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x0a:  // LDAX B: A <- (BC)
         {
-            uint16_t offset = read_addr(&state->b, &state->c);
+            uint16_t offset = get16bitval(state->b, state->c);
             uint8_t memval = state->memory[offset];
             state->a = memval;
         }
@@ -733,7 +724,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x12:  // STAX D: (DE) <- A
         {
-            uint16_t offset = read_addr(&state->d, &state->e);
+            uint16_t offset = get16bitval(state->d, state->e);
             state->memory[offset] = state->a;
         }
             break;
