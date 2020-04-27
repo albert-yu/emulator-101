@@ -470,7 +470,7 @@ void swp_ptrs(uint8_t *p1, uint8_t *p2) {
 void cmp_x(State8080 *state, uint8_t x) {
     uint16_t answer;
     answer = (uint16_t) state->a - (uint16_t) x;
-    set_arith_flags(state, answer, SET_ALL_FLAGS - SET_CY_FLAG);
+    set_arith_flags(state, answer, SET_ALL_FLAGS ^ SET_CY_FLAG);
     state->cc.cy = state->a < x;
 }
 
