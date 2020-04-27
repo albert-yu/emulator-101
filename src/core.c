@@ -960,8 +960,7 @@ void emulate_op(State8080 *state) {
             uint8_t byte2, byte3;
             byte3 = opcode[2];
             byte2 = opcode[1];
-            uint16_t sp_addr = get16bitval(byte3, byte2); 
-            state->sp = sp_addr; 
+            state->sp = get16bitval(byte3, byte2);
             state->pc += 2;
         }
             break;
@@ -969,7 +968,7 @@ void emulate_op(State8080 *state) {
         {
             // (adr) <- A
             // store accumulator direct
-            uint16_t addr = get16bitval(opcode[1], opcode[2]);
+            uint16_t addr = get16bitval(opcode[2], opcode[1]);
             state->memory[addr] = state->a;
             state->pc += 2;
         }
