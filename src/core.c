@@ -760,10 +760,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x19:  // DAD D: HL = HL + DE
         {
-            uint8_t *d_reg_ptr, *e_reg_ptr;
-            d_reg_ptr = &state->d;
-            e_reg_ptr = &state->e;
-            dad_xy(state, d_reg_ptr, e_reg_ptr);
+            dad_xy(state, &state->d, &state->e);
         }
             break;
         case 0x1a:  // LDAX D
@@ -891,21 +888,18 @@ void emulate_op(State8080 *state) {
             break;
         case 0x29:  // DAD H
         {
-            uint8_t *h_reg_ptr, *l_reg_ptr;
-            h_reg_ptr = &state->h;
-            l_reg_ptr = &state->l;
-            dad_xy(state, h_reg_ptr, l_reg_ptr);
+            dad_xy(state, &state->h, &state->l);
         }
             break;
         case 0x2a:  // LHLD adr
         {
             // get address (16 bits)
             uint16_t addr = get16bitval(opcode[2], opcode[1]);
-            uint8_t val, val2;
-            val = state->memory[addr];
-            val2 = state->memory[addr + 1]; 
-            state->l = val;
-            state->h = val2;
+            uint8_t lo, hi;
+            lo = state->memory[addr];
+            hi = state->memory[addr + 1]; 
+            state->l = lo;
+            state->h = hi;
             state->pc += 2;
         }
             break;
