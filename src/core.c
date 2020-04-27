@@ -303,26 +303,12 @@ void call_adr(State8080 *state, uint16_t adr) {
 
 
 /*
- * CALL address specified by following
- * two bytes
- */
-void call(State8080 *state) {
-    // get opcode
-    uint8_t *opcode = &state->memory[state->pc];
-    // get subroutine address
-    uint16_t subr;
-    subr = get16bitval(opcode[2], opcode[1]);
-
-    call_adr(state, subr);
-}
-
-/*
  * CALL conditionally
- * If cond is TRUE, then CALL
+ * If cond is TRUE, then CALL subr
  */
-void call_cond(State8080 *state, uint8_t cond) {
+void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
     if (cond) {
-        call(state);
+        call_adr(state, subr);
     } else {
         // otherwise, move onto
         // next instruction
@@ -1625,7 +1611,8 @@ void emulate_op(State8080 *state) {
         case 0xc4:  // CNZ adr
         {
             uint8_t notzero = !state->cc.z; 
-            call_cond(state, notzero);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, notzero);
         }
             break;
         case 0xc5:  // PUSH B
@@ -1680,12 +1667,14 @@ void emulate_op(State8080 *state) {
             break;
         case 0xcc:  // CZ adr
         {
-            call_cond(state, state->cc.z);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, state->cc.z);
         }
             break;
         case 0xcd:  // CALL adr
         {
-            call(state); 
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_adr(state, adr); 
         }
             break;
         case 0xce:  // ACI D8: A <- A + data + CY
@@ -1736,7 +1725,8 @@ void emulate_op(State8080 *state) {
         case 0xd4:
         {
             uint8_t nocarry = !state->cc.cy;
-            call_cond(state, nocarry);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, nocarry);
         }
             break;
         case 0xd5:  // PUSH D
@@ -1784,7 +1774,8 @@ void emulate_op(State8080 *state) {
             break;
         case 0xdc:  // CC adr
         {
-            call_cond(state, state->cc.cy);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, state->cc.cy);
         }
             break;
         case 0xdd:
@@ -1837,7 +1828,8 @@ void emulate_op(State8080 *state) {
         case 0xe4:  // CPO adr
         {
             uint8_t odd = !state->cc.p;
-            call_cond(state, odd);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, odd);
         }
             break;
         case 0xe5:  // PUSH H
@@ -1895,7 +1887,8 @@ void emulate_op(State8080 *state) {
         case 0xec:  // CPE adr
         {
             // call address if parity even
-            call_cond(state, state->cc.p);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, state->cc.p);
         }
             break;
         case 0xed:
@@ -1969,7 +1962,8 @@ void emulate_op(State8080 *state) {
         case 0xf4:   // CP adr
         {
             uint8_t pos = !state->cc.s;
-            call_cond(state, pos);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, pos);
         }
             break;
         case 0xf5:  // PUSH PSW
@@ -2056,7 +2050,8 @@ void emulate_op(State8080 *state) {
         {
             // if minus, call
             uint8_t minus = state->cc.s;
-            call_cond(state, minus);
+            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            call_cond(state, adr, minus);
         }
             break;
         case 0xfd:
