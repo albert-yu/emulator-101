@@ -495,12 +495,19 @@ void cmp_x(State8080 *state, uint8_t x) {
  * the two pointers. Also returns the result as 32 bits.
  */
 uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
+    // get values pointed to by pointers
     uint8_t left, right;
     left = *left_ptr;
     right = *right_ptr;
+
+    // combine into summand
     uint16_t summand;
     summand = get16bitval(left, right);
+
+    // sum
     uint32_t result = summand + val;
+
+    // store
     *left_ptr = (result & 0xff00) >> 8;
     *right_ptr = result & 0xff;
     return result;
@@ -558,13 +565,11 @@ void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
  * and sets CY flag to 1 if result needs carry
  */
 void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
-    uint8_t *dest_left, *dest_right; 
-    dest_left = &(state->h);
-    dest_right = &(state->l);
     uint16_t val_to_add;
     val_to_add = get16bitval(*x, *y);
-    uint32_t result = tworeg_add(dest_left, dest_right, val_to_add);
-    state->cc.cy = ((result & 0xffff0000) > 0);
+    uint32_t result = tworeg_add(
+        &state->h, &state->l, val_to_add);
+    state->cc.cy = ((result & 0xffff0000) != 0);
 }
 
 
