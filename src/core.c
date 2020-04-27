@@ -449,16 +449,13 @@ void ora_x(State8080 *state, uint8_t x) {
 
 
 /*
- * Swaps p1 with q1, p2 with q2
+ * Swaps p1 with p2
  */
-void swp_ptrs(uint8_t *p1, uint8_t *p2, uint8_t *q1, uint8_t *q2) {
+void swp_ptrs(uint8_t *p1, uint8_t *p2) {
     uint8_t tmp;
     tmp = *p1;
-    *p1 = *q1;
-    *q1 = tmp;
-    tmp = *p2;
-    *p2 = *q2;
-    *q2 = tmp;
+    *p1 = *p2;
+    *p2 = tmp;
 }
 
 
@@ -1823,7 +1820,8 @@ void emulate_op(State8080 *state) {
             uint8_t *sp_h, *sp_l;
             sp_h = &state->memory[sp + 1];
             sp_l = &state->memory[sp]; 
-            swp_ptrs(&state->l, &state->h, sp_l, sp_h);
+            swp_ptrs(&state->l, sp_l);
+            swp_ptrs(&state->h, sp_h);
         }
             break;
         case 0xe4:  // CPO adr
@@ -1875,9 +1873,8 @@ void emulate_op(State8080 *state) {
         case 0xeb:  // XCHG
         {
             // H <-> D; L <-> E
-            swp_ptrs(
-                &state->h, &state->l, 
-                &state->d, &state->e);
+            swp_ptrs(&state->h, &state->d);
+            swp_ptrs(&state->l, &state->e);
         }
             break;
         case 0xec:  // CPE adr
