@@ -157,7 +157,7 @@ uint8_t auxcarry(uint16_t answer) {
  * flagstoset - from left to right, the z, s, p, cy, 
  * and ac flags (should set flag if set to 1)
  */
-void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
+void set_arith_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     // remove trailing bits
     uint8_t cleaned = flagstoset & 0b11111000;
     if (cleaned & SET_Z_FLAG) {
@@ -179,10 +179,35 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
 
 
 /*
- * Same as set_flags, except for a 32-bit answer
+ * Sets flags from a logic operation response
+ */
+void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
+    // remove trailing bits
+    uint8_t cleaned = flagstoset & 0b11111000;
+    uint16_t answer = (uint16_t) res;
+    if (cleaned & SET_Z_FLAG) {
+        state->cc.z = zero(answer);
+    }
+    if (cleaned & SET_S_FLAG) {
+        state->cc.s = sign(answer);
+    }
+    if (cleaned & SET_P_FLAG) {
+        state->cc.p = parity(answer);
+    }
+
+    // carry and aux carry flags are zero
+    if (cleaned & SET_CY_FLAG) {
+        state->cc.cy = 0;
+    }
+    if (cleaned & SET_AC_FLAG) {
+        state->cc.ac = 0; 
+  }
+}
+/*
+ * Same as set_arith_flags, except for a 32-bit answer
  * (adding/subtracting two 16-bit ints)
  */
-// void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
+// void set_arith_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
 //     // remove trailing bits
 //     uint8_t cleaned = flagstoset & 0b11111000;
 // 
@@ -367,7 +392,7 @@ void push_x(State8080 *state, uint8_t x1, uint8_t x2) {
 void add_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint16_t answer = a + (uint16_t) x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -380,7 +405,7 @@ void adc_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint8_t cy = state->cc.cy;
     uint16_t answer = a + cy + x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -392,7 +417,7 @@ void adc_x(State8080 *state, uint8_t x) {
 void sub_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint16_t answer = a - (uint16_t) x;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -405,7 +430,7 @@ void sbb_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint8_t cy = state->cc.cy;
     uint16_t answer = a - x - cy;
-    set_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -417,12 +442,9 @@ void sbb_x(State8080 *state, uint8_t x) {
 void ana_x(State8080 *state, uint8_t x) {
     // using 16 bits, even though
     // bitwise AND shouldn't add a bit
-    uint16_t answer;
-    answer = (uint16_t) state->a & x;
-    set_flags(state, answer, SET_ALL_FLAGS);
-    // carry flags cleared
-    state->cc.cy = 0;
-    state->cc.ac = 0;
+    uint8_t answer;
+    answer = state->a & x;
+    set_logic_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -432,12 +454,8 @@ void ana_x(State8080 *state, uint8_t x) {
  * XRA X: A <- A ^ X
  */
 void xra_x(State8080 *state, uint8_t x) {
-    uint16_t answer = (uint16_t) state->a ^ x;
-    set_flags(state, answer, SET_ALL_FLAGS);
-
-    // AC and CY flags cleared
-    state->cc.ac = 0;
-    state->cc.cy = 0;
+    uint8_t answer = state->a ^ x;
+    set_logic_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -447,12 +465,8 @@ void xra_x(State8080 *state, uint8_t x) {
  * ORA X: A <- A | X
  */
 void ora_x(State8080 *state, uint8_t x) {
-    uint16_t answer = (uint16_t) state->a | x;
-    set_flags(state, answer, SET_ALL_FLAGS);
-
-    // AC and CY flags cleared
-    state->cc.ac = 0;
-    state->cc.cy = 0;
+    uint8_t answer = state->a | x;
+    set_logic_flags(state, answer, SET_ALL_FLAGS);
     state->a = answer & 0xff;
 }
 
@@ -482,7 +496,7 @@ void swp_ptrs(uint8_t *p1, uint8_t *p2, uint8_t *q1, uint8_t *q2) {
 void cmp_x(State8080 *state, uint8_t x) {
     uint16_t answer;
     answer = (uint16_t) state->a - (uint16_t) x;
-    set_flags(state, answer, SET_ALL_FLAGS - SET_CY_FLAG);
+    set_arith_flags(state, answer, SET_ALL_FLAGS - SET_CY_FLAG);
     state->cc.cy = state->a < x;
 }
 
@@ -519,7 +533,7 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 void inr_x(State8080 *state, uint8_t *ptr) {
     uint16_t answer = (uint16_t) *ptr + 1;
     uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
-    set_flags(state, answer, flags);
+    set_arith_flags(state, answer, flags);
     *ptr = answer & 0xff;
 }
 
@@ -531,7 +545,7 @@ void inr_x(State8080 *state, uint8_t *ptr) {
 void dcr_x(State8080 *state, uint8_t *ptr) {
     uint16_t answer = (uint16_t) (*ptr - 1);
     uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
-    set_flags(state, answer, flags);
+    set_arith_flags(state, answer, flags);
     *ptr = answer & 0xff;
 }
 
@@ -879,7 +893,7 @@ void emulate_op(State8080 *state) {
             if (least4 > 9 || state->cc.ac) {
                 answer = state->a + 6;
                 // set flags of intermediate result
-                set_flags(state, answer, SET_ALL_FLAGS);
+                set_arith_flags(state, answer, SET_ALL_FLAGS);
                 state->a = answer & 0xff;
             }
             // 2.
@@ -890,7 +904,7 @@ void emulate_op(State8080 *state) {
             // put most and least sig. 4 digits back
             // together
             answer = (most4 << 4) | least4;
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_arith_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
         }
             break;
@@ -1630,7 +1644,7 @@ void emulate_op(State8080 *state) {
             // opcode[1] will be the immediately following byte.
             uint16_t answer;
             answer = (uint16_t) state->a + (uint16_t) opcode[1];
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_arith_flags(state, answer, SET_ALL_FLAGS);
 
             // instruction is of size 2
             state->pc += 1;
@@ -1680,7 +1694,7 @@ void emulate_op(State8080 *state) {
             uint16_t a, answer;
             a = (uint16_t) state->a;
             answer = a + data + state->cc.cy;
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_arith_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
             state->pc += 1;
         }
@@ -1733,7 +1747,7 @@ void emulate_op(State8080 *state) {
         {
             uint8_t data = opcode[1];
             uint16_t answer = (uint16_t) state->a - (uint16_t) data;
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_arith_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
             
             state->pc += 1;
@@ -1779,7 +1793,7 @@ void emulate_op(State8080 *state) {
             uint16_t answer, a;
             a = (uint16_t) state->a;
             answer = a - opcode[1] - state->cc.cy;
-            set_flags(state, answer, SET_ALL_FLAGS);
+            set_arith_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
             state->pc += 2;
         }
@@ -1832,7 +1846,7 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a & opcode[1];
-            set_flags(state, answer,
+            set_arith_flags(state, answer,
                 SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
             // CY and AC flags are cleared
             state->cc.cy = 0;
@@ -1887,7 +1901,7 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a ^ opcode[1];
-            set_flags(state, answer,
+            set_arith_flags(state, answer,
                 SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
             // CY and AC flags are cleared
             state->cc.cy = 0;
@@ -1993,7 +2007,7 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a | opcode[1];
-            set_flags(state, answer,
+            set_arith_flags(state, answer,
                 SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
             // CY and AC flags are cleared
             state->cc.cy = 0;
