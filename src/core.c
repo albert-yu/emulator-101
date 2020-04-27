@@ -65,10 +65,10 @@ uint8_t sign(uint16_t answer) {
 }
 
 
-uint8_t sign32(uint32_t answer) {
-    // set to 1 when bit 15 of the math instruction is set
-    return ((answer & 0x8000) > 0);
-}
+//uint8_t sign32(uint32_t answer) {
+//    // set to 1 when bit 15 of the math instruction is set
+//    return ((answer & 0x8000) > 0);
+//}
 
 
 /*
@@ -105,9 +105,9 @@ uint8_t carry(uint16_t answer) {
 }
 
 
-uint8_t carry32(uint32_t answer) {
-    return (answer > 0xffff);
-}
+// uint8_t carry32(uint32_t answer) {
+//     return (answer > 0xffff);
+// }
 
 
 uint8_t auxcarry(uint16_t answer) {
@@ -136,9 +136,9 @@ uint8_t auxcarry(uint16_t answer) {
 }
 
 
-uint8_t auxcarry32(uint32_t answer) {
-    return auxcarry(answer & 0xffff);  
-}
+// uint8_t auxcarry32(uint32_t answer) {
+//     return auxcarry(answer & 0xffff);  
+// }
 
 
 // combine with bitwise OR
