@@ -1632,6 +1632,7 @@ void emulate_op(State8080 *state) {
             answer = (uint16_t) state->a + (uint16_t) opcode[1];
             set_arith_flags(state, answer, SET_ALL_FLAGS);
 
+            state->a = (uint8_t) answer;
             // instruction is of size 2
             state->pc += 1;
         }
