@@ -419,10 +419,10 @@ void ana_x(State8080 *state, uint8_t x) {
     // bitwise AND shouldn't add a bit
     uint16_t answer;
     answer = (uint16_t) state->a & x;
-    set_flags(state, answer,
-        SET_ALL_FLAGS - SET_CY_FLAG);
-    // CY flag is cleared
+    set_flags(state, answer, SET_ALL_FLAGS);
+    // carry flags cleared
     state->cc.cy = 0;
+    state->cc.ac = 0;
     state->a = answer & 0xff;
 }
 
@@ -433,8 +433,7 @@ void ana_x(State8080 *state, uint8_t x) {
  */
 void xra_x(State8080 *state, uint8_t x) {
     uint16_t answer = (uint16_t) state->a ^ x;
-    set_flags(state, answer, 
-        SET_ALL_FLAGS - SET_CY_FLAG - SET_AC_FLAG);
+    set_flags(state, answer, SET_ALL_FLAGS);
 
     // AC and CY flags cleared
     state->cc.ac = 0;
@@ -449,8 +448,7 @@ void xra_x(State8080 *state, uint8_t x) {
  */
 void ora_x(State8080 *state, uint8_t x) {
     uint16_t answer = (uint16_t) state->a | x;
-    set_flags(state, answer, 
-        SET_ALL_FLAGS - SET_CY_FLAG - SET_AC_FLAG);
+    set_flags(state, answer, SET_ALL_FLAGS);
 
     // AC and CY flags cleared
     state->cc.ac = 0;
@@ -1016,10 +1014,8 @@ void emulate_op(State8080 *state) {
         {
             // uglier implementation
             uint32_t answer;
-            uint8_t *h_reg_ptr, *l_reg_ptr;
-            h_reg_ptr = &state->h;
-            l_reg_ptr = &state->l;
-            answer = tworeg_add(h_reg_ptr, l_reg_ptr, state->sp);
+            answer = tworeg_add(
+                &state->h, &state->l, state->sp);
             state->cc.cy = answer > 0xffff;
         }
             break;
