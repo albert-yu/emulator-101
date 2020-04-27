@@ -3,7 +3,6 @@
 
 #include "disassembler.h"
 
-int disassemble8080op(unsigned char *codebuffer, int pc);
 
 int disassemble8080file(char* filename) {
     FILE *f = fopen(filename, "rb");
@@ -25,8 +24,7 @@ int disassemble8080file(char* filename) {
 
     int pc = 0;
 
-    while (pc < fsize)
-    {
+    while (pc < fsize) {
         pc += disassemble8080op(buffer, pc);
         printf("\n");
     }
@@ -47,8 +45,7 @@ int disassemble8080op(unsigned char *codebuffer, int pc) {
     int opbytes = 1;  // size of operation to be returned
     printf("%04x ", pc); // formatted as hexadecimal integer
 
-    switch(*code)
-    {
+    switch(*code) {
         case 0x00: printf("NOP"); break;    
         case 0x01: printf("LXI    B,#$%02x%02x", code[2], code[1]); opbytes = 3; break;    
         case 0x02: printf("STAX   B"); break;    

@@ -257,7 +257,7 @@ void jmp(State8080 *state) {
     uint8_t *opcode = &state->memory[state->pc];
     uint16_t target_addr = get16bitval(opcode[2], opcode[1]);
     // HACK: we'll add 1 at the end of the giant switch block
-    state->pc = target_addr - 1;
+    state->pc = target_addr;
 }
 
 
@@ -299,8 +299,8 @@ void call_adr(State8080 *state, uint16_t adr) {
     state->sp -= 2;
 
     // set program counter to
-    // target address - 1
-    state->pc = adr - 1;
+    // target address
+    state->pc = adr;
 }
 
 
@@ -344,7 +344,7 @@ void ret(State8080 *state) {
     // set pc to return address pointed
     // to by stack
     uint16_t target_addr = get16bitval(hi_addr, lo_addr);
-    state->pc = target_addr - 1;
+    state->pc = target_addr;
     
     // increment stack pointer
     state->sp += 2;
@@ -356,7 +356,6 @@ void ret(State8080 *state) {
  * registers `hi` and `lo`.
  */
 void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
-    // TODO: check this
     uint16_t sp_addr;
     sp_addr = state->sp;
     *lo = state->memory[sp_addr];
@@ -371,7 +370,6 @@ void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
  * Pushes contents onto the stack.
  */
 void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
-    // TODO: check this also
     uint16_t sp_addr = state->sp;
     state->memory[sp_addr - 1] = hi;
     state->memory[sp_addr - 2] = lo;
@@ -617,6 +615,7 @@ void set_hl(State8080 *state, uint8_t val) {
 
 void emulate_op(State8080 *state) {
     unsigned char *opcode = &state->memory[state->pc];
+    state->pc += 1;
 
     switch(*opcode) {
         case 0x00:  // NOP
@@ -1624,7 +1623,7 @@ void emulate_op(State8080 *state) {
             call_cond(state, notzero);
         }
             break;
-        case 0xc5:
+        case 0xc5:  // PUSH B
         {
             push_x(state, state->b, state->c);
         }
@@ -1866,7 +1865,7 @@ void emulate_op(State8080 *state) {
         case 0xe9:  // PCHL
         {
             // PC.hi <- H; PC.lo <- L
-            state->pc = get16bitval(state->h, state->l) - 1;
+            state->pc = get16bitval(state->h, state->l);
         }
             break;
         case 0xea:  // JPE adr
@@ -2064,6 +2063,6 @@ void emulate_op(State8080 *state) {
             break;
     }
 
-    state->pc += 1;
+    // state->pc += 1;
 }
 
