@@ -182,35 +182,35 @@ void set_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
  * Same as set_flags, except for a 32-bit answer
  * (adding/subtracting two 16-bit ints)
  */
-void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
-    // remove trailing bits
-    uint8_t cleaned = flagstoset & 0b11111000;
-
-    // split into left and right
-    uint16_t left, right;
-    left = answer >> 16;
-    right = answer & 0xffff;
-    if (cleaned & SET_Z_FLAG) {
-        // should be 0 if both left and
-        // right are 0
-        state->cc.z = (zero(left) | zero(right)) == 0;
-    }
-    if (cleaned & SET_S_FLAG) {
-        state->cc.s = sign32(answer);
-    }
-    if (cleaned & SET_P_FLAG) {
-        // both odd => combined even
-        // both even => combined even
-        // even and odd => combined odd
-        state->cc.p = (parity(left) == parity(right));
-    }
-    if (cleaned & SET_CY_FLAG) {
-        state->cc.cy = carry32(answer);
-    }
-    if (cleaned & SET_AC_FLAG) {
-        state->cc.ac = auxcarry32(answer); 
-  }
-}
+// void set_flags32(State8080 *state, uint32_t answer, uint8_t flagstoset) {
+//     // remove trailing bits
+//     uint8_t cleaned = flagstoset & 0b11111000;
+// 
+//     // split into left and right
+//     uint16_t left, right;
+//     left = answer >> 16;
+//     right = answer & 0xffff;
+//     if (cleaned & SET_Z_FLAG) {
+//         // should be 0 if both left and
+//         // right are 0
+//         state->cc.z = (zero(left) | zero(right)) == 0;
+//     }
+//     if (cleaned & SET_S_FLAG) {
+//         state->cc.s = sign32(answer);
+//     }
+//     if (cleaned & SET_P_FLAG) {
+//         // both odd => combined even
+//         // both even => combined even
+//         // even and odd => combined odd
+//         state->cc.p = (parity(left) == parity(right));
+//     }
+//     if (cleaned & SET_CY_FLAG) {
+//         state->cc.cy = carry32(answer);
+//     }
+//     if (cleaned & SET_AC_FLAG) {
+//         state->cc.ac = auxcarry32(answer); 
+//   }
+// }
 
 
 /*
@@ -524,7 +524,7 @@ void inr_x(State8080 *state, uint8_t *ptr) {
  * DCR X: X <- X - 1
  */
 void dcr_x(State8080 *state, uint8_t *ptr) {
-    uint16_t answer = (uint16_t) *ptr - 1;
+    uint16_t answer = (uint16_t) (*ptr - 1);
     uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
     set_flags(state, answer, flags);
     *ptr = answer & 0xff;
@@ -535,8 +535,12 @@ void dcr_x(State8080 *state, uint8_t *ptr) {
  * INX XY: XY <- XY + 1
  */
 void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
-    tworeg_add(left_ptr, right_ptr, 1);
+    //tworeg_add(left_ptr, right_ptr, 1);
     // INX does not set the carry bit
+    (*right_ptr)++;
+    if (*right_ptr == 0) {
+        (*left_ptr)++;
+    }
 }
 
 
@@ -707,7 +711,7 @@ void emulate_op(State8080 *state) {
             // e.g. 10011000 => 01001100
             uint8_t rightmost = state->a & 1;
             // and set CY flag
-            state->cc.cy = rightmost;
+            state->cc.cy = rightmost == 1;
             // set left-most bit to what the right-most bit was
             state->a = (state->a >> 1) | (rightmost << 7);
         }
