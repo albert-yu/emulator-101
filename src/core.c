@@ -66,12 +66,6 @@ uint8_t sign(uint16_t answer) {
 }
 
 
-//uint8_t sign32(uint32_t answer) {
-//    // set to 1 when bit 15 of the math instruction is set
-//    return ((answer & 0x8000) > 0);
-//}
-
-
 /*
  * Returns 1 if number of set bits is even and 0 o.w.
  * (only for lower 8 bits)
@@ -91,7 +85,9 @@ uint8_t parity(uint16_t answer) {
     int p = 0;
     x = (x & ((1 << size) - 1));
     for (i = 0; i < size; i++) {
-        if (x & 0x1) p++;
+        if (x & 0x1) {
+            p++;
+        }
         x = x >> 1;
     }
     return (0 == (p & 0x1));
@@ -107,11 +103,6 @@ uint8_t carry(uint16_t answer) {
 }
 
 
-// uint8_t carry32(uint32_t answer) {
-//     return (answer > 0xffff);
-// }
-
-
 uint8_t auxcarry(uint16_t answer) {
     // From the manual:
     // If the instruction caused a
@@ -123,7 +114,7 @@ uint8_t auxcarry(uint16_t answer) {
     // precision additions,
     // subtractions, increments,
     // decrements, comparisons, and
-    // log- ical operations, but is
+    // logical operations, but is
     // principally used with
     // additions and increments
     // preceding a DAA (Decimal
@@ -134,13 +125,8 @@ uint8_t auxcarry(uint16_t answer) {
     // zero out first three bits
     //                  76543210
     cleaned = last8 & 0b00011111; 
-    return cleaned > 0xff;  
+    return cleaned > 0xf;  
 }
-
-
-// uint8_t auxcarry32(uint32_t answer) {
-//     return auxcarry(answer & 0xffff);  
-// }
 
 
 // combine with bitwise OR
@@ -2040,7 +2026,5 @@ void emulate_op(State8080 *state) {
         }
             break;
     }
-
-    // state->pc += 1;
 }
 
