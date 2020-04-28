@@ -15,7 +15,9 @@ void state_free(State8080 *state) {
     if (state) {
         if (state->memory) {
             free(state->memory);
+            state->memory = NULL;
         }
+        free(state);
         state = NULL;
     }
 }
@@ -80,8 +82,6 @@ int load_and_run(char *filename) {
     fseek(f, 0L, SEEK_END);
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
-
-    // uint8_t *buffer = state.memory;
 
     fread(state.memory, fsize, 1, f);
     fclose(f);
