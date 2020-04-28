@@ -197,7 +197,7 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
  * Combines two 8 bit values into a single
  * 16 bit value
  */
-uint16_t get16bitval(uint8_t left, uint8_t right) {
+uint16_t makeword(uint8_t left, uint8_t right) {
     uint16_t result;
     result = (left << 8) | right;
     return result;
@@ -281,7 +281,7 @@ void ret(State8080 *state) {
     hi_addr = state->memory[sp_addr + 1];
     // set pc to return address pointed
     // to by stack
-    uint16_t target_addr = get16bitval(hi_addr, lo_addr);
+    uint16_t target_addr = makeword(hi_addr, lo_addr);
     state->pc = target_addr;
     
     // increment stack pointer
@@ -446,7 +446,7 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 
     // combine into summand
     uint16_t summand;
-    summand = get16bitval(left, right);
+    summand = makeword(left, right);
 
     // sum
     uint32_t result = summand + val;
@@ -510,7 +510,7 @@ void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
  */
 void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     uint16_t val_to_add;
-    val_to_add = get16bitval(*x, *y);
+    val_to_add = makeword(*x, *y);
     uint32_t result = tworeg_add(
         &state->h, &state->l, val_to_add);
     state->cc.cy = ((result & 0xffff0000) != 0);
@@ -522,7 +522,7 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
  * pair
  */
 uint16_t read_hl_addr(State8080 *state) {
-    return get16bitval(state->h, state->l);
+    return makeword(state->h, state->l);
 }
 
 
@@ -573,7 +573,7 @@ void emulate_op(State8080 *state) {
         {
             // set the value of memory with address formed by
             // register pair BC to A
-            uint16_t offset = get16bitval(state->b, state->c);
+            uint16_t offset = makeword(state->b, state->c);
             state->memory[offset] = state->a;
         }
             break;
@@ -622,7 +622,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x0a:  // LDAX B: A <- (BC)
         {
-            uint16_t offset = get16bitval(state->b, state->c);
+            uint16_t offset = makeword(state->b, state->c);
             uint8_t memval = state->memory[offset];
             state->a = memval;
         }
@@ -672,7 +672,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x12:  // STAX D: (DE) <- A
         {
-            uint16_t offset = get16bitval(state->d, state->e);
+            uint16_t offset = makeword(state->d, state->e);
             state->memory[offset] = state->a;
         }
             break;
@@ -723,7 +723,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0x1a:  // LDAX D
         {
-            uint16_t offset = get16bitval(state->d, state->e);
+            uint16_t offset = makeword(state->d, state->e);
             uint8_t memval = state->memory[offset];
             state->a = memval;
         }
@@ -777,7 +777,7 @@ void emulate_op(State8080 *state) {
         {
             // the following two opcodes form an address
             // when put together
-            uint16_t addr = get16bitval(opcode[2], opcode[1]);
+            uint16_t addr = makeword(opcode[2], opcode[1]);
             state->memory[addr] = state->l;
             state->memory[addr + 1] = state->h;
             state->pc += 2;
@@ -852,7 +852,7 @@ void emulate_op(State8080 *state) {
         case 0x2a:  // LHLD adr
         {
             // get address (16 bits)
-            uint16_t addr = get16bitval(opcode[2], opcode[1]);
+            uint16_t addr = makeword(opcode[2], opcode[1]);
             uint8_t lo, hi;
             lo = state->memory[addr];
             hi = state->memory[addr + 1]; 
@@ -902,7 +902,7 @@ void emulate_op(State8080 *state) {
             uint8_t byte2, byte3;
             byte3 = opcode[2];
             byte2 = opcode[1];
-            state->sp = get16bitval(byte3, byte2);
+            state->sp = makeword(byte3, byte2);
             state->pc += 2;
         }
             break;
@@ -910,7 +910,7 @@ void emulate_op(State8080 *state) {
         {
             // (adr) <- A
             // store accumulator direct
-            uint16_t addr = get16bitval(opcode[2], opcode[1]);
+            uint16_t addr = makeword(opcode[2], opcode[1]);
             state->memory[addr] = state->a;
             state->pc += 2;
         }
@@ -965,7 +965,7 @@ void emulate_op(State8080 *state) {
         case 0x3a:  // LDA adr
         {
             // A <- (adr)
-            uint16_t addr = get16bitval(opcode[2], opcode[1]);
+            uint16_t addr = makeword(opcode[2], opcode[1]);
             uint8_t val = state->memory[addr];
             state->a = val;
             state->pc += 2;
@@ -1546,20 +1546,20 @@ void emulate_op(State8080 *state) {
         case 0xc2:  // JNZ adr
         {
             uint8_t notzero = state->cc.z == 0;
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, notzero);
         }
             break;
         case 0xc3:  // JMP adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp(state, adr);
         }
             break;
         case 0xc4:  // CNZ adr
         {
             uint8_t notzero = !state->cc.z; 
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, notzero);
         }
             break;
@@ -1605,7 +1605,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0xca:  // JZ adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, state->cc.z);
         }
             break;
@@ -1616,13 +1616,13 @@ void emulate_op(State8080 *state) {
             break;
         case 0xcc:  // CZ adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, state->cc.z);
         }
             break;
         case 0xcd:  // CALL adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_adr(state, adr); 
         }
             break;
@@ -1658,7 +1658,7 @@ void emulate_op(State8080 *state) {
         case 0xd2:  // JNC adr
         {
             // if not carry, jmp
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, !state->cc.cy);
         }
             break;
@@ -1674,7 +1674,7 @@ void emulate_op(State8080 *state) {
         case 0xd4:
         {
             uint8_t nocarry = !state->cc.cy;
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, nocarry);
         }
             break;
@@ -1711,7 +1711,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0xda:
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, state->cc.cy);
         }
             break;
@@ -1723,7 +1723,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0xdc:  // CC adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, state->cc.cy);
         }
             break;
@@ -1760,7 +1760,7 @@ void emulate_op(State8080 *state) {
             break;
         case 0xe2:  // JPO adr
         {
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, !state->cc.p);
         }
             break;
@@ -1778,7 +1778,7 @@ void emulate_op(State8080 *state) {
         case 0xe4:  // CPO adr
         {
             uint8_t odd = !state->cc.p;
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, odd);
         }
             break;
@@ -1811,13 +1811,13 @@ void emulate_op(State8080 *state) {
         case 0xe9:  // PCHL
         {
             // PC.hi <- H; PC.lo <- L
-            state->pc = get16bitval(state->h, state->l);
+            state->pc = makeword(state->h, state->l);
         }
             break;
         case 0xea:  // JPE adr
         {
             // jmp if even
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, state->cc.p);
         }
             break;
@@ -1831,7 +1831,7 @@ void emulate_op(State8080 *state) {
         case 0xec:  // CPE adr
         {
             // call address if parity even
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, state->cc.p);
         }
             break;
@@ -1906,7 +1906,7 @@ void emulate_op(State8080 *state) {
         case 0xf2:  // JP adr
         {
             // if positive, JMP
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, state->cc.s == 0);
         }
             break;
@@ -1919,7 +1919,7 @@ void emulate_op(State8080 *state) {
         case 0xf4:   // CP adr
         {
             uint8_t pos = !state->cc.s;
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, pos);
         }
             break;
@@ -1987,13 +1987,13 @@ void emulate_op(State8080 *state) {
             break;
         case 0xf9:  // SPHL: SP = HL
         {
-            state->sp = get16bitval(state->h, state->l);
+            state->sp = makeword(state->h, state->l);
         }
             break;
         case 0xfa:  // JM
         {
             // jump if sign is negative (sign = 1)
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             jmp_cond(state, adr, state->cc.s);
         }
             break;
@@ -2007,7 +2007,7 @@ void emulate_op(State8080 *state) {
         {
             // if minus, call
             uint8_t minus = state->cc.s;
-            uint16_t adr = get16bitval(opcode[2], opcode[1]);
+            uint16_t adr = makeword(opcode[2], opcode[1]);
             call_cond(state, adr, minus);
         }
             break;
