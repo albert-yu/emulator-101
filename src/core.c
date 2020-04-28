@@ -350,7 +350,11 @@ void adc_x(State8080 *state, uint8_t x) {
 void sub_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint16_t answer = a - (uint16_t) x;
-    set_arith_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, 
+        SET_ALL_FLAGS ^ SET_CY_FLAG);
+    if (x > state->a) {
+        state->cc.cy = 1;
+    }
     state->a = answer & 0xff;
 }
 
@@ -365,7 +369,11 @@ void sbb_x(State8080 *state, uint8_t x) {
     cy = (uint16_t) state->cc.cy;
     x16 = (uint16_t) x;
     answer = a - x16 - cy;
-    set_arith_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, 
+        SET_ALL_FLAGS ^ SET_CY_FLAG);
+    if (x16 + cy > a) {
+        state->cc.cy = 1;
+    }
     state->a = answer & 0xff;
 }
 
@@ -1685,9 +1693,13 @@ void emulate_op(State8080 *state) {
             break;
         case 0xd6:   // SUI D8
         {
-            uint8_t data = opcode[1];
-            uint16_t answer = (uint16_t) state->a - (uint16_t) data;
-            set_arith_flags(state, answer, SET_ALL_FLAGS);
+            uint8_t byte = opcode[1];
+            uint16_t answer = (uint16_t) state->a - (uint16_t) byte;
+            set_arith_flags(state, answer, 
+                SET_ALL_FLAGS ^ SET_CY_FLAG);
+            if (byte > state->a) {
+                state->cc.cy = 1;
+            }
             state->a = answer & 0xff;
             
             state->pc += 1;
@@ -1732,10 +1744,17 @@ void emulate_op(State8080 *state) {
             break;
         case 0xde:  // SBI D8
         {
-            uint16_t answer, a;
+            uint16_t answer, a, cy, byte;
             a = (uint16_t) state->a;
-            answer = a - opcode[1] - state->cc.cy;
-            set_arith_flags(state, answer, SET_ALL_FLAGS);
+            cy = (uint16_t) state->cc.cy;
+            byte = (uint16_t) opcode[1];
+            answer = a - byte - cy;
+            set_arith_flags(state, answer, 
+                SET_ALL_FLAGS ^ SET_CY_FLAG);
+            // set CY if subtracting larger num
+            if (byte + cy > a) {
+                state->cc.cy = 1;
+            }
             state->a = answer & 0xff;
             state->pc += 2;
         }
@@ -1842,11 +1861,8 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a ^ opcode[1];
-            set_arith_flags(state, answer,
-                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
-            // CY and AC flags are cleared
-            state->cc.cy = 0;
-            state->cc.ac = 0;
+            set_logic_flags(state, answer,
+                SET_ALL_FLAGS);
             state->a = answer & 0xff;
             state->pc += 1;
         }
@@ -1963,11 +1979,8 @@ void emulate_op(State8080 *state) {
         {
             uint16_t answer;
             answer = (uint16_t) state->a | opcode[1];
-            set_arith_flags(state, answer,
-                SET_ALL_FLAGS - SET_AC_FLAG - SET_CY_FLAG);
-            // CY and AC flags are cleared
-            state->cc.cy = 0;
-            state->cc.ac = 0;
+            set_logic_flags(state, answer,
+                SET_ALL_FLAGS);
             state->a = answer & 0xff;
             state->pc += 1;
         }
