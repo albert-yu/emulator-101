@@ -102,6 +102,9 @@ int load_and_run(char *filename) {
                 "and then press enter: "); 
             fgets(user_in, 20, stdin);
             instrs_to_advance = get_num_instrs(user_in);
+            if (instrs_to_advance == 0) {
+                continue;
+            }
         }
         printf("\n\n");
         emulate_op(&state);
