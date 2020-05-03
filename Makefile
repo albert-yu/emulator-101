@@ -10,7 +10,7 @@ OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CFLAGS += -Wall
 CPPFLAGS += -Iinclude
 
-.PHONY: all clean
+.PHONY: all clean debug
 
 all: $(EXE) $(LIBOUT)
 
@@ -18,12 +18,17 @@ $(EXE): $(OBJ)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(DEBUG) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJ): | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
+
+# debug: DEBUG = -DDEBUG
+debug: DEBUG = -g -O0
+
+debug: all
 
 clean:
 	$(RM) $(OBJ)
