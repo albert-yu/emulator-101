@@ -51,6 +51,10 @@ typedef struct state8080_t {
 
     // 1 if interrupt enabled
     uint8_t             int_enable;
+
+    // I/0
+    void (*input)(uint8_t);
+    uint8_t (*output)(uint8_t);
 } State8080;
 
 

@@ -1672,9 +1672,9 @@ void emulate_op(State8080 *state) {
             break;
         case 0xd3:  // OUT D8
         {
-            // TODO: implement along
-            // with IN D8
-
+            if (state->output) {
+                state->output(opcode[1]);
+            }
             // skip over data byte
             state->pc += 1;
         }
@@ -1729,6 +1729,9 @@ void emulate_op(State8080 *state) {
             break;
         case 0xdb:  // IN D8
         {
+            if (state->input) {
+                state->input(opcode[1]);
+            }
             // skip over data byte
             state->pc++;
         }
