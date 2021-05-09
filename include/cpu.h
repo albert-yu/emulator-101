@@ -1,5 +1,5 @@
-#ifndef CORE_H
-#define CORE_H
+#ifndef CPU_H
+#define CPU_H
 
 #include <inttypes.h>
 

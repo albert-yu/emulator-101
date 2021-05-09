@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core.h"
+#include "cpu.h"
 #include "emu.h"
 
 State8080* state_alloc(size_t mem_size) {

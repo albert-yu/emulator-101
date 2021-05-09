@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "core.h"
+#include "cpu.h"
 #include "disassembler.h"
 
 
