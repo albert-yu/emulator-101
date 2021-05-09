@@ -1,5 +1,6 @@
 # Emulating the Intel 8080
-http://emulator101.com/
+
+[Emulator 101](http://emulator101.com/)
 
 ## Build
 
@@ -27,6 +28,35 @@ make clean && make debug
 
 ## Notes
 
+### Memory Map
+
+```plain
+Space Invaders, (C) Taito 1978, Midway 1979    
+
+CPU: Intel 8080 @ 2MHz (CPU similar to the (newer) Zilog Z80)    
+
+Interrupts: $cf (RST 8) at the start of vblank, $d7 (RST $10) at the end of vblank.    
+
+Video: 256(x)*224(y) @ 60Hz, vertical monitor. Colours are simulated with a    
+plastic transparent overlay and a background picture.    
+Video hardware is very simple: 7168 bytes 1bpp bitmap (32 bytes per scanline).    
+
+Sound: SN76477 and samples.    
+
+Memory map:    
+ ROM    
+ $0000-$07ff:    invaders.h    
+ $0800-$0fff:    invaders.g    
+ $1000-$17ff:    invaders.f    
+ $1800-$1fff:    invaders.e    
+
+ RAM    
+ $2000-$23ff:    work RAM    
+ $2400-$3fff:    video RAM    
+
+ $4000-:     RAM mirror   
+```
+
 ### Parity
 
 Need to check what the Parity flag is actually for. It seems that [this reference JavaScript implementation](https://bluishcoder.co.nz/js8080/) sets the flag based on the _value_ of the result rather than the number of bits set.
@@ -48,11 +78,7 @@ From the manual:
 
 Another difference found is at instruction 42434, the js emulator processes an interrupt. I have not yet emulated this.
 
-### GDB
-
-Can't get gdb to work on my system for some reason. Just hangs on new thread even though I set breakpoints.
-
 ## References
+
 * [8080 opcodes](http://www.emulator101.com/reference/8080-by-opcode.html)
 * [8080 assembly programming manual](http://altairclone.com/downloads/manuals/8080%20Programmers%20Manual.pdf)
-
