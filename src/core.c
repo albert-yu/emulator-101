@@ -1730,7 +1730,7 @@ void emulate_op(State8080 *state) {
         case 0xdb:  // IN D8
         {
             if (state->input) {
-                state->input(opcode[1]);
+                state->a = state->input(opcode[1]);
             }
             // skip over data byte
             state->pc++;
