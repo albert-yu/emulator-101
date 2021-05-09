@@ -25,6 +25,10 @@ void state_free(State8080 *state) {
 
 #define MAX_STEPS 100000
 
+// 16-bit address has a maximum of
+// 2^15 addressable 8-bit chunks
+#define MAX_MEM (1 << 15)
+
 /*
  * Returns the number of instructions
  * to advance
@@ -71,10 +75,7 @@ int load_and_run(char *filename) {
     state.sp = 0;
     state.pc = 0;
     state.int_enable = 0;
-    // 16-bit address has a maximum of
-    // 2^15 addressable 8-bit chunks
-    size_t max_size = 1 << 15;
-    state.memory = (uint8_t*) malloc(max_size * sizeof(*state.memory));
+    state.memory = (uint8_t*) malloc(MAX_MEM * sizeof(*state.memory));
 
     state.cc = cc;
 
