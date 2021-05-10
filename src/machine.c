@@ -37,7 +37,7 @@
 	
 // 	Reading from port 3 returns said result.
 
-uint8_t machine_in(uint8_t port) {
+uint8_t machine_in(Machine *machine, uint8_t port) {
     uint8_t a = 0;
     switch(port) {
         case 3:
@@ -48,4 +48,25 @@ uint8_t machine_in(uint8_t port) {
         break;
     }    
     return a;  
+}
+
+
+void machine_out(Machine *machine, uint8_t port) {
+
+}
+
+
+void machine_step(Machine *machine) {
+    IO8080 *io = &machine->io;
+    emulate_op(&machine->cpu_state, io);
+    if (io_empty(*io)) {
+        return;
+    }
+
+    if (io->in) {
+        uint8_t a = machine_in(machine, io->port);
+        io->in_val = a;
+    } else if (io->out) {
+        machine_out(machine, io->port);
+    }
 }

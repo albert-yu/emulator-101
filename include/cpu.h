@@ -28,6 +28,26 @@ typedef struct condition_codes_t {
     uint8_t     pad:3;
 } ConditionCodes;
 
+
+/**
+ * I/O for 8080
+ */
+typedef struct io8080_t {
+    // port number
+    uint8_t port;
+
+    // value to be read IN by CPU
+    uint8_t in_val;
+
+    // flag for IN (1 if active)
+    uint8_t in:1;
+
+    // flag for OUT (1 if active)
+    uint8_t out:1;
+
+} IO8080;
+
+
 typedef struct state8080_t {
     // registers (7 of them)
     uint8_t             a;
@@ -51,10 +71,6 @@ typedef struct state8080_t {
 
     // 1 if interrupt enabled
     uint8_t             int_enable;
-
-    // I/0
-    uint8_t (*input)(uint8_t);
-    void (*output)(uint8_t);
 } State8080;
 
 
@@ -64,11 +80,23 @@ typedef struct state8080_t {
 void print_state(State8080 *state);
 
 
+/**
+ * Returns true if the given IO struct
+ * is empty (has default values)
+ */
+uint8_t io_empty(IO8080 io);
+
+
+/**
+ * Resets the IO object to default (empty) values
+ */
+void io_reset(IO8080 *io);
+
 /*
  * Given the state, emulates the opcode
  * pointed to by the program counter
  * and moves onto the next instruction
  */
-void emulate_op(State8080 *state);
+void emulate_op(State8080 *state, IO8080 *io);
 
 #endif

@@ -36,6 +36,12 @@ void print_state(State8080 *state) {
 }
 
 
+uint8_t io_empty(IO8080 io) {
+    uint8_t any_filled = io.in || io.out || io.port || io.in_val;
+    return !any_filled;
+}
+
+
 void unimplemented_instr(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
     printf("Error: Unimplemented instruction %x\n", opcode);
@@ -560,7 +566,21 @@ void set_hl(State8080 *state, uint8_t val) {
 }
 
 
-void emulate_op(State8080 *state) {
+void io_reset(IO8080 *io) {
+    io->in = 0;
+    io->out = 0;
+    io->port = 0;
+    io->in_val = 0;
+}
+
+
+void emulate_op(State8080 *state, IO8080 *io) {
+    if (io->in_val) {
+        state->a = io->in_val;
+    }
+
+    io_reset(io);
+
     unsigned char *opcode = &state->memory[state->pc];
     state->pc += 1;
 
@@ -1672,9 +1692,9 @@ void emulate_op(State8080 *state) {
             break;
         case 0xd3:  // OUT D8
         {
-            if (state->output) {
-                state->output(opcode[1]);
-            }
+            io->out = 1;
+            io->port = opcode[1];
+
             // skip over data byte
             state->pc += 1;
         }
@@ -1729,9 +1749,11 @@ void emulate_op(State8080 *state) {
             break;
         case 0xdb:  // IN D8
         {
-            if (state->input) {
-                state->a = state->input(opcode[1]);
-            }
+            // if (state->input) {
+            //     state->a = state->input(opcode[1]);
+            // }
+            io->in = 1;
+            io->port = opcode[1];
             // skip over data byte
             state->pc++;
         }

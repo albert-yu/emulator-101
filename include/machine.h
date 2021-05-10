@@ -2,11 +2,19 @@
 #define MACHINE_H
 
 #include <inttypes.h>
+#include "cpu.h"
 
 typedef struct machine_t {
     uint16_t shift_register;
+    State8080 cpu_state; 
+    IO8080 io;
 } Machine;
 
-uint8_t machine_in(uint8_t port);
+
+/**
+ * Executes one CPU instruction
+ * through the machine
+ */
+void machine_step(Machine* machine);
 
 #endif
