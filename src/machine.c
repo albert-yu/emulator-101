@@ -29,16 +29,9 @@
 /**
  * Handles data flow from machine to CPU
  */
-uint8_t machine_in(Machine *machine, uint8_t port) {
+uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
     uint8_t a = 0;
     switch (port) {
-        case 0:
-            // not used
-            break;
-        case 1:
-        {
-
-        }
         case 3:
         {
             uint16_t v = machine->shift_register;
@@ -55,7 +48,7 @@ uint8_t machine_in(Machine *machine, uint8_t port) {
 /**
  * Handles data flow from CPU to machine
  */
-void machine_out(Machine *machine, uint8_t port, uint8_t value) {
+void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
     switch (port) {
         case 2:
         {
@@ -86,9 +79,9 @@ void machine_step(Machine *machine) {
     }
 
     if (io->in) {
-        uint8_t a = machine_in(machine, io->port);
+        uint8_t a = machine_in_cpu(machine, io->port);
         io->value = a;
     } else if (io->out) {
-        machine_out(machine, io->port, io->value);
+        machine_out_cpu(machine, io->port, io->value);
     }
 }
