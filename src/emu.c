@@ -182,24 +182,12 @@ int load_and_run(char *filename) {
         .value = 0
     };
 
-    MachinePorts ports;
-    ports = (MachinePorts) {
-        .in0 = 0,
-        .in1 = 0,
-        .in2 = 0,
-        .in3 = 0,
-        .out2 = 0,
-        .out3 = 0,
-        .out5 = 0,
-        .out6 = 0
-    };
-
     Machine machine;
     machine = (Machine) {
         .cpu_state = &state,
         .shift_register = 0,
         .io = &io,
-        .ports = &ports
+        .ports = {0, 0, 0, 0, 0, 0, 0}
     };
 
     // get the file size and read it into a memory buffer
