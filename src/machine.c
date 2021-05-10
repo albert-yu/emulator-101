@@ -1,16 +1,5 @@
 #include "machine.h"
 
-// Port 1
-//  bit 0 = CREDIT (1 if deposit)
-//  bit 1 = 2P start (1 if pressed)
-//  bit 2 = 1P start (1 if pressed)
-//  bit 3 = Always 1
-//  bit 4 = 1P shot (1 if pressed)
-//  bit 5 = 1P left (1 if pressed)
-//  bit 6 = 1P right (1 if pressed)
-//  bit 7 = Not connected
-
-
 // 16 bit shift register:
 
 // 	f              0	bit
@@ -46,10 +35,16 @@ uint8_t machine_in(Machine *machine, uint8_t port) {
         case 0:
             // not used
             break;
+        case 1:
+        {
+
+        }
         case 3:
         {
             uint16_t v = machine->shift_register;
-            a = (v >> (8 - machine->shift_offset)) & 0xff;
+            uint8_t shift_offset = machine->ports.out2;
+            a = (v >> (8 - shift_offset)) & 0xff;
+            // machine->ports.in3 = a; // useless assignment
         }
             break;
     }
@@ -66,7 +61,7 @@ void machine_out(Machine *machine, uint8_t port, uint8_t value) {
         {
             // right-most three bits (0x7 = 0b111)
             uint8_t shift_offset = value & 0x7;
-            machine->shift_offset = shift_offset;
+            machine->ports.out2 = shift_offset;
         }
             break;
         case 4:
