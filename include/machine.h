@@ -6,7 +6,7 @@
 
 
 // ports 0-6
-#define PORT_COUNT 7
+#define __PORT_COUNT 7
 
 #define P2_START 1
 #define P1_START 2
@@ -22,7 +22,7 @@ typedef struct machine_t {
     uint16_t shift_register;
     State8080 *cpu_state; 
     IO8080 *io;
-    uint8_t ports [PORT_COUNT];
+    uint8_t ports [__PORT_COUNT];
 } Machine;
 
 
@@ -31,5 +31,21 @@ typedef struct machine_t {
  * through the machine
  */
 void machine_step(Machine* machine);
+
+/**
+ * Insert coin into machine
+ */
+void machine_insert_coin(Machine *machine);
+
+
+/**
+ * Handles key presses
+ */
+void machine_keydown(Machine *machine, char key);
+
+/**
+ * Handles key releases
+ */
+void machine_keyup(Machine *machine, char key);
 
 #endif

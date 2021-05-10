@@ -104,6 +104,7 @@ void machine_step(Machine *machine) {
 #define LEFT_BIT_UNSET ~LEFT_BIT_SET
 #define RIGHT_BIT_UNSET ~RIGHT_BIT_SET
 
+
 void machine_keydown(Machine *machine, char key) {
     switch (key) {
         case P2_START:
@@ -137,6 +138,7 @@ void machine_keydown(Machine *machine, char key) {
     }
 }
 
+
 void machine_keyup(Machine *machine, char key) {
     switch (key) {
         case P2_START:
@@ -167,6 +169,7 @@ void machine_keyup(Machine *machine, char key) {
             break;
     }
 }
+
 
 void machine_insert_coin(Machine *machine) {
     machine->ports[1] |= 1;
