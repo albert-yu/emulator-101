@@ -35,7 +35,7 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
         case 3:
         {
             uint16_t v = machine->shift_register;
-            uint8_t shift_offset = machine->ports.out2;
+            uint8_t shift_offset = machine->ports->out2;
             a = (v >> (8 - shift_offset)) & 0xff;
             // machine->ports.in3 = a; // useless assignment
         }
@@ -54,7 +54,7 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
         {
             // right-most three bits (0x7 = 0b111)
             uint8_t shift_offset = value & 0x7;
-            machine->ports.out2 = shift_offset;
+            machine->ports->out2 = shift_offset;
         }
             break;
         case 4:
@@ -72,8 +72,8 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
 
 
 void machine_step(Machine *machine) {
-    IO8080 *io = &machine->io;
-    emulate_op(&machine->cpu_state, io);
+    IO8080 *io = machine->io;
+    emulate_op(machine->cpu_state, io);
     if (io_empty(*io)) {
         return;
     }

@@ -69,9 +69,9 @@ typedef struct machine_ports_t {
 
 typedef struct machine_t {
     uint16_t shift_register;
-    State8080 cpu_state; 
-    IO8080 io;
-    MachinePorts ports;
+    State8080 *cpu_state; 
+    IO8080 *io;
+    MachinePorts *ports;
 } Machine;
 
 
