@@ -37,22 +37,49 @@
 	
 // 	Reading from port 3 returns said result.
 
+/**
+ * Handles data flow from machine to CPU
+ */
 uint8_t machine_in(Machine *machine, uint8_t port) {
     uint8_t a = 0;
-    switch(port) {
+    switch (port) {
+        case 0:
+            // not used
+            break;
         case 3:
         {
-            // uint16_t v = (shift1<<8) | shift0;
-            // a = ((v >> (8-shift_offset)) & 0xff);
+            uint16_t v = machine->shift_register;
+            a = (v >> (8 - machine->shift_offset)) & 0xff;
         }
-        break;
-    }    
-    return a;  
+            break;
+    }
+    return a;
 }
 
 
-void machine_out(Machine *machine, uint8_t port) {
+/**
+ * Handles data flow from CPU to machine
+ */
+void machine_out(Machine *machine, uint8_t port, uint8_t value) {
+    switch (port) {
+        case 2:
+        {
+            // right-most three bits (0x7 = 0b111)
+            uint8_t shift_offset = value & 0x7;
+            machine->shift_offset = shift_offset;
+        }
+            break;
+        case 4:
+        {
+            uint16_t curr_val = machine->shift_register;
 
+            // shift the right 8 bits to the right
+            // by 8, and put value as left 8 bits
+            uint16_t new_val = (value << 8) | (curr_val >> 8);
+            machine->shift_register = new_val;
+        }
+            break;
+    }
 }
 
 
@@ -67,6 +94,6 @@ void machine_step(Machine *machine) {
         uint8_t a = machine_in(machine, io->port);
         io->value = a;
     } else if (io->out) {
-        machine_out(machine, io->port);
+        machine_out(machine, io->port, io->value);
     }
 }

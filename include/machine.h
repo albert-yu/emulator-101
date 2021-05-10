@@ -6,6 +6,7 @@
 
 typedef struct machine_t {
     uint16_t shift_register;
+    uint8_t shift_offset;
     State8080 cpu_state; 
     IO8080 io;
 } Machine;
