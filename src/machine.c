@@ -86,16 +86,88 @@ void machine_step(Machine *machine) {
     }
 }
 
+#define P2_START_BIT_SET (1 << P2_START)
+#define P1_START_BIT_SET (1 << P1_START)
 
-#define LEFT 1
-#define RIGHT 2
-#define UP 3
-#define DOWN 4
+// fire is bit 4 for both player 1 and 2
+#define FIRE_BIT_SET (1 << P1_FIRE)
+
+// joy left is bit 5 for both player 1 and 2
+#define LEFT_BIT_SET (1 << P1_JOY_LEFT)
+
+// joy right is bit 6 for both player 1 and 2
+#define RIGHT_BIT_SET (1 << P1_JOY_RIGHT)
+
+#define P2_START_BIT_UNSET ~P2_START_BIT_SET
+#define P1_START_BIT_UNSET ~P1_START_BIT_SET
+#define FIRE_BIT_UNSET ~FIRE_BIT_SET
+#define LEFT_BIT_UNSET ~LEFT_BIT_SET
+#define RIGHT_BIT_UNSET ~RIGHT_BIT_SET
 
 void machine_keydown(Machine *machine, char key) {
     switch (key) {
-        case LEFT: {
-        }
+        case P2_START:
+            machine->ports[1] |= P2_START_BIT_SET;
+            break;
+        case P1_START:
+            machine->ports[1] |= P1_START_BIT_SET;
+            break;
+        case P1_FIRE:
+            machine->ports[1] |= FIRE_BIT_SET;
+            break;
+        case P1_JOY_LEFT: 
+            // set bit 5 of port 1
+            machine->ports[1] |= LEFT_BIT_SET;
+            break;
+        case P1_JOY_RIGHT:
+            // set bit 6 of port 1
+            machine->ports[1] |= RIGHT_BIT_SET;
+            break;
+        case P2_FIRE:
+            machine->ports[2] |= FIRE_BIT_SET;
+            break;
+        case P2_JOY_LEFT: 
+            // set bit 5 of port 1
+            machine->ports[2] |= LEFT_BIT_SET;
+            break;
+        case P2_JOY_RIGHT:
+            // set bit 6 of port 1
+            machine->ports[2] |= RIGHT_BIT_SET;
             break;
     }
+}
+
+void machine_keyup(Machine *machine, char key) {
+    switch (key) {
+        case P2_START:
+            machine->ports[1] &= P2_START_BIT_UNSET;
+            break;
+        case P1_START:
+            machine->ports[1] &= P1_START_BIT_UNSET;
+            break;
+        case P1_FIRE:
+            machine->ports[1] &= FIRE_BIT_UNSET;
+            break;
+        case P1_JOY_LEFT: 
+            machine->ports[1] &= LEFT_BIT_UNSET;
+            break;
+        case P1_JOY_RIGHT:
+            machine->ports[1] &= RIGHT_BIT_UNSET;
+            break;
+        case P2_FIRE:
+            machine->ports[2] &= FIRE_BIT_UNSET;
+            break;
+        case P2_JOY_LEFT: 
+            // set bit 5 of port 1
+            machine->ports[2] &= LEFT_BIT_UNSET;
+            break;
+        case P2_JOY_RIGHT:
+            // set bit 6 of port 1
+            machine->ports[2] &= RIGHT_BIT_UNSET;
+            break;
+    }
+}
+
+void machine_insert_coin(Machine *machine) {
+    machine->ports[1] |= 1;
 }
