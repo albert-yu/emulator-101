@@ -35,6 +35,9 @@ typedef struct machine_t {
     // machine's ports
     uint8_t ports [__PORT_COUNT];
 
+    // time stamp of last time
+    timestamp last_ts;
+
     // time stamp of next interrupt
     timestamp next_int;
 

@@ -1,6 +1,8 @@
 #include <time.h>
 #include "machine.h"
 
+#define EPSILON 1e-9
+
 // 16 bit shift register:
 
 // 	f              0	bit
@@ -73,15 +75,19 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
 
 
 /**
- * Get UNIX timestamp in milliseconds
+ * Get UNIX timestamp in microseconds
  * as a float
  */
-timestamp ts_utc() {
+timestamp ts_utc_micro() {
     struct timespec time;
     // gettimeofday(&time, NULL);
     timespec_get(&time, TIME_UTC);
-    return ((double)time.tv_sec * 1e6) + ((double) (time.tv_nsec / 1000));
+    return ((double)time.tv_sec * 1e6) + ((double) time.tv_nsec) / 1000.0;
 }
+
+
+#define FPS (1.0 / 60.0)
+#define INTERVAL_MICROSEC (FPS * 1e6)
 
 
 void machine_step(Machine *machine) {
@@ -96,6 +102,13 @@ void machine_step(Machine *machine) {
         io->value = a;
     } else if (io->out) {
         machine_out_cpu(machine, io->port, io->value);
+    }
+
+    timestamp now = ts_utc_micro();
+    if (machine->last_ts < EPSILON) {
+        machine->last_ts = now;
+        machine->next_int = machine->last_ts + INTERVAL_MICROSEC;
+        machine->int_type = 1;
     }
 }
 
