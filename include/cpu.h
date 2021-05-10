@@ -105,4 +105,10 @@ void io_reset(IO8080 *io);
  */
 void emulate_op(State8080 *state, IO8080 *io);
 
+
+/**
+ * Generates an interrupt
+ */
+void interrupt(State8080 *state, int interrupt_num);
+
 #endif

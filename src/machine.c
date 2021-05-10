@@ -1,3 +1,4 @@
+#include <time.h>
 #include "machine.h"
 
 // 16 bit shift register:
@@ -68,6 +69,18 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
         }
             break;
     }
+}
+
+
+/**
+ * Get UNIX timestamp in milliseconds
+ * as a float
+ */
+timestamp ts_utc() {
+    struct timespec time;
+    // gettimeofday(&time, NULL);
+    timespec_get(&time, TIME_UTC);
+    return ((double)time.tv_sec * 1e6) + ((double) (time.tv_nsec / 1000));
 }
 
 

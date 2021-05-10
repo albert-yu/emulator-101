@@ -18,11 +18,28 @@
 #define P2_JOY_LEFT (P1_JOY_LEFT * 2)
 #define P2_JOY_RIGHT (P1_JOY_RIGHT * 2)
 
+
+// type alias for time stamp
+typedef double timestamp;
+
 typedef struct machine_t {
+    // special hardware for shifts
     uint16_t shift_register;
+
+    // CPU
     State8080 *cpu_state; 
+
+    // I/O
     IO8080 *io;
+
+    // machine's ports
     uint8_t ports [__PORT_COUNT];
+
+    // time stamp of next interrupt
+    timestamp next_int;
+
+    // type of interrupt (1 or 2)
+    int int_type;
 } Machine;
 
 
@@ -42,6 +59,7 @@ void machine_insert_coin(Machine *machine);
  * Handles key presses
  */
 void machine_keydown(Machine *machine, char key);
+
 
 /**
  * Handles key releases

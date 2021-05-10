@@ -574,6 +574,16 @@ void io_reset(IO8080 *io) {
 }
 
 
+void interrupt(State8080 *state, int interrupt_num) {
+    uint8_t hi, lo;
+    lo = state->pc & 0xff;
+    hi = (state->pc >> 8) & 0xff;
+    push_x(state, hi, lo);
+
+    state->pc = 8 * interrupt_num;
+}
+
+
 void emulate_op(State8080 *state, IO8080 *io) {
     // read any in values
     if (io->in && io->value) {
