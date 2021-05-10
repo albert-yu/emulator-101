@@ -37,7 +37,7 @@ void print_state(State8080 *state) {
 
 
 uint8_t io_empty(IO8080 io) {
-    uint8_t any_filled = io.in || io.out || io.port || io.in_val;
+    uint8_t any_filled = io.in || io.out || io.port || io.value;
     return !any_filled;
 }
 
@@ -570,13 +570,14 @@ void io_reset(IO8080 *io) {
     io->in = 0;
     io->out = 0;
     io->port = 0;
-    io->in_val = 0;
+    io->value = 0;
 }
 
 
 void emulate_op(State8080 *state, IO8080 *io) {
-    if (io->in_val) {
-        state->a = io->in_val;
+    // read any in values
+    if (io->in && io->value) {
+        state->a = io->value;
     }
 
     io_reset(io);
@@ -1694,6 +1695,7 @@ void emulate_op(State8080 *state, IO8080 *io) {
         {
             io->out = 1;
             io->port = opcode[1];
+            io->value = state->a;
 
             // skip over data byte
             state->pc += 1;
