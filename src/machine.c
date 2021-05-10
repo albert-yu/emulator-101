@@ -65,7 +65,7 @@ void machine_step(Machine *machine) {
 
     if (io->in) {
         uint8_t a = machine_in(machine, io->port);
-        io->in_val = a;
+        io->value = a;
     } else if (io->out) {
         machine_out(machine, io->port);
     }

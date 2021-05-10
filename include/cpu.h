@@ -30,7 +30,14 @@ typedef struct condition_codes_t {
 
 
 /**
- * I/O for 8080
+ * External I/O interface for 8080.
+ * 
+ * Whenever an IN or OUT instruction is executed,
+ * the `in` or `out` flag is set to 1. If it's
+ * an OUT instruction, the machine should set the
+ * value of the port to `value`. If it's an IN
+ * instruction, the machine should set the value
+ * of its port to `value`.
  */
 typedef struct io8080_t {
     // port number
@@ -44,7 +51,6 @@ typedef struct io8080_t {
 
     // flag for OUT (1 if active)
     uint8_t out:1;
-
 } IO8080;
 
 
