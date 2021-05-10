@@ -54,7 +54,7 @@ typedef struct state8080_t {
 
     // I/0
     uint8_t (*input)(uint8_t);
-    uint8_t (*output)(uint8_t);
+    void (*output)(uint8_t);
 } State8080;
 
 
