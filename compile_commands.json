@@ -1,0 +1,67 @@
+[
+ {
+  "directory": "/Users/albert/Projects/emulator-101",
+  "arguments": [
+   "cc",
+   "-Iinclude",
+   "-Wall",
+   "-c",
+   "src/cpu.c",
+   "-o",
+   "obj/cpu.o"
+  ],
+  "file": "src/cpu.c"
+ },
+ {
+  "directory": "/Users/albert/Projects/emulator-101",
+  "arguments": [
+   "cc",
+   "-Iinclude",
+   "-Wall",
+   "-c",
+   "src/disassembler.c",
+   "-o",
+   "obj/disassembler.o"
+  ],
+  "file": "src/disassembler.c"
+ },
+ {
+  "directory": "/Users/albert/Projects/emulator-101",
+  "arguments": [
+   "cc",
+   "-Iinclude",
+   "-Wall",
+   "-c",
+   "src/emu.c",
+   "-o",
+   "obj/emu.o"
+  ],
+  "file": "src/emu.c"
+ },
+ {
+  "directory": "/Users/albert/Projects/emulator-101",
+  "arguments": [
+   "cc",
+   "-Iinclude",
+   "-Wall",
+   "-c",
+   "src/machine.c",
+   "-o",
+   "obj/machine.o"
+  ],
+  "file": "src/machine.c"
+ },
+ {
+  "directory": "/Users/albert/Projects/emulator-101",
+  "arguments": [
+   "cc",
+   "-Iinclude",
+   "-Wall",
+   "-c",
+   "src/main.c",
+   "-o",
+   "obj/main.o"
+  ],
+  "file": "src/main.c"
+ }
+]

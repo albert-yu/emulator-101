@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "disassembler.h"
 #include "emu.h"
 
 int main(int argc, char **argv) {
