@@ -110,6 +110,14 @@ void machine_step(Machine *machine) {
         machine->next_int = machine->last_ts + INTERVAL_MICROSEC;
         machine->int_type = 1;
     }
+
+    if (machine->cpu_state->int_enable && now > machine->next_int) {
+        interrupt(machine->cpu_state, machine->int_type);
+
+        // trick to flip between 1 and 2
+        machine->int_type = 3 - machine->int_type;
+        machine->next_int = now + INTERVAL_MICROSEC / 2.0;
+    }
 }
 
 #define P2_START_BIT_SET (1 << P2_START)
