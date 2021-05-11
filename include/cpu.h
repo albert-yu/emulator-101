@@ -111,4 +111,9 @@ int emulate_op(State8080 *state, IO8080 *io);
  */
 void interrupt(State8080 *state, int interrupt_num);
 
+/**
+ * Returns the framebuffer from memory
+ */
+void* framebuffer(State8080 *state);
+
 #endif

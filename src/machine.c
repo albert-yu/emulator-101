@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <errno.h>
+#include "cpu.h"
 #include "machine.h"
 
 #define EPSILON 1e-9
@@ -169,6 +170,12 @@ int sleep_msec(long microseconds) {
 void machine_run(Machine *machine, long sleep_microseconds) {
     machine_do_sync(machine);
     sleep_msec(sleep_microseconds);
+}
+
+
+void* machine_framebuffer(Machine *machine) {
+    // return (void*) &machine->cpu_state->memory[]
+    return framebuffer(machine->cpu_state);
 }
 
 

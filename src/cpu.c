@@ -30,6 +30,19 @@ unsigned char cycles[] = {
 };
 
 
+// TODO: protect memory from writes to ROM
+#define ROM_START 0
+#define ROM_END 0x1fff
+#define RAM_START (ROM_END + 1)
+#define RAM_END 0x23ff
+#define FRAMEBUFFER_START 0x2400
+
+
+void* framebuffer(State8080 *state) {
+    return (void*) &state->memory[FRAMEBUFFER_START];
+}
+
+
 /*
  * Print out the state for debugging
  */

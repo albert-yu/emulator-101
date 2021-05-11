@@ -70,10 +70,17 @@ void machine_keydown(Machine *machine, char key);
  */
 void machine_keyup(Machine *machine, char key);
 
+
 /**
  * Runs the machine and delays execution for the specified
  * number of micro seconds
  */
 void machine_run(Machine *machine, long sleep_microseconds);
+
+
+/**
+ * Returns the frame buffer
+ */
+void* machine_framebuffer(Machine *machine);
 
 #endif
