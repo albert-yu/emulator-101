@@ -94,13 +94,16 @@ timestamp ts_utc_micro() {
 #define INTERVAL_MICROSEC (FPS * 1e6)
 
 
-void machine_step(Machine *machine) {
+int machine_step(Machine *machine) {
     IO8080 *io = machine->io;
-    emulate_op(machine->cpu_state, io);
+    int cycles = emulate_op(machine->cpu_state, io);
     if (io_empty(*io)) {
-        return;
+        return cycles;
     }
 
+    // NOTE: according to the guide,
+    // the cycle count is 3 instead 
+    // of 10 for IN and OUT. Why?
     if (io->in) {
         uint8_t a = machine_in_cpu(machine, io->port);
         io->value = a;
@@ -108,6 +111,11 @@ void machine_step(Machine *machine) {
         machine_out_cpu(machine, io->port, io->value);
     }
 
+    return cycles;
+}
+
+
+void machine_exec(Machine *machine) {
     timestamp now = ts_utc_micro();
     if (machine->last_ts < EPSILON) {
         machine->last_ts = now;
@@ -122,7 +130,20 @@ void machine_step(Machine *machine) {
         machine->int_type = 3 - machine->int_type;
         machine->next_int = now + INTERVAL_MICROSEC / 2.0;
     }
+
+    timestamp since_last = now - machine->last_ts;
+
+    // 2 MHz clock speed, so 2 cycles per microsecond
+    int cycles_to_catch_up = 2 * since_last;
+
+    int cycles = 0;
+    while (cycles_to_catch_up > cycles) {
+        cycles += machine_step(machine);
+    }
+
+    machine->last_ts = now;
 }
+
 
 #define P2_START_BIT_SET (1 << P2_START)
 #define P1_START_BIT_SET (1 << P1_START)

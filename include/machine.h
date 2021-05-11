@@ -48,9 +48,10 @@ typedef struct machine_t {
 
 /**
  * Executes one CPU instruction
- * through the machine
+ * through the machine and returns
+ * the number of cycles
  */
-void machine_step(Machine* machine);
+int machine_step(Machine* machine);
 
 /**
  * Insert coin into machine
