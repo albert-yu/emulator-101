@@ -1,4 +1,6 @@
+#include <stdint.h>
 #include <time.h>
+#include <errno.h>
 #include "machine.h"
 
 #define EPSILON 1e-9
@@ -115,7 +117,11 @@ int machine_step(Machine *machine) {
 }
 
 
-void machine_exec(Machine *machine) {
+/**
+ * Time-aware machine execution
+ * (synchronized at 2 MHz)
+ */
+void machine_do_sync(Machine *machine) {
     timestamp now = ts_utc_micro();
     if (machine->last_ts < EPSILON) {
         machine->last_ts = now;
@@ -142,6 +148,27 @@ void machine_exec(Machine *machine) {
     }
 
     machine->last_ts = now;
+}
+
+
+int sleep_msec(long microseconds) {
+    long nsec = (microseconds % 1000000) * 1000;
+    long seconds = microseconds / 1e6;
+    struct timespec ts = (struct timespec) {
+        .tv_sec = seconds,
+        .tv_nsec = nsec
+    };
+    int res;
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+    return res;
+}
+
+
+void machine_run(Machine *machine, long sleep_microseconds) {
+    machine_do_sync(machine);
+    sleep_msec(sleep_microseconds);
 }
 
 
