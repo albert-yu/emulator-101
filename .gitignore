@@ -58,3 +58,4 @@ intel8080
 invaders/
 
 .cache/
+compile_commands.json
