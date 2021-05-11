@@ -4,6 +4,31 @@
 #include "cpu.h"
 #include "disassembler.h"
 
+/**
+ * CPU cycle lookup table
+ */
+unsigned char cycles[] = {
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x00..0x0f
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x10..0x1f
+    4, 10, 16, 5, 5, 5, 7, 4, 4, 10, 16, 5, 5, 5, 7, 4, //etc
+    4, 10, 13, 5, 10, 10, 10, 4, 4, 10, 13, 5, 5, 5, 7, 4,
+
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5, //0x40..0x4f
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+    7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 7, 5,
+
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4, //0x80..8x4f
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+
+    11, 10, 10, 10, 17, 11, 7, 11, 11, 10, 10, 10, 10, 17, 7, 11, //0xc0..0xcf
+    11, 10, 10, 10, 17, 11, 7, 11, 11, 10, 10, 10, 10, 17, 7, 11, 
+    11, 10, 10, 18, 17, 11, 7, 11, 11, 5, 10, 5, 17, 17, 7, 11, 
+    11, 10, 10, 4, 17, 11, 7, 11, 11, 5, 10, 4, 17, 17, 7, 11, 
+};
+
 
 /*
  * Print out the state for debugging
@@ -584,7 +609,7 @@ void interrupt(State8080 *state, int interrupt_num) {
 }
 
 
-void emulate_op(State8080 *state, IO8080 *io) {
+int emulate_op(State8080 *state, IO8080 *io) {
     // read any in values
     if (io->in && io->value) {
         state->a = io->value;
@@ -598,7 +623,7 @@ void emulate_op(State8080 *state, IO8080 *io) {
     // print out current instruction
     disassemble8080op(state->memory, state->pc);
 
-    switch(*opcode) {
+    switch (*opcode) {
         case 0x00:  // NOP
             break;
         case 0x01:  // LXI B,D16
@@ -2076,5 +2101,6 @@ void emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
     }
-}
 
+    return cycles[*opcode];
+}

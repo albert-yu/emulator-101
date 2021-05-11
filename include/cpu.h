@@ -103,7 +103,7 @@ void io_reset(IO8080 *io);
  * pointed to by the program counter
  * and moves onto the next instruction
  */
-void emulate_op(State8080 *state, IO8080 *io);
+int emulate_op(State8080 *state, IO8080 *io);
 
 
 /**
