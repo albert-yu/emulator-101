@@ -18,6 +18,9 @@
 #define P2_JOY_LEFT (P1_JOY_LEFT * 2)
 #define P2_JOY_RIGHT (P1_JOY_RIGHT * 2)
 
+#define FRAME_ROWS 256
+#define FRAME_COLS 224
+
 
 // type alias for time stamp
 typedef double timestamp;
