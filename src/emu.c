@@ -42,8 +42,8 @@ size_t get_num_instrs(char *input) {
     // alphanumeric character or only 
     // contains alphanumeric characters,
     // 0 is returned.
-    size_t steps = (size_t) atoi(input); 
-    return steps < MAX_STEPS ? steps : MAX_STEPS; 
+    size_t steps = (size_t) atoi(input);
+    return steps < MAX_STEPS ? steps : MAX_STEPS;
 }
 
 
@@ -112,7 +112,7 @@ int load_and_run(char *filename) {
     size_t instrs_to_advance = 0;
     while (state.pc < fsize) {
         printf("Emulator state:\n");
-        print_state(&state);
+        cpu_print_state(&state);
         printf("Instructions executed: %zu\n", instr_count);
 
         if (instrs_to_advance == 0) {
@@ -133,7 +133,7 @@ int load_and_run(char *filename) {
         instrs_to_advance--;
     }
     printf("LOOP EXITED.\n");
-    print_state(&state);
+    cpu_print_state(&state);
     printf("fsize: 0x%x\n", fsize);
 
     free(state.memory);

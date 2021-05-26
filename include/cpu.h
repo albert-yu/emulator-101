@@ -83,37 +83,37 @@ typedef struct state8080_t {
 /*
  * Prints out the current state
  */
-void print_state(State8080 *state);
+void cpu_print_state(State8080 *state);
 
 
 /**
  * Returns true if the given IO struct
  * is empty (has default values)
  */
-uint8_t io_empty(IO8080 io);
+uint8_t cpu_io_empty(IO8080 io);
 
 
 /**
  * Resets the IO object to default (empty) values
  */
-void io_reset(IO8080 *io);
+void cpu_io_reset(IO8080 *io);
 
 /*
  * Given the state, emulates the opcode
  * pointed to by the program counter
  * and moves onto the next instruction
  */
-int emulate_op(State8080 *state, IO8080 *io);
+int cpu_emulate_op(State8080 *state, IO8080 *io);
 
 
 /**
  * Generates an interrupt
  */
-void interrupt(State8080 *state, int interrupt_num);
+void cpu_interrupt(State8080 *state, int interrupt_num);
 
 /**
  * Returns the framebuffer from memory
  */
-void* framebuffer(State8080 *state);
+void* cpu_framebuffer(State8080 *state);
 
 #endif

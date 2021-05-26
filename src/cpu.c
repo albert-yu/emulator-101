@@ -38,7 +38,7 @@ unsigned char cycles[] = {
 #define FRAMEBUFFER_START 0x2400
 
 
-void* framebuffer(State8080 *state) {
+void* cpu_framebuffer(State8080 *state) {
     return (void*) &state->memory[FRAMEBUFFER_START];
 }
 
@@ -46,7 +46,7 @@ void* framebuffer(State8080 *state) {
 /*
  * Print out the state for debugging
  */
-void print_state(State8080 *state) {
+void cpu_print_state(State8080 *state) {
     printf("\n");
     printf("----------------------------------\n");
     printf(" A    B    C    D    E    H    L  \n");
@@ -74,7 +74,7 @@ void print_state(State8080 *state) {
 }
 
 
-uint8_t io_empty(IO8080 io) {
+uint8_t cpu_io_empty(IO8080 io) {
     uint8_t any_filled = io.in || io.out || io.port || io.value;
     return !any_filled;
 }
@@ -604,7 +604,7 @@ void set_hl(State8080 *state, uint8_t val) {
 }
 
 
-void io_reset(IO8080 *io) {
+void cpu_io_reset(IO8080 *io) {
     io->in = 0;
     io->out = 0;
     io->port = 0;
@@ -612,7 +612,7 @@ void io_reset(IO8080 *io) {
 }
 
 
-void interrupt(State8080 *state, int interrupt_num) {
+void cpu_interrupt(State8080 *state, int interrupt_num) {
     uint8_t hi, lo;
     lo = state->pc & 0xff;
     hi = (state->pc >> 8) & 0xff;
@@ -622,13 +622,13 @@ void interrupt(State8080 *state, int interrupt_num) {
 }
 
 
-int emulate_op(State8080 *state, IO8080 *io) {
+int cpu_emulate_op(State8080 *state, IO8080 *io) {
     // read any in values
     if (io->in && io->value) {
         state->a = io->value;
     }
 
-    io_reset(io);
+    cpu_io_reset(io);
 
     unsigned char *opcode = &state->memory[state->pc];
     state->pc += 1;

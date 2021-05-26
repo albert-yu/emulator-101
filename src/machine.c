@@ -99,8 +99,8 @@ timestamp ts_utc_micro() {
 
 int machine_step(Machine *machine) {
     IO8080 *io = machine->io;
-    int cycles = emulate_op(machine->cpu_state, io);
-    if (io_empty(*io)) {
+    int cycles = cpu_emulate_op(machine->cpu_state, io);
+    if (cpu_io_empty(*io)) {
         return cycles;
     }
 
@@ -131,7 +131,7 @@ void machine_do_sync(Machine *machine) {
     }
 
     if (machine->cpu_state->int_enable && now > machine->next_int) {
-        interrupt(machine->cpu_state, machine->int_type);
+        cpu_interrupt(machine->cpu_state, machine->int_type);
 
         // trick to flip between 1 and 2
         machine->int_type = 3 - machine->int_type;
@@ -175,7 +175,7 @@ void machine_run(Machine *machine, long sleep_microseconds) {
 
 void* machine_framebuffer(Machine *machine) {
     // return (void*) &machine->cpu_state->memory[]
-    return framebuffer(machine->cpu_state);
+    return cpu_framebuffer(machine->cpu_state);
 }
 
 
