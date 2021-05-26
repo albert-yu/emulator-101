@@ -93,8 +93,8 @@ timestamp ts_utc_micro() {
 }
 
 
-#define FPS (1.0 / 60.0)
-#define INTERVAL_MICROSEC (FPS * 1e6)
+#define INV_FPS (1.0 / 60.0)
+#define INTERVAL_MICROSEC (INV_FPS * 1e6)
 
 
 int machine_step(Machine *machine) {
