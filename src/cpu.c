@@ -634,7 +634,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
     state->pc += 1;
 
     // print out current instruction
-    disassemble8080op(state->memory, state->pc);
+    // disassemble8080op(state->memory, state->pc);
 
     switch (*opcode) {
         case 0x00:  // NOP

@@ -1,7 +1,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "machine.h"
 
-void run_loop();
+void loop_machine(Machine *machine);
 
 #endif

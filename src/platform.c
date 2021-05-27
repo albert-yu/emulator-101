@@ -1,9 +1,76 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
+#include "machine.h"
 #include "platform.h"
 
 #define WINDOW_WIDTH 600
+
+#define BLACK_R 0
+#define BLACK_G 0
+#define BLACK_B 0
+
+#define WHITE_R 255
+#define WHITE_G 255
+#define WHITE_B 255
+
+#define ALPHA 255
+#define MICRO_SECS 16000
+
+
+void loop_machine(Machine *machine) {
+    SDL_Event event;
+    SDL_Renderer *renderer;
+    SDL_Window *window;
+    int i;
+    int j;
+
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_CreateWindowAndRenderer(FRAME_ROWS, FRAME_COLS, 0, &window, &renderer);
+    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    // for (i = 0; i < WINDOW_WIDTH; ++i)
+    //     SDL_RenderDrawPoint(renderer, i, i);
+    while (1) {
+        if (SDL_PollEvent(&event) && event.type == SDL_QUIT) {
+            break;
+        }
+        // update state
+        machine_run(machine, MICRO_SECS);
+
+        // get frame buffer
+        uint8_t *framebuf = machine_framebuffer(machine);
+
+        // render pixels
+        SDL_SetRenderDrawColor(renderer, BLACK_R, BLACK_G, BLACK_B, ALPHA);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, WHITE_R, WHITE_G, WHITE_B, ALPHA);
+
+        uint8_t pixels, mask, value;
+
+        for (i = 0; i < FRAME_COLS; i++) {
+            for (j = 0; j < FRAME_ROWS; j++) {
+                // 8 pixels per byte
+                int offset = i * FRAME_COLS + j;
+                pixels = framebuf[offset];
+
+                for (uint8_t b = 0; b < 8; b++) {
+                    mask = 1 << b;
+                    value = mask & pixels; 
+                    if (!value) {
+                        continue;
+                    }
+                    SDL_RenderDrawPoint(renderer, i, j);
+                }
+            }
+        }
+
+        SDL_RenderPresent(renderer);
+    }
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
 
 
 void run_loop() {
