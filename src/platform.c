@@ -52,8 +52,8 @@ void loop_machine(Machine *machine) {
 
         uint8_t pixels, mask, value;
 
-        for (i = 0; i < ROWS; i++) {
-            for (j = 0; j < COLS; j++) {
+        for (j = 0; j < COLS; j++) {
+            for (i = 0; i < ROWS;) {
                 // 8 pixels per byte
                 int offset = (j * ROWS + i) / 8;
                 pixels = framebuf[offset];
@@ -61,10 +61,10 @@ void loop_machine(Machine *machine) {
                 for (uint8_t b = 0; b < 8; b++) {
                     mask = 1 << b;
                     value = mask & pixels; 
-                    if (!value) {
-                        continue;
+                    if (value) {
+                        SDL_RenderDrawPoint(renderer, i, j);
                     }
-                    SDL_RenderDrawPoint(renderer, i, j);
+                    i++;
                 }
             }
         }
