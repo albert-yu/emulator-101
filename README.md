@@ -4,6 +4,14 @@
 
 ## Build
 
+This depends on SDL2 for rendering graphics. So, on macOS with Homebrew:
+
+```bash
+brew install sdl2
+```
+
+Then, to build:
+
 ```bash
 make
 ```

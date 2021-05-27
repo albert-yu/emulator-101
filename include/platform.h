@@ -2,6 +2,6 @@
 #define PLATFORM_H
 
 
-void try_window();
+void run_loop();
 
 #endif

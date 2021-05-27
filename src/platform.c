@@ -6,7 +6,7 @@
 #define WINDOW_WIDTH 600
 
 
-void try_window() {
+void run_loop() {
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
