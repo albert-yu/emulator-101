@@ -10,7 +10,6 @@ OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CFLAGS += -Wall
 CPPFLAGS += -Iinclude
 
-CPPFLAGS += -I/usr/include/SDL2
 LDLIBS += -lSDL2
 
 .PHONY: all clean debug
