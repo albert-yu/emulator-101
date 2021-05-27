@@ -221,11 +221,11 @@ void machine_keydown(Machine *machine, char key) {
             machine->ports[2] |= FIRE_BIT_SET;
             break;
         case P2_JOY_LEFT: 
-            // set bit 5 of port 1
+            // set bit 5 of port 2
             machine->ports[2] |= LEFT_BIT_SET;
             break;
         case P2_JOY_RIGHT:
-            // set bit 6 of port 1
+            // set bit 6 of port 2
             machine->ports[2] |= RIGHT_BIT_SET;
             break;
     }
