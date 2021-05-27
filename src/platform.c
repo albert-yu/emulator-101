@@ -19,6 +19,10 @@
 #define MICRO_SECS 16000
 
 
+#define ROWS FRAME_COLS
+#define COLS FRAME_ROWS
+
+
 void loop_machine(Machine *machine) {
     SDL_Event event;
     SDL_Renderer *renderer;
@@ -27,7 +31,7 @@ void loop_machine(Machine *machine) {
     int j;
 
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_CreateWindowAndRenderer(FRAME_ROWS, FRAME_COLS, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(ROWS, COLS, 0, &window, &renderer);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // for (i = 0; i < WINDOW_WIDTH; ++i)
     //     SDL_RenderDrawPoint(renderer, i, i);
@@ -48,10 +52,10 @@ void loop_machine(Machine *machine) {
 
         uint8_t pixels, mask, value;
 
-        for (i = 0; i < FRAME_COLS; i++) {
-            for (j = 0; j < FRAME_ROWS; j++) {
+        for (i = 0; i < COLS; i++) {
+            for (j = 0; j < ROWS; j++) {
                 // 8 pixels per byte
-                int offset = i * FRAME_COLS + j;
+                int offset = (i * COLS + j) / 8;
                 pixels = framebuf[offset];
 
                 for (uint8_t b = 0; b < 8; b++) {
