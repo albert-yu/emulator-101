@@ -19,8 +19,8 @@
 #define MICRO_SECS 16000
 
 
-#define ROWS FRAME_COLS
-#define COLS FRAME_ROWS
+#define ROWS FRAME_ROWS
+#define COLS FRAME_COLS
 
 
 void loop_machine(Machine *machine) {
@@ -52,10 +52,10 @@ void loop_machine(Machine *machine) {
 
         uint8_t pixels, mask, value;
 
-        for (i = 0; i < COLS; i++) {
-            for (j = 0; j < ROWS; j++) {
+        for (i = 0; i < ROWS; i++) {
+            for (j = 0; j < COLS; j++) {
                 // 8 pixels per byte
-                int offset = (i * COLS + j) / 8;
+                int offset = (j * ROWS + i) / 8;
                 pixels = framebuf[offset];
 
                 for (uint8_t b = 0; b < 8; b++) {
