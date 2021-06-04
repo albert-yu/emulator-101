@@ -30,7 +30,7 @@ make clean && make debug
 
 ## Run
 
-Takes the folder container `invaders.h`, `invaders.g`, etc. as the first argument.
+For the first argument, takes the folder containing `invaders.h`, `invaders.g`, etc.
 
 ```bash
 ./intel8080 invaders
