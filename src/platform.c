@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
@@ -23,12 +24,38 @@
 #define COLS FRAME_COLS
 
 
+void render_bitmap(SDL_Renderer *renderer, uint8_t *framebuf) {
+    SDL_SetRenderDrawColor(renderer, BLACK_R, BLACK_G, BLACK_B, ALPHA);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, WHITE_R, WHITE_G, WHITE_B, ALPHA);
+
+    uint8_t pixels, mask, value;
+
+    for (int j = 0; j < COLS; j++) {
+        for (int i = 0; i < ROWS;) {
+            // 8 pixels per byte
+            int offset = (j * ROWS + i) / 8;
+            pixels = framebuf[offset];
+
+            for (uint8_t b = 0; b < 8; b++) {
+                mask = 1 << b;
+                value = mask & pixels; 
+                if (value) {
+                    SDL_RenderDrawPoint(renderer, i, j);
+                }
+                i++;
+            }
+        }
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
+
 void loop_machine(Machine *machine) {
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
-    int i;
-    int j;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(ROWS, COLS, 0, &window, &renderer);
@@ -46,30 +73,7 @@ void loop_machine(Machine *machine) {
         uint8_t *framebuf = machine_framebuffer(machine);
 
         // render pixels
-        SDL_SetRenderDrawColor(renderer, BLACK_R, BLACK_G, BLACK_B, ALPHA);
-        SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, WHITE_R, WHITE_G, WHITE_B, ALPHA);
-
-        uint8_t pixels, mask, value;
-
-        for (j = 0; j < COLS; j++) {
-            for (i = 0; i < ROWS;) {
-                // 8 pixels per byte
-                int offset = (j * ROWS + i) / 8;
-                pixels = framebuf[offset];
-
-                for (uint8_t b = 0; b < 8; b++) {
-                    mask = 1 << b;
-                    value = mask & pixels; 
-                    if (value) {
-                        SDL_RenderDrawPoint(renderer, i, j);
-                    }
-                    i++;
-                }
-            }
-        }
-
-        SDL_RenderPresent(renderer);
+        render_bitmap(renderer, framebuf);
     }
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
