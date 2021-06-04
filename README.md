@@ -30,8 +30,10 @@ make clean && make debug
 
 ## Run
 
+Takes the folder container `invaders.h`, `invaders.g`, etc. as the first argument.
+
 ```bash
-./intel8080 invaders/invaders
+./intel8080 invaders
 ```
 
 ## Notes
