@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -142,14 +143,65 @@ size_t get_num_instrs(char *input) {
 //     return 0;
 // }
 
-int load_and_run(char *filename) {
-    FILE *f = fopen(filename, "rb");
-    if (f == NULL)
-    {
-        printf("Error: couldn't open %s\n", filename);
+
+#define H_START 0x0000
+#define G_START 0x0800
+#define F_START 0x1000
+#define E_START 0x1800
+
+#define CHUNK_SIZE (G_START - H_START)
+
+
+void load_invaders_chunk(char *invaders_folder, char chunk, uint8_t *memory) {
+    // make full path
+    size_t folder_len = strlen(invaders_folder);
+    char *folder_path = calloc(folder_len + 16, sizeof(*folder_path));
+    sprintf(folder_path, "%s/invaders.%c", invaders_folder, chunk);
+
+    // load the file
+    FILE *f = fopen(folder_path, "rb");
+    if (f == NULL) {
+        printf("Error: couldn't open %s\n", folder_path);
         exit(1);
     }
 
+    // get the file size and read it into a memory buffer
+    fseek(f, 0L, SEEK_END);
+    int fsize = ftell(f);
+    if (fsize != CHUNK_SIZE) {
+        printf("WARNING: unexpected chunk size %d, expected %d\n", fsize, CHUNK_SIZE);
+    }
+    fseek(f, 0L, SEEK_SET);
+
+    int offset = 0;
+    switch (chunk) {
+        case 'h':
+            offset = H_START;
+            break;
+        case 'g':
+            offset = G_START;
+            break;
+        case 'f':
+            offset = F_START;
+            break;
+        case 'e':
+            offset = E_START;
+            break;
+    }
+    fread(memory + offset, fsize, 1, f);
+    fclose(f);
+}
+
+
+void load_invaders(char *invaders_folder, uint8_t *memory) {
+    load_invaders_chunk(invaders_folder, 'h', memory);
+    load_invaders_chunk(invaders_folder, 'g', memory);
+    load_invaders_chunk(invaders_folder, 'f', memory);
+    load_invaders_chunk(invaders_folder, 'e', memory);
+}
+
+
+int load_and_run(char *folder) {
     // declare ConditionCodes struct
     ConditionCodes cc;
     cc = (ConditionCodes) {
@@ -193,13 +245,7 @@ int load_and_run(char *filename) {
         .ports = {0, 0, 0, 0, 0, 0, 0}
     };
 
-    // get the file size and read it into a memory buffer
-    fseek(f, 0L, SEEK_END);
-    int fsize = ftell(f);
-    fseek(f, 0L, SEEK_SET);
-
-    fread(state.memory, fsize, 1, f);
-    fclose(f);
+    load_invaders(folder, state.memory);
 
     loop_machine(&machine);
 
