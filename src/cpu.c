@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -83,16 +84,29 @@ uint8_t cpu_io_empty(IO8080 io) {
 void unimplemented_instr(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
     printf("Error: Unimplemented instruction %x\n", opcode);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 
 void unused_opcode(State8080 *state) {
-    // uint8_t opcode = state->memory[state->pc];
-    // printf("Error: unused opcode 0x%x\n", opcode);
-    // printf("State at failure:\n");
-    // print_state(state);
-    // exit(1);
+    uint8_t opcode = state->memory[state->pc];
+    printf("Error: unused opcode 0x%x\n", opcode);
+    printf("State at failure:\n");
+    cpu_print_state(state);
+    exit(EXIT_FAILURE);
+}
+
+
+/**
+ * Writes to memory only if the offset is valid.
+ * Otherwise, exits the program with failure.
+ */
+void mem_write(State8080 *state, int offset, uint8_t value) {
+    if (offset >= ROM_START && offset <= ROM_END) {
+        printf("Fatal error: tried to write to ROM at address %d\n", offset);
+        exit(EXIT_FAILURE);
+    }
+    state->memory[offset] = value;
 }
 
 
