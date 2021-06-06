@@ -102,7 +102,7 @@ void unused_opcode(State8080 *state) {
  */
 void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
     if (offset >= ROM_START && offset <= ROM_END) {
-        printf("Fatal error: tried to write to ROM at address %d\n", offset);
+        printf("Fatal error: tried to write to ROM at address 0x%x\n", offset);
         exit(EXIT_FAILURE);
     }
     state->memory[offset] = value;
