@@ -17,7 +17,7 @@
 #define WHITE_B 255
 
 #define ALPHA 255
-#define MICRO_SECS 16000
+#define MICRO_SECS 10000
 
 
 #define ROWS FRAME_ROWS

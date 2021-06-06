@@ -31,7 +31,6 @@ unsigned char cycles[] = {
 };
 
 
-// TODO: protect memory from writes to ROM
 #define ROM_START 0
 #define ROM_END 0x1fff
 #define RAM_START (ROM_END + 1)
@@ -101,7 +100,7 @@ void unused_opcode(State8080 *state) {
  * Writes to memory only if the offset is valid.
  * Otherwise, exits the program with failure.
  */
-void mem_write(State8080 *state, int offset, uint8_t value) {
+void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
     if (offset >= ROM_START && offset <= ROM_END) {
         printf("Fatal error: tried to write to ROM at address %d\n", offset);
         exit(EXIT_FAILURE);
@@ -285,6 +284,17 @@ void jmp_cond(State8080 *state, uint16_t adr, uint8_t cond) {
 
 
 /*
+ * Pushes contents onto the stack.
+ */
+void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
+    uint16_t sp_addr = state->sp;
+    mem_write(state, sp_addr - 1, hi);
+    mem_write(state, sp_addr - 2, lo);
+    state->sp -= 2;
+}
+
+
+/*
  * Call specified target address (need for RST)
  */
 void call_adr(State8080 *state, uint16_t adr) {
@@ -302,11 +312,7 @@ void call_adr(State8080 *state, uint16_t adr) {
     lo_addr = ret_addr & 0xff;
 
     // push return address onto the stack
-    state->memory[sp_addr - 1] = hi_addr; 
-    state->memory[sp_addr - 2] = lo_addr;
-
-    // decrement stack pointer
-    state->sp -= 2;
+    push_x(state, hi_addr, lo_addr);
 
     // set program counter to
     // target address
@@ -359,17 +365,6 @@ void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
 
     // increment stack pointer
     state->sp += 2;
-}
-
-
-/*
- * Pushes contents onto the stack.
- */
-void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
-    uint16_t sp_addr = state->sp;
-    state->memory[sp_addr - 1] = hi;
-    state->memory[sp_addr - 2] = lo;
-    state->sp -= 2;
 }
 
 
@@ -614,7 +609,7 @@ uint8_t read_hl(State8080 *state) {
  */
 void set_hl(State8080 *state, uint8_t val) {
     uint16_t offset = read_hl_addr(state);
-    state->memory[offset] = val;
+    mem_write(state, offset, val);
 }
 
 
@@ -665,7 +660,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // set the value of memory with address formed by
             // register pair BC to A
             uint16_t offset = makeword(state->b, state->c);
-            state->memory[offset] = state->a;
+            mem_write(state, offset, state->a);
         }
             break;
         case 0x03:   // INX B
@@ -764,7 +759,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0x12:  // STAX D: (DE) <- A
         {
             uint16_t offset = makeword(state->d, state->e);
-            state->memory[offset] = state->a;
+            mem_write(state, offset, state->a);
         }
             break;
         case 0x13:
@@ -869,8 +864,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // the following two opcodes form an address
             // when put together
             uint16_t addr = makeword(opcode[2], opcode[1]);
-            state->memory[addr] = state->l;
-            state->memory[addr + 1] = state->h;
+            mem_write(state, addr, state->l);
+            mem_write(state, addr + 1, state->h);
             state->pc += 2;
         }
             break;
@@ -1002,7 +997,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // (adr) <- A
             // store accumulator direct
             uint16_t addr = makeword(opcode[2], opcode[1]);
-            state->memory[addr] = state->a;
+            mem_write(state, addr, state->a);
             state->pc += 2;
         }
             break;
@@ -2033,7 +2028,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             uint16_t sp_adr = state->sp;
             
             // ((SP) - 1) <- A
-            state->memory[sp_adr - 1] = state->a;
+            mem_write(state, sp_adr - 1, state->a);
 
             uint8_t sp_flags = 0;
 
@@ -2058,7 +2053,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
             // (........)7 <- S
             sp_flags |= (state->cc.s << 7);
-            state->memory[sp_adr - 2] = sp_flags;
+            mem_write(state, sp_adr - 2, sp_flags);
 
             // (SP) <- (SP) - 2
             state->sp -= 2;
