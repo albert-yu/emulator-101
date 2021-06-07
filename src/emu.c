@@ -26,27 +26,27 @@ void state_free(State8080 *state) {
 }
 
 
-#define MAX_STEPS 100000
+// #define MAX_STEPS 100000
 
 // 16-bit address has a maximum of
 // 2^15 addressable 8-bit chunks
 #define MAX_MEM (1 << 15)
 
-/*
- * Returns the number of instructions
- * to advance
- */
-size_t get_num_instrs(char *input) {
-    if (strlen(input) == 1) {
-        return 1;
-    }
-    // If the string starts with an 
-    // alphanumeric character or only 
-    // contains alphanumeric characters,
-    // 0 is returned.
-    size_t steps = (size_t) atoi(input);
-    return steps < MAX_STEPS ? steps : MAX_STEPS;
-}
+// /*
+//  * Returns the number of instructions
+//  * to advance
+//  */
+// size_t get_num_instrs(char *input) {
+//     if (strlen(input) == 1) {
+//         return 1;
+//     }
+//     // If the string starts with an 
+//     // alphanumeric character or only 
+//     // contains alphanumeric characters,
+//     // 0 is returned.
+//     size_t steps = (size_t) atoi(input);
+//     return steps < MAX_STEPS ? steps : MAX_STEPS;
+// }
 
 
 #define H_START 0x0000
@@ -106,33 +106,33 @@ void load_invaders(char *invaders_folder, uint8_t *memory) {
 }
 
 
-void emu_step(Machine *machine) {
-    size_t instr_count = 0;
-    char user_in [20];
+// void emu_step(Machine *machine) {
+//     size_t instr_count = 0;
+//     char user_in [20];
 
-    size_t instrs_to_advance = 0;
-    while (1) {
-        printf("Emulator state:\n");
-        cpu_print_state(machine->cpu_state);
-        printf("Instructions executed: %zu\n", instr_count);
+//     size_t instrs_to_advance = 0;
+//     while (1) {
+//         printf("Emulator state:\n");
+//         cpu_print_state(machine->cpu_state);
+//         printf("Instructions executed: %zu\n", instr_count);
 
-        if (instrs_to_advance == 0) {
-            printf(
-                "Press enter to advance one instruction, or " 
-                "enter number of instructions to advance "
-                "and then press enter: "); 
-            fgets(user_in, 20, stdin);
-            instrs_to_advance = get_num_instrs(user_in);
-            if (instrs_to_advance == 0) {
-                continue;
-            }
-        }
-        printf("\n\n");
-        machine_step(machine);
-        instr_count++;
-        instrs_to_advance--;
-    }
-}
+//         if (instrs_to_advance == 0) {
+//             printf(
+//                 "Press enter to advance one instruction, or " 
+//                 "enter number of instructions to advance "
+//                 "and then press enter: "); 
+//             fgets(user_in, 20, stdin);
+//             instrs_to_advance = get_num_instrs(user_in);
+//             if (instrs_to_advance == 0) {
+//                 continue;
+//             }
+//         }
+//         printf("\n\n");
+//         machine_step(machine);
+//         instr_count++;
+//         instrs_to_advance--;
+//     }
+// }
 
 
 int emu_start(char *folder, EmuMode mode) {
@@ -183,10 +183,10 @@ int emu_start(char *folder, EmuMode mode) {
 
     switch (mode) {
         case RUN_MODE:
-            loop_machine(&machine);
+            platform_run(&machine);
             break;
         case STEP_MODE:
-            emu_step(&machine);
+            platform_step(&machine);
             break;
         case DISASM_MODE:
             fprintf(stderr, "Disassembler not implemented yet\n");

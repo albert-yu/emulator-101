@@ -3,6 +3,16 @@
 
 #include "machine.h"
 
-void loop_machine(Machine *machine);
+
+/**
+ * Runs without interruption
+ */
+void platform_run(Machine *machine);
+
+
+/**
+ * Steps through one instruction at a time
+ */
+void platform_step(Machine *machine);
 
 #endif
