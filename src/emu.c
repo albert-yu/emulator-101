@@ -49,101 +49,6 @@ size_t get_num_instrs(char *input) {
 }
 
 
-// int load_and_run(char *filename) {
-//     FILE *f = fopen(filename, "rb");
-//     if (f == NULL)
-//     {
-//         printf("Error: couldn't open %s\n", filename);
-//         exit(1);
-//     }
-
-//     // declare ConditionCodes struct
-//     ConditionCodes cc;
-//     cc = (ConditionCodes) {
-//         .z = 0,
-//         .s = 0,
-//         .p = 0,
-//         .cy = 0,
-//         .ac = 0
-//     };
-
-//     // declare State8080 struct
-//     State8080 state;
-//     state = (State8080) {
-//         .a = 0,
-//         .b = 0,
-//         .c = 0,
-//         .d = 0,
-//         .e = 0,
-//         .h = 0,
-//         .l = 0,
-//         .sp = 0,
-//         .pc = 0,
-//         .int_enable = 0,
-//         .memory = (uint8_t*) malloc(MAX_MEM * sizeof(*state.memory)),
-//         .cc = cc
-//     };
-
-//     IO8080 io;
-//     io = (IO8080) {
-//         .in = 0,
-//         .out = 0,
-//         .port = 0,
-//         .value = 0
-//     };
-
-//     Machine machine;
-//     machine = (Machine) {
-//         .cpu_state = &state,
-//         .shift_register = 0,
-//         .io = &io,
-//         .ports = {0, 0, 0, 0, 0, 0, 0}
-//     };
-
-//     // get the file size and read it into a memory buffer
-//     fseek(f, 0L, SEEK_END);
-//     int fsize = ftell(f);
-//     fseek(f, 0L, SEEK_SET);
-
-//     fread(state.memory, fsize, 1, f);
-//     fclose(f);
-
-//     size_t instr_count = 0;
-//     char user_in [20];
-
-//     size_t instrs_to_advance = 0;
-//     while (state.pc < fsize) {
-//         printf("Emulator state:\n");
-//         cpu_print_state(&state);
-//         printf("Instructions executed: %zu\n", instr_count);
-
-//         if (instrs_to_advance == 0) {
-//             printf(
-//                 "Press enter to advance one instruction, or " 
-//                 "enter number of instructions to advance "
-//                 "and then press enter: "); 
-//             fgets(user_in, 20, stdin);
-//             instrs_to_advance = get_num_instrs(user_in);
-//             if (instrs_to_advance == 0) {
-//                 continue;
-//             }
-//         }
-//         printf("\n\n");
-//         // emulate_op(&state, &io);
-//         machine_step(&machine);
-//         instr_count++;
-//         instrs_to_advance--;
-//     }
-//     printf("LOOP EXITED.\n");
-//     cpu_print_state(&state);
-//     printf("fsize: 0x%x\n", fsize);
-
-//     free(state.memory);
-
-//     return 0;
-// }
-
-
 #define H_START 0x0000
 #define G_START 0x0800
 #define F_START 0x1000
@@ -223,7 +128,6 @@ void emu_step(Machine *machine) {
             }
         }
         printf("\n\n");
-        // emulate_op(&state, &io);
         machine_step(machine);
         instr_count++;
         instrs_to_advance--;
@@ -285,6 +189,7 @@ int emu_start(char *folder, EmuMode mode) {
             emu_step(&machine);
             break;
         case DISASM_MODE:
+            fprintf(stderr, "Disassembler not implemented yet\n");
             break;
     }
 
