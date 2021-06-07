@@ -80,18 +80,30 @@ uint8_t cpu_io_empty(IO8080 io) {
 }
 
 
+void print_failed_instr(State8080 * state) {
+    disassemble8080op(state->memory, state->pc - 1);
+}
+
+
+void print_failed_state(State8080 *state) {
+    printf("State at failure:\n");
+    cpu_print_state(state);
+}
+
+
 void unimplemented_instr(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
-    printf("Error: Unimplemented instruction %x\n", opcode);
+    printf("Error: Unimplemented instruction 0x%x\n", opcode);
+    print_failed_state(state);
     exit(EXIT_FAILURE);
 }
 
 
 void unused_opcode(State8080 *state) {
     uint8_t opcode = state->memory[state->pc];
+    print_failed_instr(state);
     printf("Error: unused opcode 0x%x\n", opcode);
-    printf("State at failure:\n");
-    cpu_print_state(state);
+    print_failed_state(state);
     exit(EXIT_FAILURE);
 }
 
@@ -103,6 +115,9 @@ void unused_opcode(State8080 *state) {
 void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
     if (offset >= ROM_START && offset <= ROM_END) {
         printf("Fatal error: tried to write to ROM at address 0x%x\n", offset);
+        // print out current instruction
+        print_failed_instr(state);
+        print_failed_state(state);
         exit(EXIT_FAILURE);
     }
     state->memory[offset] = value;

@@ -41,7 +41,7 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
         case 0:
             return 1;
         case 1:
-            return 2;
+            return 0;
         case 3:
         {
             uint16_t v = machine->shift_register;
@@ -174,7 +174,6 @@ void machine_run(Machine *machine, long sleep_microseconds) {
 
 
 void* machine_framebuffer(Machine *machine) {
-    // return (void*) &machine->cpu_state->memory[]
     return cpu_framebuffer(machine->cpu_state);
 }
 
