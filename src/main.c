@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv) {
     int opt;
-    enum { RUN_MODE, STEP_MODE, DISASM_MODE } mode = RUN_MODE;
+    EmuMode mode = RUN_MODE;
     // if (argv) {
     //     load_and_run(argv[1]);
     // }
@@ -22,15 +22,7 @@ int main(int argc, char **argv) {
     }
 
     char *folder = argv[optind];
-
-    switch (mode) {
-        case RUN_MODE:
-            load_and_run(folder);
-            break;
-        case STEP_MODE:
-        case DISASM_MODE:
-            break;
-    }
+    emu_start(folder, mode);
     return 0;
 }
 

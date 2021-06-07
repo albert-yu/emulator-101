@@ -201,7 +201,37 @@ void load_invaders(char *invaders_folder, uint8_t *memory) {
 }
 
 
-int load_and_run(char *folder) {
+void emu_step(Machine *machine) {
+    size_t instr_count = 0;
+    char user_in [20];
+
+    size_t instrs_to_advance = 0;
+    while (1) {
+        printf("Emulator state:\n");
+        cpu_print_state(machine->cpu_state);
+        printf("Instructions executed: %zu\n", instr_count);
+
+        if (instrs_to_advance == 0) {
+            printf(
+                "Press enter to advance one instruction, or " 
+                "enter number of instructions to advance "
+                "and then press enter: "); 
+            fgets(user_in, 20, stdin);
+            instrs_to_advance = get_num_instrs(user_in);
+            if (instrs_to_advance == 0) {
+                continue;
+            }
+        }
+        printf("\n\n");
+        // emulate_op(&state, &io);
+        machine_step(machine);
+        instr_count++;
+        instrs_to_advance--;
+    }
+}
+
+
+int emu_start(char *folder, EmuMode mode) {
     // declare ConditionCodes struct
     ConditionCodes cc;
     cc = (ConditionCodes) {
@@ -247,7 +277,16 @@ int load_and_run(char *folder) {
 
     load_invaders(folder, state.memory);
 
-    loop_machine(&machine);
+    switch (mode) {
+        case RUN_MODE:
+            loop_machine(&machine);
+            break;
+        case STEP_MODE:
+            emu_step(&machine);
+            break;
+        case DISASM_MODE:
+            break;
+    }
 
     free(state.memory);
 
