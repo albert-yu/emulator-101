@@ -36,6 +36,13 @@ For the first argument, takes the folder containing `invaders.h`, `invaders.g`, 
 ./intel8080 invaders
 ```
 
+To step through one instruction at a time, use the `-s` option:
+
+
+```bash
+./intel8080 -s invaders
+```
+
 ## Notes
 
 ### Parity
