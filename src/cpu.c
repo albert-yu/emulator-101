@@ -630,7 +630,7 @@ void set_bc(State8080 *state, uint8_t val) {
 
 
 uint16_t de_addr(State8080 *state) {
-    return makeword(state->b, state->c);
+    return makeword(state->d, state->e);
 }
 
 
@@ -768,9 +768,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x0a:  // LDAX B: A <- (BC)
         {
-            // uint16_t offset = makeword(state->b, state->c);
-            // uint8_t memval = state->memory[offset];
-            // state->a = memval;
             state->a = get_bc(state);
         }
             break;
@@ -870,9 +867,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x1a:  // LDAX D
         {
-            uint16_t offset = makeword(state->d, state->e);
-            uint8_t memval = state->memory[offset];
-            state->a = memval;
+            state->a = get_de(state);
         }
             break;
         case 0x1b:
@@ -1113,8 +1108,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // A <- (adr)
             uint16_t addr = makeword(opcode[2], opcode[1]);
-            uint8_t val = state->memory[addr];
-            state->a = val;
+            state->a = mem_read(state, addr);
             state->pc += 2;
         }
             break;
