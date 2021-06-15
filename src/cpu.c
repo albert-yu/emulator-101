@@ -141,7 +141,7 @@ uint16_t makeword(uint8_t left, uint8_t right) {
 /**
  * Reads the byte at the specified location
  */
-uint8_t mem_read(State8080 *state, uint16_t offset) {
+uint8_t mem_read_byte(State8080 *state, uint16_t offset) {
     return state->memory[offset];
 }
 
@@ -160,7 +160,7 @@ uint8_t* mem_read_ptr(State8080 *state, uint8_t offset) {
  * and increments the program counter
  */
 uint8_t next_byte(State8080 *state) {
-    return mem_read(state, state->pc++);
+    return mem_read_byte(state, state->pc++);
 }
 
 
@@ -409,8 +409,8 @@ void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
 void ret(State8080 *state) {
     uint16_t sp_addr = state->sp;
     uint8_t hi_addr, lo_addr;
-    lo_addr = mem_read(state, sp_addr);
-    hi_addr = mem_read(state, sp_addr + 1);
+    lo_addr = mem_read_byte(state, sp_addr);
+    hi_addr = mem_read_byte(state, sp_addr + 1);
     // set pc to return address pointed
     // to by stack
     uint16_t target_addr = makeword(hi_addr, lo_addr);
@@ -428,8 +428,8 @@ void ret(State8080 *state) {
 void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
     uint16_t sp_addr;
     sp_addr = state->sp;
-    *lo = mem_read(state, sp_addr);
-    *hi = mem_read(state, sp_addr + 1);
+    *lo = mem_read_byte(state, sp_addr);
+    *hi = mem_read_byte(state, sp_addr + 1);
 
     // increment stack pointer
     state->sp += 2;
@@ -656,7 +656,7 @@ uint16_t bc_addr(State8080 *state) {
  * by the BC register pair
  */
 uint8_t get_bc_mem(State8080 *state) {
-    return mem_read(state, bc_addr(state));
+    return mem_read_byte(state, bc_addr(state));
 }
 
 
@@ -680,7 +680,7 @@ uint16_t de_addr(State8080 *state) {
  * by the BC register pair
  */
 uint8_t get_de_mem(State8080 *state) {
-    return mem_read(state, de_addr(state));
+    return mem_read_byte(state, de_addr(state));
 }
 
 
@@ -708,7 +708,7 @@ uint16_t hl_addr(State8080 *state) {
  * the HL register pair
  */
 uint8_t get_hl_mem(State8080 *state) {
-    return mem_read(state, hl_addr(state));
+    return mem_read_byte(state, hl_addr(state));
 }
 
 
@@ -982,20 +982,14 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode); 
             break;
         case 0x29:  // DAD H
-        {
             dad_xy(state, &state->h, &state->l);
-        }
             break;
         case 0x2a:  // LHLD adr
         {
             // get address (16 bits)
-            uint16_t addr = makeword(opcode[2], opcode[1]);
-            uint8_t lo, hi;
-            lo = state->memory[addr];
-            hi = state->memory[addr + 1]; 
-            state->l = lo;
-            state->h = hi;
-            state->pc += 2;
+            uint16_t addr = next_word(state);
+            state->l = mem_read_byte(state, addr);
+            state->h = mem_read_byte(state, addr + 1); 
         }
             break;
         // page 4-8 of the manual
@@ -1074,7 +1068,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // uint16_t addr = makeword(opcode[2], opcode[1]);
             // state->a = mem_read(state, addr);
             // state->pc += 2;
-            state->a = mem_read(state, next_word(state));
+            state->a = mem_read_byte(state, next_word(state));
         }
             break;
         case 0x3b:  // DCX SP
