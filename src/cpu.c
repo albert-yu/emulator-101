@@ -127,6 +127,17 @@ void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
 }
 
 
+/*
+ * Combines two 8 bit values into a single
+ * 16 bit value
+ */
+uint16_t makeword(uint8_t left, uint8_t right) {
+    uint16_t result;
+    result = (left << 8) | right;
+    return result;
+}
+
+
 /**
  * Reads the byte at the specified location
  */
@@ -150,6 +161,18 @@ uint8_t* mem_read_ptr(State8080 *state, uint8_t offset) {
  */
 uint8_t next_byte(State8080 *state) {
     return mem_read(state, state->pc++);
+}
+
+
+/**
+ * Returns next word pointed to by the program counter
+ * and updates the program counter
+ */
+uint16_t next_word(State8080 *state) {
+    uint8_t left, right;
+    right = next_byte(state);
+    left = next_byte(state);
+    return makeword(left, right);
 }
 
 
@@ -292,17 +315,6 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
     if (cleaned & SET_AC_FLAG) {
         state->cc.ac = 0; 
   }
-}
-
-
-/*
- * Combines two 8 bit values into a single
- * 16 bit value
- */
-uint16_t makeword(uint8_t left, uint8_t right) {
-    uint16_t result;
-    result = (left << 8) | right;
-    return result;
 }
 
 
@@ -632,12 +644,20 @@ uint16_t bc_addr(State8080 *state) {
  * Reads the value in memory pointed to
  * by the BC register pair
  */
-uint8_t get_bc(State8080 *state) {
+uint8_t get_bc_mem(State8080 *state) {
     return mem_read(state, bc_addr(state));
 }
 
 
-void set_bc(State8080 *state, uint8_t val) {
+void set_bc_addr(State8080 *state, uint16_t addr) {
+    uint8_t left = (addr >> 8) & 0xff;
+    uint8_t right = addr & 0xff;
+    state->b = left;
+    state->c = right;
+}
+
+
+void set_bc_mem(State8080 *state, uint8_t val) {
     mem_write(state, bc_addr(state), val);
 }
 
@@ -651,12 +671,12 @@ uint16_t de_addr(State8080 *state) {
  * Reads the value in memory pointed to
  * by the BC register pair
  */
-uint8_t get_de(State8080 *state) {
+uint8_t get_de_mem(State8080 *state) {
     return mem_read(state, de_addr(state));
 }
 
 
-void set_de(State8080 *state, uint8_t val) {
+void set_de_mem(State8080 *state, uint8_t val) {
     mem_write(state, de_addr(state), val);
 }
 
@@ -675,7 +695,7 @@ uint16_t hl_addr(State8080 *state) {
  * Reads the value in memory pointed to by
  * the HL register pair
  */
-uint8_t get_hl(State8080 *state) {
+uint8_t get_hl_mem(State8080 *state) {
     return mem_read(state, hl_addr(state));
 }
 
@@ -692,7 +712,7 @@ uint8_t* get_hl_ptr(State8080 *state) {
 /*
  * Sets the memory addressed by HL to `val`
  */
-void set_hl(State8080 *state, uint8_t val) {
+void set_hl_mem(State8080 *state, uint8_t val) {
     uint16_t offset = hl_addr(state);
     mem_write(state, offset, val);
 }
@@ -732,9 +752,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x01:  // LXI B,D16
         {
-            state->c = opcode[1];  // c <- byte 2
-            state->b = opcode[2];  // b <- byte 3
-            state->pc += 2;  // advance two more bytes
+            // state->c = opcode[1];  // c <- byte 2
+            // state->b = opcode[2];  // b <- byte 3
+            // state->pc += 2;  // advance two more bytes
+            set_bc_addr(state, next_word(state));
         }
             break;
         case 0x02:  // STAX B: (BC) <- A
@@ -787,7 +808,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x0a:  // LDAX B: A <- (BC)
-            state->a = get_bc(state);
+            state->a = get_bc_mem(state);
             break;
         case 0x0b:  // DCX B: BC <- BC - 1
             dcx_xy(&state->b, &state->c);
@@ -872,7 +893,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x1a:  // LDAX D
         {
-            state->a = get_de(state);
+            state->a = get_de_mem(state);
         }
             break;
         case 0x1b:
@@ -1042,9 +1063,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // (adr) <- A
             // store accumulator direct
-            uint16_t addr = makeword(opcode[2], opcode[1]);
+            // uint16_t addr = makeword(opcode[2], opcode[1]);
+            uint16_t addr = next_word(state);
             mem_write(state, addr, state->a);
-            state->pc += 2;
+            // state->pc += 2;
         }
             break;
         case 0x33:  // INX SP: SP <- SP + 1
@@ -1063,7 +1085,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x36:  // (HL) <- byte 2
-            set_hl(state, next_byte(state));
+            set_hl_mem(state, next_byte(state));
             break;
         case 0x37:  // STC
             // set carry flag to 1
@@ -1084,9 +1106,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0x3a:  // LDA adr
         {
             // A <- (adr)
-            uint16_t addr = makeword(opcode[2], opcode[1]);
-            state->a = mem_read(state, addr);
-            state->pc += 2;
+            // uint16_t addr = makeword(opcode[2], opcode[1]);
+            // state->a = mem_read(state, addr);
+            // state->pc += 2;
+            state->a = mem_read(state, next_word(state));
         }
             break;
         case 0x3b:  // DCX SP
@@ -1130,7 +1153,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->b = state->l;
             break;
         case 0x46:  // B <- (HL)
-            state->b = get_hl(state);
+            state->b = get_hl_mem(state);
             break;
         case 0x47: 
             state->b = state->a;
@@ -1154,7 +1177,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->c = state->l;
             break;
         case 0x4e:
-            state->c = get_hl(state);
+            state->c = get_hl_mem(state);
             break;
         case 0x4f:
             state->c = state->a;
@@ -1178,7 +1201,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->d = state->l;
             break;
         case 0x56:
-            state->d = get_hl(state);
+            state->d = get_hl_mem(state);
             break;
         case 0x57:
             state->d = state->a;
@@ -1202,7 +1225,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->e = state->l;
             break;
         case 0x5e:
-            state->e = get_hl(state);
+            state->e = get_hl_mem(state);
             break;
         case 0x5f:
             state->e = state->a;
@@ -1226,7 +1249,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->h = state->l;
             break;
         case 0x66:
-            state->h = get_hl(state);
+            state->h = get_hl_mem(state);
             break;
         case 0x67:
             state->h = state->a;
@@ -1250,28 +1273,28 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->l = state->l;
             break;
         case 0x6e:
-            state->l = get_hl(state);
+            state->l = get_hl_mem(state);
             break;
         case 0x6f:
             state->l = state->a;
             break;
         case 0x70: // MOV M,B
-            set_hl(state, state->b);
+            set_hl_mem(state, state->b);
             break;
         case 0x71:
-            set_hl(state, state->c);
+            set_hl_mem(state, state->c);
             break;
         case 0x72:
-            set_hl(state, state->d);
+            set_hl_mem(state, state->d);
             break;
         case 0x73:
-            set_hl(state, state->e);
+            set_hl_mem(state, state->e);
             break;
         case 0x74:
-            set_hl(state, state->h);
+            set_hl_mem(state, state->h);
             break;
         case 0x75:
-            set_hl(state, state->l);
+            set_hl_mem(state, state->l);
             break;
         case 0x76: 
             // HLT (Halt) instruction
@@ -1279,7 +1302,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             exit(0);
             break;
         case 0x77:
-            set_hl(state, state->a);
+            set_hl_mem(state, state->a);
             break;
         case 0x78:
             state->a = state->b;
@@ -1300,7 +1323,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->a = state->l;
             break;
         case 0x7e:
-            state->a = get_hl(state);
+            state->a = get_hl_mem(state);
             break;
         case 0x7f:  // MOV A,A
             state->a = state->a;
@@ -1340,7 +1363,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x86:  // ADD M
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             add_x(state, m);
         }
             break;
@@ -1382,7 +1405,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x8e:
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             adc_x(state, m);
         }
         case 0x8f: 
@@ -1422,7 +1445,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x96:  // SUB (HL)
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             sub_x(state, m);
         }
             break;
@@ -1463,7 +1486,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x9e:
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             sbb_x(state, m);
         }
             break;
@@ -1504,7 +1527,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xa6:
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             ana_x(state, m);
         }
             break;
@@ -1545,7 +1568,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xae:
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             xra_x(state, m);
         }
             break;
@@ -1586,7 +1609,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xb6:
         {
-            uint8_t m = get_hl(state);
+            uint8_t m = get_hl_mem(state);
             ora_x(state, m);
         }
             break;
@@ -1627,7 +1650,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xbe:
         {
-            cmp_x(state, get_hl(state));
+            cmp_x(state, get_hl_mem(state));
         }
             break;
         case 0xbf:
