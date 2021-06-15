@@ -92,11 +92,6 @@ uint8_t cpu_io_empty(IO8080 io) {
 }
 
 
-void print_failed_instr(State8080 * state, uint8_t opcode) {
-    disassemble8080op(state->memory, opcode);
-}
-
-
 void print_failed_state(State8080 *state) {
     printf("State at failure:\n");
     cpu_print_state(state);
@@ -112,7 +107,6 @@ void unimplemented_instr(State8080 *state) {
 
 
 void unused_opcode(State8080 *state, uint8_t opcode) {
-    print_failed_instr(state, opcode);
     printf("Error: unused opcode 0x%x\n", opcode);
     print_failed_state(state);
     exit(EXIT_FAILURE);
@@ -169,7 +163,8 @@ uint8_t zero(uint16_t answer) {
 
 uint8_t sign(uint16_t answer) {
     // set to 1 when bit 7 of the math instruction is set
-    return ((answer & 0x80) == 0x80);
+    // return ((answer & 0x80) == 0x80);
+    return (answer & 0xff) >> 7;
 }
 
 
@@ -586,7 +581,7 @@ void inr_x(State8080 *state, uint8_t *ptr) {
  * DCR X: X <- X - 1
  */
 void dcr_x(State8080 *state, uint8_t *ptr) {
-    uint16_t answer = (uint16_t) (*ptr - 1);
+    uint16_t answer = (uint16_t) *ptr - 1;
     uint8_t flags = SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_AC_FLAG;
     set_arith_flags(state, answer, flags);
     *ptr = answer & 0xff;
@@ -1064,6 +1059,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             uint16_t offset = hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
             dcr_x(state, m_ptr);
+            // dcr_x(state, get_hl_ptr(state));
         }
             break;
         case 0x36:  // (HL) <- byte 2

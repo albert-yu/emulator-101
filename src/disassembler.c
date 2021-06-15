@@ -4,36 +4,6 @@
 #include "disassembler.h"
 
 
-int disassemble8080file(char* filename) {
-    FILE *f = fopen(filename, "rb");
-    if (f == NULL)
-    {
-        printf("Error: couldn't open %s\n", filename);
-        exit(1);
-    }
-
-    // get the file size and read it into a memory buffer
-    fseek(f, 0L, SEEK_END);
-    int fsize = ftell(f);
-    fseek(f, 0L, SEEK_SET);
-
-    unsigned char *buffer = malloc(fsize);
-
-    fread(buffer, fsize, 1, f);
-    fclose(f);
-
-    int pc = 0;
-
-    while (pc < fsize) {
-        pc += disassemble8080op(buffer, pc);
-    }
-
-    free(buffer);
-
-    return 0;
-}
-
-
 /*
  * Prints out the mnemonic
  * Returns the size of the operation in bytes
