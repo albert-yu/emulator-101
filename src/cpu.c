@@ -610,6 +610,45 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
 }
 
 
+uint16_t bc_addr(State8080 *state) {
+    return makeword(state->b, state->c);
+}
+
+
+/**
+ * Reads the value in memory pointed to
+ * by the BC register pair
+ */
+uint8_t get_bc(State8080 *state) {
+    return mem_read(state, bc_addr(state));
+}
+
+
+void set_bc(State8080 *state, uint8_t val) {
+    mem_write(state, bc_addr(state), val);
+}
+
+
+uint16_t de_addr(State8080 *state) {
+    return makeword(state->b, state->c);
+}
+
+
+/**
+ * Reads the value in memory pointed to
+ * by the BC register pair
+ */
+uint8_t get_de(State8080 *state) {
+    return mem_read(state, de_addr(state));
+}
+
+
+void set_de(State8080 *state, uint8_t val) {
+    mem_write(state, de_addr(state), val);
+}
+
+
+
 /*
  * Returns the address stored in HL register
  * pair
@@ -623,16 +662,8 @@ uint16_t hl_addr(State8080 *state) {
  * Reads the value in memory pointed to by
  * the HL register pair
  */
-uint8_t read_hl(State8080 *state) {
-    // Note: the addend is the byte pointed to by the address stored
-    // in the HL register pair
-
-    // get the address
-    uint16_t offset = hl_addr(state);
-
-    // get value in memory
-    uint8_t m = state->memory[offset];
-    return m;
+uint8_t get_hl(State8080 *state) {
+    return mem_read(state, hl_addr(state));
 }
 
 
@@ -737,9 +768,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x0a:  // LDAX B: A <- (BC)
         {
-            uint16_t offset = makeword(state->b, state->c);
-            uint8_t memval = state->memory[offset];
-            state->a = memval;
+            // uint16_t offset = makeword(state->b, state->c);
+            // uint8_t memval = state->memory[offset];
+            // state->a = memval;
+            state->a = get_bc(state);
         }
             break;
         case 0x0b:  // DCX B: BC <- BC - 1
@@ -1137,7 +1169,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->b = state->l;
             break;
         case 0x46:  // B <- (HL)
-            state->b = read_hl(state);
+            state->b = get_hl(state);
             break;
         case 0x47: 
             state->b = state->a;
@@ -1161,7 +1193,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->c = state->l;
             break;
         case 0x4e:
-            state->c = read_hl(state);
+            state->c = get_hl(state);
             break;
         case 0x4f:
             state->c = state->a;
@@ -1185,7 +1217,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->d = state->l;
             break;
         case 0x56:
-            state->d = read_hl(state);
+            state->d = get_hl(state);
             break;
         case 0x57:
             state->d = state->a;
@@ -1209,7 +1241,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->e = state->l;
             break;
         case 0x5e:
-            state->e = read_hl(state);
+            state->e = get_hl(state);
             break;
         case 0x5f:
             state->e = state->a;
@@ -1233,7 +1265,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->h = state->l;
             break;
         case 0x66:
-            state->h = read_hl(state);
+            state->h = get_hl(state);
             break;
         case 0x67:
             state->h = state->a;
@@ -1257,7 +1289,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->l = state->l;
             break;
         case 0x6e:
-            state->l = read_hl(state);
+            state->l = get_hl(state);
             break;
         case 0x6f:
             state->l = state->a;
@@ -1307,7 +1339,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->a = state->l;
             break;
         case 0x7e:
-            state->a = read_hl(state);
+            state->a = get_hl(state);
             break;
         case 0x7f:  // MOV A,A
             state->a = state->a;
@@ -1347,7 +1379,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x86:  // ADD M
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             add_x(state, m);
         }
             break;
@@ -1389,7 +1421,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x8e:
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             adc_x(state, m);
         }
         case 0x8f: 
@@ -1429,7 +1461,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x96:  // SUB (HL)
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             sub_x(state, m);
         }
             break;
@@ -1470,7 +1502,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x9e:
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             sbb_x(state, m);
         }
             break;
@@ -1511,7 +1543,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xa6:
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             ana_x(state, m);
         }
             break;
@@ -1552,7 +1584,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xae:
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             xra_x(state, m);
         }
             break;
@@ -1593,7 +1625,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xb6:
         {
-            uint8_t m = read_hl(state);
+            uint8_t m = get_hl(state);
             ora_x(state, m);
         }
             break;
@@ -1634,7 +1666,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xbe:
         {
-            cmp_x(state, read_hl(state));
+            cmp_x(state, get_hl(state));
         }
             break;
         case 0xbf:
