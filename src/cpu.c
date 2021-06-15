@@ -2074,29 +2074,20 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xf7:  // RST 6 (CALL $30)
-        {
             call_adr(state, 0x30);
-        }
             break;
         case 0xf8:  // RM
-        {
             // if minus, RET
             if (state->cc.s) {
                 ret(state);
             }
-        }
             break;
         case 0xf9:  // SPHL: SP = HL
-        {
-            state->sp = makeword(state->h, state->l);
-        }
+            state->sp = hl_addr(state);
             break;
         case 0xfa:  // JM
-        {
             // jump if sign is negative (sign = 1)
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, state->cc.s);
-        }
+            jmp_cond(state, next_word(state), state->cc.s);
             break;
         case 0xfb:  // EI
         {
