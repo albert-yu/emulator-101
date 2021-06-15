@@ -141,6 +141,15 @@ uint8_t mem_read(State8080 *state, uint16_t offset) {
 }
 
 
+/**
+ * Returns next byte pointed to by the program counter
+ * and increments the program counter
+ */
+uint8_t next_byte(State8080 *state) {
+    return mem_read(state, state->pc++);
+}
+
+
 // Flags ----------------------------------
 
 uint8_t zero(uint16_t answer) {
@@ -742,10 +751,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
 
         case 0x06: 
-        {
-            state->b = opcode[1];  // b <- byte 2
-            state->pc += 1;
-        }           
+            // b <- byte 2
+            state->b = next_byte(state);
             break;
 
         case 0x07:  // RLC: A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
@@ -767,31 +774,19 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x0a:  // LDAX B: A <- (BC)
-        {
             state->a = get_bc(state);
-        }
             break;
         case 0x0b:  // DCX B: BC <- BC - 1
-        {
             dcx_xy(&state->b, &state->c);
-        }
             break;
         case 0x0c:  // INR C
-        {
             inr_x(state, &state->c);
-        }
-            
             break;
         case 0x0d:  // DCR C
-        {
             dcr_x(state, &state->c);
-        }
             break;
         case 0x0e:  // MVI C,D8: C <- byte 2
-        {
-            state->c = opcode[1];
-            state->pc += 1;
-        }
+            state->c = next_byte(state);
             break;
         case 0x0f:  // RRC: A = A >> 1; bit 7 = prev bit 0; CY = prev bit 0
         {
@@ -837,10 +832,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x16:  // MVI D,D8: D <- byte 2
-        {
-            state->d = opcode[1];
-            state->pc += 1;
-        }
+            state->d = next_byte(state);
             break;
         case 0x17:  // RAL: A = A << 1; bit 0 = prev CY; CY = prev bit 7
         {
@@ -886,10 +878,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x1e:  // E <- byte 2
-        {
-            state->e = opcode[1];
-            state->pc += 1;
-        }
+            state->e = next_byte(state);
             break;
         case 0x1f:  // RAR
         {
@@ -926,25 +915,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x23:  // INX H
-        {
             inx_xy(&state->h, &state->l);
-        }
             break;
         case 0x24:  // INR H
-        {
             inr_x(state, &state->h);
-        }
             break;
         case 0x25:
-        {
             dcr_x(state, &state->h);
-        }
             break;
         case 0x26:  // MVI H,D8
-        {
-            state->h = opcode[1];
-            state->pc += 1;
-        }
+            state->h = next_byte(state);
             break;
         case 0x27:  // DAA - decimal adjust accumulator
         // The eight-bit number in the accumulator
@@ -1020,11 +1000,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x2e:  // MVI L,D8
-        {
             // L <- byte 2
-            state->l = opcode[1];
-            state->pc += 1;
-        }
+            state->l = next_byte(state);
             break;
         case 0x2f:  // CMA: A <- !A
         {
@@ -1080,11 +1057,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x36:  // (HL) <- byte 2
-        {
-            uint8_t byte2 = opcode[1];
-            set_hl(state, byte2);
-            state->pc += 1;
-        }
+            set_hl(state, next_byte(state));
             break;
         case 0x37:  // STC
             // set carry flag to 1
@@ -1124,12 +1097,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             dcr_x(state, &state->a);
             break;
         case 0x3e:  // MVI A,D8
-        {
             // A <- byte 2
-            uint8_t byte2 = opcode[1];
-            state->a = byte2;
-            state->pc += 1;
-        }
+            state->a = next_byte(state);
             break;
         case 0x3f:  // CMC: CY = !CY
             state->cc.cy = ~state->cc.cy;
