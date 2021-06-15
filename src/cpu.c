@@ -8,7 +8,7 @@
 /**
  * CPU cycle lookup table
  */
-unsigned char cycles[] = {
+uint8_t cycles[] = {
     4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x00..0x0f
     4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x10..0x1f
     4, 10, 16, 5, 5, 5, 7, 4, 4, 10, 16, 5, 5, 5, 7, 4, //etc
@@ -92,8 +92,8 @@ uint8_t cpu_io_empty(IO8080 io) {
 }
 
 
-void print_failed_instr(State8080 * state) {
-    disassemble8080op(state->memory, state->pc - 1);
+void print_failed_instr(State8080 * state, uint8_t opcode) {
+    disassemble8080op(state->memory, opcode);
 }
 
 
@@ -111,9 +111,8 @@ void unimplemented_instr(State8080 *state) {
 }
 
 
-void unused_opcode(State8080 *state) {
-    uint8_t opcode = state->memory[state->pc];
-    print_failed_instr(state);
+void unused_opcode(State8080 *state, uint8_t opcode) {
+    print_failed_instr(state, opcode);
     printf("Error: unused opcode 0x%x\n", opcode);
     print_failed_state(state);
     exit(EXIT_FAILURE);
@@ -127,8 +126,6 @@ void unused_opcode(State8080 *state) {
 void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
     if (offset >= ROM_START && offset <= ROM_END) {
         printf("Fatal error: tried to write to ROM at address 0x%x\n", offset);
-        // print out current instruction
-        print_failed_instr(state);
         print_failed_state(state);
         exit(EXIT_FAILURE);
     }
@@ -726,7 +723,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
 
         case 0x08:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0x09:  // DAD B: HL = HL + BC
         {
@@ -774,7 +771,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x10: 
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0x11:  // D <- byte 3, E <- byte 2
         { 
@@ -827,7 +824,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x18:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0x19:  // DAD D: HL = HL + DE
         {
@@ -877,7 +874,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x20:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0x21:  // LXI H,D16: H <- byte 3, L <- byte 2
         {
@@ -955,7 +952,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x28: 
-            unused_opcode(state); 
+            unused_opcode(state, *opcode); 
             break;
         case 0x29:  // DAD H
         {
@@ -1005,7 +1002,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x30:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0x31:  // LXI SP, D16
         {
@@ -1064,7 +1061,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x38: 
-            unused_opcode(state); 
+            unused_opcode(state, *opcode); 
             break;
         case 0x39:  // DAD SP
         {
@@ -1724,7 +1721,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xcb:
         {
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
         }
             break;
         case 0xcc:  // CZ adr
@@ -1825,7 +1822,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xd9:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0xda:
         {
@@ -1851,7 +1848,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xdd:
-            unused_opcode(state); 
+            unused_opcode(state, *opcode); 
             break;
         case 0xde:  // SBI D8
         {
@@ -1966,7 +1963,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xed:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0xee:  // XRI D8
         {
@@ -2136,7 +2133,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xfd:
-            unused_opcode(state);
+            unused_opcode(state, *opcode);
             break;
         case 0xfe:  // CPI byte
         {
