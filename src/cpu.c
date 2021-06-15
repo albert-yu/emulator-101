@@ -407,28 +407,11 @@ void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
 
 
 /*
- * RET instruction
- */
-void ret(State8080 *state) {
-    uint16_t sp_addr = state->sp;
-    uint8_t hi_addr, lo_addr;
-    lo_addr = mem_read_byte(state, sp_addr);
-    hi_addr = mem_read_byte(state, sp_addr + 1);
-    // set pc to return address pointed
-    // to by stack
-    uint16_t target_addr = makeword(hi_addr, lo_addr);
-    state->pc = target_addr;
-    
-    // increment stack pointer
-    state->sp += 2;
-}
-
-
-/*
  * Pops content off the stack into 
- * registers `hi` and `lo`.
+ * registers `hi` and `lo` (and
+ * increments stack pointer)
  */
-void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
+void pop_pair(State8080 *state, uint8_t *hi, uint8_t *lo) {
     uint16_t sp_addr;
     sp_addr = state->sp;
     *lo = mem_read_byte(state, sp_addr);
@@ -436,6 +419,25 @@ void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
 
     // increment stack pointer
     state->sp += 2;
+}
+
+
+/**
+ * Pops the word off the stack and returns it
+ * (and increments stack pointer)
+ */
+uint16_t pop_word(State8080 *state) {
+    uint8_t left, right;
+    pop_pair(state, &left, &right);
+    return makeword(left, right);
+}
+
+
+/*
+ * RET instruction
+ */
+void ret(State8080 *state) {
+    state->pc = pop_word(state);
 }
 
 
@@ -757,6 +759,12 @@ void cpu_interrupt(State8080 *state, int interrupt_num) {
 
 
 int cpu_emulate_op(State8080 *state, IO8080 *io) {
+    if (state->pc > ROM_END) {
+        printf("PC exceeds ROM\n");
+        print_failed_state(state);
+        exit(EXIT_FAILURE);
+    }
+
     uint8_t *opcode = &state->memory[state->pc];
     state->pc += 1;
 
@@ -1629,7 +1637,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // pop the stack into
             // registers B and C
-            pop(state, &state->b, &state->c);
+            pop_pair(state, &state->b, &state->c);
         }
             break;
         case 0xc2:  // JNZ adr
@@ -1741,7 +1749,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xd1:
         {
-            pop(state, &state->d, &state->e);
+            pop_pair(state, &state->d, &state->e);
         }
             break;
         case 0xd2:  // JNC adr
@@ -1853,7 +1861,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xe1:  // POP H
         {
-            pop(state, &state->h, &state->l);
+            pop_pair(state, &state->h, &state->l);
         }
             break;
         case 0xe2:  // JPO adr
@@ -1961,7 +1969,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0xf1:  // POP PSW
         {
             uint8_t sp_val, a_val;
-            pop(state, &a_val, &sp_val);
+            pop_pair(state, &a_val, &sp_val);
 
             // (CY) <- ((SP))O
             state->cc.cy = sp_val & 1;
