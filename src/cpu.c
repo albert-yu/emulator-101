@@ -2090,10 +2090,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, next_word(state), state->cc.s);
             break;
         case 0xfb:  // EI
-        {
             // enable interrupts
             state->int_enable = 1;
-        }
             break;
         case 0xfc:  // CM adr
         {
@@ -2107,15 +2105,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0xfe:  // CPI byte
-        {
-            cmp_x(state, opcode[1]);
-            state->pc += 1;
-        }
+            cmp_x(state, next_byte(state));
             break;
         case 0xff:
-        {
             call_adr(state, 0x38);
-        }
             break;
     }
 
