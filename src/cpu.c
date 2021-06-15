@@ -2066,11 +2066,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0xf6:  // ORI D8
         {
             uint16_t answer;
-            answer = (uint16_t) state->a | opcode[1];
+            answer = (uint16_t) state->a | next_byte(state);
             set_logic_flags(state, answer,
                 SET_ALL_FLAGS);
             state->a = answer & 0xff;
-            state->pc += 1;
         }
             break;
         case 0xf7:  // RST 6 (CALL $30)
@@ -2094,12 +2093,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->int_enable = 1;
             break;
         case 0xfc:  // CM adr
-        {
             // if minus, call
-            uint8_t minus = state->cc.s;
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, minus);
-        }
+            call_cond(state, next_word(state), state->cc.s);
             break;
         case 0xfd:
             unused_opcode(state, *opcode);
