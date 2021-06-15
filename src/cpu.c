@@ -920,10 +920,11 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // the following two opcodes form an address
             // when put together
-            uint16_t addr = makeword(opcode[2], opcode[1]);
+            // uint16_t addr = makeword(opcode[2], opcode[1]);
+            uint16_t addr = next_word(state);
             mem_write(state, addr, state->l);
             mem_write(state, addr + 1, state->h);
-            state->pc += 2;
+            // state->pc += 2;
         }
             break;
         case 0x23:  // INX H
