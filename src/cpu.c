@@ -133,6 +133,14 @@ void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
 }
 
 
+/**
+ * Reads the byte at the specified location
+ */
+uint8_t mem_read(State8080 *state, uint16_t offset) {
+    return state->memory[offset];
+}
+
+
 // Flags ----------------------------------
 
 uint8_t zero(uint16_t answer) {
@@ -365,8 +373,8 @@ void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
 void ret(State8080 *state) {
     uint16_t sp_addr = state->sp;
     uint8_t hi_addr, lo_addr;
-    lo_addr = state->memory[sp_addr];
-    hi_addr = state->memory[sp_addr + 1];
+    lo_addr = mem_read(state, sp_addr);
+    hi_addr = mem_read(state, sp_addr + 1);
     // set pc to return address pointed
     // to by stack
     uint16_t target_addr = makeword(hi_addr, lo_addr);
@@ -384,8 +392,8 @@ void ret(State8080 *state) {
 void pop(State8080 *state, uint8_t *hi, uint8_t *lo) {
     uint16_t sp_addr;
     sp_addr = state->sp;
-    *lo = state->memory[sp_addr];
-    *hi = state->memory[sp_addr + 1];
+    *lo = mem_read(state, sp_addr);
+    *hi = mem_read(state, sp_addr + 1);
 
     // increment stack pointer
     state->sp += 2;
