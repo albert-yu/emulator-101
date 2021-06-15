@@ -681,7 +681,6 @@ void set_de_mem(State8080 *state, uint8_t val) {
 }
 
 
-
 /*
  * Returns the address stored in HL register
  * pair
@@ -751,37 +750,23 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0x00:  // NOP
             break;
         case 0x01:  // LXI B,D16
-        {
-            // state->c = opcode[1];  // c <- byte 2
-            // state->b = opcode[2];  // b <- byte 3
-            // state->pc += 2;  // advance two more bytes
             set_bc_addr(state, next_word(state));
-        }
             break;
         case 0x02:  // STAX B: (BC) <- A
-        {
             // set the value of memory with address formed by
             // register pair BC to A
-            uint16_t offset = makeword(state->b, state->c);
-            mem_write(state, offset, state->a);
-        }
+            set_bc_mem(state, state->a);
             break;
         case 0x03:   // INX B
-        {
             // BC <- BC + 1 
             inx_xy(&state->b, &state->c);
-        }
             break;
         case 0x04: 
-        {
             inr_x(state, &state->b);
-        }
             break;
 
         case 0x05:
-        {
             dcr_x(state, &state->b); 
-        }           
             break;
 
         case 0x06: 
@@ -803,9 +788,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0x09:  // DAD B: HL = HL + BC
-        {
             dad_xy(state, &state->b, &state->c);
-        }
             break;
         case 0x0a:  // LDAX B: A <- (BC)
             state->a = get_bc_mem(state);
