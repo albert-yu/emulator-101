@@ -1087,10 +1087,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x37:  // STC
-        {
             // set carry flag to 1
             state->cc.cy = 1;
-        }
             break;
         case 0x38: 
             unused_opcode(state, *opcode); 
@@ -1120,14 +1118,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x3c:  // INR A
-        {
             inr_x(state, &state->a);
-        }
             break;
         case 0x3d:
-        {
             dcr_x(state, &state->a);
-        }
             break;
         case 0x3e:  // MVI A,D8
         {
@@ -1138,9 +1132,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x3f:  // CMC: CY = !CY
-        {
             state->cc.cy = ~state->cc.cy;
-        }
             break;
         case 0x40:  // MOV B,B
             // I think this is redundant, but including
