@@ -196,14 +196,6 @@ uint8_t sign(uint16_t answer) {
  * (only for lower 8 bits)
  */
 uint8_t parity(uint16_t answer) {
-    // uint8_t p = 0;
-    // uint8_t ans8bit = answer & 0xff;
-    // while (ans8bit) {
-    //     p = !p;
-    //     ans8bit = ans8bit & (ans8bit - 1);
-    // }
-    // return !p;
-    //
     uint8_t x = answer & 0xff;
     int size = 8;
     int i;
@@ -216,6 +208,17 @@ uint8_t parity(uint16_t answer) {
         x = x >> 1;
     }
     return (0 == (p & 0x1));
+
+    // uint8_t val = answer & 0xff;
+    // uint8_t nb_one_bits = 0;
+    // for (int i = 0; i < 8; i++) {
+    //     nb_one_bits += ((val >> i) & 1);
+    // }
+
+    // return (nb_one_bits & 1) == 0;
+
+    // uint8_t x = answer & 0xff;
+    // return x % 2 == 0;
 }
 
 
