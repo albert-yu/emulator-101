@@ -676,6 +676,14 @@ uint8_t get_de_mem(State8080 *state) {
 }
 
 
+void set_de_addr(State8080 *state, uint16_t addr) {
+    uint8_t left = (addr >> 8) & 0xff;
+    uint8_t right = addr & 0xff;
+    state->d = left;
+    state->e = right;
+}
+
+
 void set_de_mem(State8080 *state, uint8_t val) {
     mem_write(state, de_addr(state), val);
 }
@@ -816,34 +824,23 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0x11:  // D <- byte 3, E <- byte 2
-        { 
-            state->d = opcode[2];
-            state->e = opcode[1];
-            state->pc += 2;
-        }
+            // state->d = opcode[2];
+            // state->e = opcode[1];
+            // state->pc += 2;
+            set_de_addr(state, next_word(state));
             break;
         case 0x12:  // STAX D: (DE) <- A
-        {
-            // uint16_t offset = makeword(state->d, state->e);
-            // mem_write(state, offset, state->a);
             set_de_mem(state, state->a);
-        }
             break;
         case 0x13:
-        {
             // pointers to registers
             inx_xy(&state->d, &state->e);
-        }
             break;
         case 0x14:  // INR D
-        {
             inr_x(state, &state->d);
-        }
             break;
         case 0x15:
-        {
             dcr_x(state, &state->d);
-        }
             break;
         case 0x16:  // MVI D,D8: D <- byte 2
             state->d = next_byte(state);
