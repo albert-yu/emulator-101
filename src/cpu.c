@@ -142,6 +142,15 @@ uint8_t mem_read(State8080 *state, uint16_t offset) {
 
 
 /**
+ * Returns a pointer to the value at the specified
+ * location in memory
+ */
+uint8_t* mem_read_ptr(State8080 *state, uint8_t offset) {
+    return &state->memory[offset];
+}
+
+
+/**
  * Returns next byte pointed to by the program counter
  * and increments the program counter
  */
@@ -676,6 +685,15 @@ uint8_t get_hl(State8080 *state) {
 }
 
 
+/**
+ * Returns pointer to value in memory
+ * pointed to by HL register pair
+ */
+uint8_t* get_hl_ptr(State8080 *state) {
+    return mem_read_ptr(state, hl_addr(state));
+}
+
+
 /*
  * Sets the memory addressed by HL to `val`
  */
@@ -1035,19 +1053,11 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x33:  // INX SP: SP <- SP + 1
-        {
             // stack pointer is already 16 bits
-            state->sp = state->sp + 1; 
-        }
+            state->sp++; 
             break;
         case 0x34:  // INR M
-        {
-            // need to get the pointer
-            // to update memory in correct place
-            uint16_t offset = hl_addr(state);
-            uint8_t *m_ptr = &state->memory[offset];
-            inr_x(state, m_ptr);
-        }
+            inr_x(state, get_hl_ptr(state));
             break;
         case 0x35:  // DCR M
         {
