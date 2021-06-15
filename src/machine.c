@@ -93,8 +93,9 @@ timestamp ts_utc_micro() {
 }
 
 
+#define MHZ 2
 #define INV_FPS (1.0 / 60.0)
-#define INTERVAL_MICROSEC (INV_FPS * 1e6)
+#define INTERVAL_MICROSEC (INV_FPS * 1e6 / MHZ)
 
 
 int machine_step(Machine *machine) {
@@ -141,7 +142,7 @@ void machine_do_sync(Machine *machine) {
     timestamp since_last = now - machine->last_ts;
 
     // 2 MHz clock speed, so 2 cycles per microsecond
-    int cycles_to_catch_up = 2 * since_last;
+    int cycles_to_catch_up = MHZ * since_last;
 
     int cycles = 0;
     while (cycles_to_catch_up > cycles) {
