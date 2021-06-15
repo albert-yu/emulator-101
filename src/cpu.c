@@ -606,7 +606,7 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
  * Returns the address stored in HL register
  * pair
  */
-uint16_t read_hl_addr(State8080 *state) {
+uint16_t hl_addr(State8080 *state) {
     return makeword(state->h, state->l);
 }
 
@@ -620,7 +620,7 @@ uint8_t read_hl(State8080 *state) {
     // in the HL register pair
 
     // get the address
-    uint16_t offset = read_hl_addr(state);
+    uint16_t offset = hl_addr(state);
 
     // get value in memory
     uint8_t m = state->memory[offset];
@@ -632,7 +632,7 @@ uint8_t read_hl(State8080 *state) {
  * Sets the memory addressed by HL to `val`
  */
 void set_hl(State8080 *state, uint8_t val) {
-    uint16_t offset = read_hl_addr(state);
+    uint16_t offset = hl_addr(state);
     mem_write(state, offset, val);
 }
 
@@ -663,11 +663,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
     cpu_io_reset(io);
 
-    unsigned char *opcode = &state->memory[state->pc];
+    uint8_t *opcode = &state->memory[state->pc];
     state->pc += 1;
-
-    // print out current instruction
-    // disassemble8080op(state->memory, state->pc);
 
     switch (*opcode) {
         case 0x00:  // NOP
@@ -1035,14 +1032,14 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // need to get the pointer
             // to update memory in correct place
-            uint16_t offset = read_hl_addr(state);
+            uint16_t offset = hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
             inr_x(state, m_ptr);
         }
             break;
         case 0x35:  // DCR M
         {
-            uint16_t offset = read_hl_addr(state);
+            uint16_t offset = hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
             dcr_x(state, m_ptr);
         }
