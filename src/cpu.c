@@ -318,6 +318,17 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
 }
 
 
+/**
+ * Sets the 16-bit value to the register pair
+ */
+void set_reg_pair(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
+    uint8_t left = (val >> 8) & 0xff;
+    uint8_t right = val & 0xff;
+    *left_ptr = left;
+    *right_ptr = right;    
+}
+
+
 /*
  * JMP to address specified
  * in bytes 2 and 3
@@ -650,10 +661,7 @@ uint8_t get_bc_mem(State8080 *state) {
 
 
 void set_bc_addr(State8080 *state, uint16_t addr) {
-    uint8_t left = (addr >> 8) & 0xff;
-    uint8_t right = addr & 0xff;
-    state->b = left;
-    state->c = right;
+    set_reg_pair(&state->b, &state->c, addr);
 }
 
 
@@ -677,10 +685,7 @@ uint8_t get_de_mem(State8080 *state) {
 
 
 void set_de_addr(State8080 *state, uint16_t addr) {
-    uint8_t left = (addr >> 8) & 0xff;
-    uint8_t right = addr & 0xff;
-    state->d = left;
-    state->e = right;
+    set_reg_pair(&state->d, &state->e, addr);
 }
 
 
@@ -717,10 +722,7 @@ uint8_t* get_hl_ptr(State8080 *state) {
 
 
 void set_hl_addr(State8080 *state, uint16_t addr) {
-    uint8_t left = (addr >> 8) & 0xff;
-    uint8_t right = addr & 0xff;
-    state->h = left;
-    state->l = right;
+    set_reg_pair(&state->h, &state->l, addr);
 }
 
 
