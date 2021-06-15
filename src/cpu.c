@@ -754,13 +754,6 @@ void cpu_interrupt(State8080 *state, int interrupt_num) {
 
 
 int cpu_emulate_op(State8080 *state, IO8080 *io) {
-    // read any in values
-    if (io->in && io->value) {
-        state->a = io->value;
-    }
-
-    cpu_io_reset(io);
-
     uint8_t *opcode = &state->memory[state->pc];
     state->pc += 1;
 
@@ -1753,14 +1746,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xd3:  // OUT D8
-        {
             io->out = 1;
-            io->port = opcode[1];
+            io->port = next_byte(state);
             io->value = state->a;
-
-            // skip over data byte
-            state->pc += 1;
-        }
             break;
         case 0xd4:
         {
@@ -1811,15 +1799,12 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xdb:  // IN D8
-        {
-            // if (state->input) {
-            //     state->a = state->input(opcode[1]);
-            // }
+            // read any in values
+            if (io->in && io->value) {
+                state->a = io->value;
+            }
             io->in = 1;
-            io->port = opcode[1];
-            // skip over data byte
-            state->pc++;
-        }
+            io->port = next_byte(state);
             break;
         case 0xdc:  // CC adr
         {
@@ -1969,8 +1954,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
         case 0xf1:  // POP PSW
         {
-            uint16_t sp_addr = state->sp;
-            uint8_t sp_val = state->memory[sp_addr];
+            uint8_t sp_val, a_val;
+            pop(state, &a_val, &sp_val);
 
             // (CY) <- ((SP))O
             state->cc.cy = sp_val & 1;
@@ -1988,23 +1973,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->cc.s = (sp_val & (1 << 7)) > 0;
 
             // (A) <- ((SP) +1)
-            state->a = state->memory[sp_addr + 1];
-
-            // (SP) <- (SP) + 2
-            state->sp += 2;
-
-            // below is the implementation from
-            // the site...
-            // uint8_t psw = state->memory[sp_addr];
-
-            // state->cc.z = (0x01 == (psw & 0x01);
-            // state->cc.s = (0x02 == (psw & 0x02);
-            // state->cc.p = (0x04 == (psw & 0x04);
-            // state->cc.cy = (0x05 == (psw & 0x05);
-            // state->cc.ac = (0x10 == (psw & 0x10);
-            //
-            // I don't think it matters as long as
-            // the flags match when pushed and popped
+            state->a = a_val;
         }
             break;
         case 0xf2:  // JP adr
