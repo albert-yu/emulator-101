@@ -1036,6 +1036,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             uint16_t offset = hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
             dcr_x(state, m_ptr);
+
+            // TODO: investigate why the below implementation
+            // changes the behavior of the emulator
             // dcr_x(state, get_hl_ptr(state));
         }
             break;
