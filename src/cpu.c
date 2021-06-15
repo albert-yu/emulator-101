@@ -764,16 +764,13 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0x04: 
             inr_x(state, &state->b);
             break;
-
         case 0x05:
             dcr_x(state, &state->b); 
             break;
-
         case 0x06: 
             // b <- byte 2
             state->b = next_byte(state);
             break;
-
         case 0x07:  // RLC: A = A << 1; bit 0 = prev bit 7; CY = prev bit 7
         {
             // get left-most bit
@@ -783,7 +780,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->a = (state->a << 1) | leftmost;
         }
             break;
-
         case 0x08:
             unused_opcode(state, *opcode);
             break;
@@ -828,8 +824,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0x12:  // STAX D: (DE) <- A
         {
-            uint16_t offset = makeword(state->d, state->e);
-            mem_write(state, offset, state->a);
+            // uint16_t offset = makeword(state->d, state->e);
+            // mem_write(state, offset, state->a);
+            set_de_mem(state, state->a);
         }
             break;
         case 0x13:
