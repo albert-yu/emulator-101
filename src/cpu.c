@@ -43,6 +43,17 @@ void* cpu_framebuffer(State8080 *state) {
 }
 
 
+#define INSTRS_TO_PRINT 10
+
+void print_instructions(State8080 *state) {
+    uint16_t pc = state->pc;
+    for (int i = 0; i < INSTRS_TO_PRINT; i++) {
+        int steps_to_advance = disassemble8080op(state->memory, pc);
+        pc += steps_to_advance;
+    }
+}
+
+
 /*
  * Print out the state for debugging
  */
@@ -71,6 +82,7 @@ void cpu_print_state(State8080 *state) {
     printf(" Interrupt enable: %d\n", state->int_enable);
     printf("----------------------------------\n");
     printf("\n");
+    print_instructions(state);
 }
 
 
