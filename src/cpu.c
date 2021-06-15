@@ -1000,45 +1000,29 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         // page 4-8 of the manual
         case 0x2b:  // DCX H: HL <- HL - 1
-        {
             dcx_xy(&state->h, &state->l);
-        }
             break;
         case 0x2c:  // INR L
-        {
             inr_x(state, &state->l);
-        }
             break;
         case 0x2d:
-        {
             dcr_x(state, &state->l);
-        }
             break;
         case 0x2e:  // MVI L,D8
             // L <- byte 2
             state->l = next_byte(state);
             break;
         case 0x2f:  // CMA: A <- !A
-        {
             // complement accumulator
             state->a = ~state->a;
             // no flags affected
-        }
             break;
         case 0x30:
             unused_opcode(state, *opcode);
             break;
         case 0x31:  // LXI SP, D16
-        {
             // SP.hi <- byte 3, SP>lo <- byte 2
-            // SP is 16 bits
-            // I think hi = most significant bits
-            uint8_t byte2, byte3;
-            byte3 = opcode[2];
-            byte2 = opcode[1];
-            state->sp = makeword(byte3, byte2);
-            state->pc += 2;
-        }
+            state->sp = next_word(state);
             break;
         case 0x32:  // STA adr
         {
