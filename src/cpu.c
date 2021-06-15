@@ -716,6 +716,14 @@ uint8_t* get_hl_ptr(State8080 *state) {
 }
 
 
+void set_hl_addr(State8080 *state, uint16_t addr) {
+    uint8_t left = (addr >> 8) & 0xff;
+    uint8_t right = addr & 0xff;
+    state->h = left;
+    state->l = right;
+}
+
+
 /*
  * Sets the memory addressed by HL to `val`
  */
@@ -824,9 +832,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0x11:  // D <- byte 3, E <- byte 2
-            // state->d = opcode[2];
-            // state->e = opcode[1];
-            // state->pc += 2;
             set_de_addr(state, next_word(state));
             break;
         case 0x12:  // STAX D: (DE) <- A
@@ -909,11 +914,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0x21:  // LXI H,D16: H <- byte 3, L <- byte 2
-        {
-            state->h = opcode[2];
-            state->l = opcode[1];
-            state->pc += 2;
-        }
+            set_hl_addr(state, next_word(state));
             break;
         case 0x22:  // SHLD adr: (adr) <-L; (adr+1)<-H
         {
