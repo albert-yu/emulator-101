@@ -107,9 +107,9 @@ void unimplemented_instr(State8080 *state) {
 
 
 void unused_opcode(State8080 *state, uint8_t opcode) {
-    printf("Error: unused opcode 0x%x\n", opcode);
-    print_failed_state(state);
-    exit(EXIT_FAILURE);
+    // printf("Error: unused opcode 0x%x\n", opcode);
+    // print_failed_state(state);
+    // exit(EXIT_FAILURE);
 }
 
 
@@ -759,7 +759,7 @@ void cpu_service_interrupt(State8080 *state) {
         return;
     }
     state->int_pending = 0;
-    state->int_enable = 0;
+    // state->int_enable = 0;
     uint8_t hi, lo;
     lo = state->pc & 0xff;
     hi = (state->pc >> 8 ) & 0xff;
@@ -893,29 +893,19 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0x19:  // DAD D: HL = HL + DE
-        {
             dad_xy(state, &state->d, &state->e);
-        }
             break;
         case 0x1a:  // LDAX D
-        {
             state->a = get_de_mem(state);
-        }
             break;
         case 0x1b:
-        {
             dcx_xy(&state->d, &state->e);
-        }
             break;
         case 0x1c:
-        {
             inr_x(state, &state->e);
-        }
             break;
         case 0x1d:
-        {
             dcr_x(state, &state->e);
-        }
             break;
         case 0x1e:  // E <- byte 2
             state->e = next_byte(state);
@@ -1313,334 +1303,199 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->a = state->a;
             break;
         case 0x80:  // ADD B
-        {
             add_x(state, state->b);
-        }            
             break;
 
         case 0x81:  // ADD C
-        {
             add_x(state, state->c);
-        }
             break;
 
         case 0x82:  // ADD D
-        {
             add_x(state, state->d);
-        } 
             break;
 
         case 0x83:  // ADD E
-        {
             add_x(state, state->e);
-        } 
             break;
         case 0x84:  // ADD H
-        {
             add_x(state, state->h);
-        } 
             break;
         case 0x85:  // ADD L
-        {
             add_x(state, state->l);
-        }
             break;
         case 0x86:  // ADD M
-        {
-            uint8_t m = get_hl_mem(state);
-            add_x(state, m);
-        }
+            // uint8_t m = get_hl_mem(state);
+            add_x(state, get_hl_mem(state));
             break;
         case 0x87:  // ADD A
-        {
             add_x(state, state->a);
-        }
             break;
         case 0x88:  // ADC B (A <- A + B + CY)
-        {
-            uint8_t b = state->b;
-            adc_x(state, b);
-        }
+            adc_x(state, state->b);
             break;
         case 0x89:  // ADC C
-        {
             adc_x(state, state->c);
-        }
             break;
         case 0x8a:  // ADC D
-        {
             adc_x(state, state->d);
-        }
             break;
         case 0x8b:  // ADC E
-        {
             adc_x(state, state->e);
-        }
             break;
         case 0x8c:  // ADC H 
-        {
             adc_x(state, state->h);
-        }
             break;
         case 0x8d:  // ADC L
-        {
             adc_x(state, state->l);
-        }
             break;
         case 0x8e:
-        {
-            uint8_t m = get_hl_mem(state);
-            adc_x(state, m);
-        }
+            adc_x(state, get_hl_mem(state));
         case 0x8f: 
-        {
             adc_x(state, state->a);
-        }
             break;
         case 0x90:  // SUB B
-        {
             sub_x(state, state->b);
-        }
             break;
         case 0x91:
-        {
             sub_x(state, state->c);
-        }
             break;
         case 0x92:
-        {
             sub_x(state, state->d);
-        }
             break;
         case 0x93:
-        {
             sub_x(state, state->e);
-        }
             break;
         case 0x94:
-        {
             sub_x(state, state->h);
-        }
             break;
         case 0x95:
-        {
             sub_x(state, state->l);
-        }
             break;
         case 0x96:  // SUB (HL)
-        {
-            uint8_t m = get_hl_mem(state);
-            sub_x(state, m);
-        }
+            sub_x(state, get_hl_mem(state));
             break;
         case 0x97:  // SUB A
-        {
             sub_x(state, state->a);
-        }
             break;
         case 0x98:  // SBB B
-        {
             sbb_x(state, state->b);
-        }
             break;
         case 0x99:
-        {
             sbb_x(state, state->c);
-        }
             break;
         case 0x9a:
-        {
             sbb_x(state, state->d);
-        }
             break;
         case 0x9b:
-        {
             sbb_x(state, state->e);
-        }
             break;
         case 0x9c:
-        {
             sbb_x(state, state->h);
-        }
             break;
         case 0x9d:
-        {
             sbb_x(state, state->l);
-        }
             break;
         case 0x9e:
-        {
-            uint8_t m = get_hl_mem(state);
-            sbb_x(state, m);
-        }
+            sbb_x(state, get_hl_mem(state));
             break;
         case 0x9f:
-        {
             sbb_x(state, state->a);
-        }
             break;
         case 0xa0:  // ANA B
-        {
             ana_x(state, state->b);
-        }
             break;
         case 0xa1:
-        {
             ana_x(state, state->c);
-        }
             break;
         case 0xa2:
-        {
             ana_x(state, state->d);
-        }
             break;
         case 0xa3:
-        {
             ana_x(state, state->e);
-        }
             break;
         case 0xa4:
-        {
             ana_x(state, state->h);
-        }
             break;
         case 0xa5:
-        {
             ana_x(state, state->l);
-        }
             break;
         case 0xa6:
-        {
-            uint8_t m = get_hl_mem(state);
-            ana_x(state, m);
-        }
+            ana_x(state, get_hl_mem(state));
             break;
         case 0xa7:
-        {
             ana_x(state, state->a);
-        }
             break;
         case 0xa8:
-        {
             xra_x(state, state->b);
-        }
             break;
         case 0xa9:
-        {
             xra_x(state, state->c);
-        }
             break;
         case 0xaa:
-        {
             xra_x(state, state->d);
-        }
             break;
         case 0xab:
-        {
             xra_x(state, state->e);
-        }
             break;
         case 0xac:
-        {
             xra_x(state, state->h);
-        }
             break;
         case 0xad:
-        {
             xra_x(state, state->l);
-        }
             break;
         case 0xae:
-        {
-            uint8_t m = get_hl_mem(state);
-            xra_x(state, m);
-        }
+            xra_x(state, get_hl_mem(state));
             break;
         case 0xaf:
-        {
             xra_x(state, state->a);
-        }
             break;
         case 0xb0:
-        {
             ora_x(state, state->b);
-        }
             break;
         case 0xb1:
-        {
             ora_x(state, state->c);
-        }
             break;
         case 0xb2:
-        {
             ora_x(state, state->d);
-        }
             break;
         case 0xb3:
-        {
             ora_x(state, state->e);
-        }
             break;
         case 0xb4:
-        {
             ora_x(state, state->h);
-        }
             break;
         case 0xb5:
-        {
             ora_x(state, state->l);
-        }
             break;
         case 0xb6:
-        {
-            uint8_t m = get_hl_mem(state);
-            ora_x(state, m);
-        }
+            ora_x(state, get_hl_mem(state));
             break;
         case 0xb7:
-        {
             ora_x(state, state->a);
-        }
             break;
         case 0xb8:  // CMP B
-        {
             cmp_x(state, state->b);
-        }
             break;
         case 0xb9:
-        {
             cmp_x(state, state->c);
-        }
             break;
         case 0xba:
-        {
             cmp_x(state, state->d);
-        }
             break;
         case 0xbb:
-        {
             cmp_x(state, state->e);
-        }
             break;
         case 0xbc:
-        {
             cmp_x(state, state->h);
-        }
             break;
         case 0xbd:
-        {
             cmp_x(state, state->l);
-        }
             break;
         case 0xbe:
-        {
             cmp_x(state, get_hl_mem(state));
-        }
             break;
         case 0xbf:
-        {
             cmp_x(state, state->a);
-        }
             break;
         case 0xc0:  // RNZ
         {
@@ -1652,11 +1507,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xc1:  // POP B
-        {
             // pop the stack into
             // registers B and C
             pop_pair(state, &state->b, &state->c);
-        }
             break;
         case 0xc2:  // JNZ adr
         {
@@ -1679,9 +1532,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xc5:  // PUSH B
-        {
             push_x(state, state->b, state->c);
-        }
             break;
         case 0xc6:  // ADI D8
         {
@@ -1701,22 +1552,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xc7:  // RST 0
-        {
             call_adr(state, 0);
-        }
             break;
         case 0xc8:  // RZ
-        {
             // if Z, RET
             if (state->cc.z) {
                 ret(state);
             }
-        }
             break;
         case 0xc9:  // RET
-        {
             ret(state);
-        }
             break;
         case 0xca:  // JZ adr
         {
@@ -1725,9 +1570,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xcb:
-        {
             unused_opcode(state, *opcode);
-        }
             break;
         case 0xcc:  // CZ adr
         {
@@ -1753,22 +1596,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xcf: // RST 8
-        {
             call_adr(state, 8);
-        }
             break;
         case 0xd0:  // RNC
-        {
             // if not carry, return
             if (!state->cc.cy) {
                 ret(state);
             }
-        } 
             break;
         case 0xd1:
-        {
             pop_pair(state, &state->d, &state->e);
-        }
             break;
         case 0xd2:  // JNC adr
         {
@@ -1790,9 +1627,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xd5:  // PUSH D
-        {
             push_x(state, state->d, state->e);
-        }
             break;
         case 0xd6:   // SUI D8
         {
@@ -1809,17 +1644,13 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         } 
             break;
         case 0xd7:  // CALL 10 (16 in decimal)
-        {
             // 0, 8, 16, 24, 32, 40, 48, and 56
             call_adr(state, 16);
-        }
             break;
         case 0xd8:  // RC
-        {
             if (state->cc.cy) {
                 ret(state);
             }
-        }
             break;
         case 0xd9:
             unused_opcode(state, *opcode);
@@ -1865,22 +1696,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xdf:
-        {
             call_adr(state, 24);
-        }
             break;
         case 0xe0:  // RPO
-        {
             // if parity odd, RET
             if (!state->cc.p) {
                 ret(state);
             }
-        }
             break;
         case 0xe1:  // POP H
-        {
             pop_pair(state, &state->h, &state->l);
-        }
             break;
         case 0xe2:  // JPO adr
         {
@@ -1907,9 +1732,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xe5:  // PUSH H
-        {
             push_x(state, state->h, state->l);
-        }
             break;
         case 0xe6:  // ANI D8
         {
@@ -1920,23 +1743,17 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xe7:
-        {
             // decimal value = 32
             call_adr(state, 0x20);
-        }
             break;
         case 0xe8:  // RPE
-        {
             if (state->cc.p) {
                 ret(state);
             }
-        }
             break;
         case 0xe9:  // PCHL
-        {
             // PC.hi <- H; PC.lo <- L
             state->pc = makeword(state->h, state->l);
-        }
             break;
         case 0xea:  // JPE adr
         {
@@ -1946,11 +1763,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xeb:  // XCHG
-        {
             // H <-> D; L <-> E
             swp_ptrs(&state->h, &state->d);
             swp_ptrs(&state->l, &state->e);
-        }
             break;
         case 0xec:  // CPE adr
         {
@@ -1973,17 +1788,13 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xef:  // RST
-        {
             call_adr(state, 0x28);
-        }
             break;
         case 0xf0:  // RP
-        {
             // if positive, RET
             if (state->cc.s == 0) {
                 ret(state);
             }
-        }
         case 0xf1:  // POP PSW
         {
             uint8_t sp_val, a_val;
@@ -2016,10 +1827,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xf3:  // DI
-        {
             // disable interrupts
             state->int_enable = 0;
-        }
             break;
         case 0xf4:   // CP adr
         {
