@@ -46,6 +46,9 @@ typedef struct machine_t {
 
     // type of interrupt (1 or 2)
     int int_type;
+
+    // total cycles
+    unsigned long cycles;
 } Machine;
 
 

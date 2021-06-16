@@ -97,10 +97,33 @@ timestamp ts_utc_micro() {
 #define INV_FPS (1.0 / 60.0)
 #define INTERVAL_MICROSEC (INV_FPS * 1e6 / MHZ)
 
+// number of cycles between interrupts
+#define CYCLES_INTERVAL 16667
+
+
+void process_interrupts(Machine *machine) {
+    if (machine->cycles < CYCLES_INTERVAL) {
+        return;
+    }
+
+    machine->cycles -= CYCLES_INTERVAL;
+
+    if (machine->cpu_state->int_enable) {
+        cpu_generate_interrupt(machine->cpu_state, machine->int_type);
+
+        // trick to flip between 1 and 2
+        machine->int_type = 3 - machine->int_type;
+    }
+}
+
 
 int machine_step(Machine *machine) {
     IO8080 *io = machine->io;
     int cycles = cpu_emulate_op(machine->cpu_state, io);
+    machine->cycles += cycles;
+
+    process_interrupts(machine);
+
     if (cpu_io_empty(*io)) {
         return cycles;
     }
@@ -131,13 +154,13 @@ void machine_do_sync(Machine *machine) {
         machine->int_type = 1;
     }
 
-    if (machine->cpu_state->int_enable && now > machine->next_int) {
-        cpu_generate_interrupt(machine->cpu_state, machine->int_type);
+    // if (machine->cpu_state->int_enable && now > machine->next_int) {
+    //     cpu_generate_interrupt(machine->cpu_state, machine->int_type);
 
-        // trick to flip between 1 and 2
-        machine->int_type = 3 - machine->int_type;
-        machine->next_int = now + INTERVAL_MICROSEC / 2.0;
-    }
+    //     // trick to flip between 1 and 2
+    //     machine->int_type = 3 - machine->int_type;
+    //     machine->next_int = now + INTERVAL_MICROSEC / 2.0;
+    // }
 
     timestamp since_last = now - machine->last_ts;
 
