@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <string.h>
 
 #include "machine.h"
 #include "platform.h"
@@ -113,6 +114,7 @@ void platform_step(Machine *machine) {
             // show state
             printf("Emulator state:\n");
             cpu_print_state(machine->cpu_state);
+            printf("Cycles: %zu\n", machine->cycles);
             printf("Instructions executed: %zu\n", instr_count);
 
             // render pixels
@@ -122,8 +124,11 @@ void platform_step(Machine *machine) {
             printf(
                 "Press enter to advance one instruction, or " 
                 "enter number of instructions to advance "
-                "and then press enter: "); 
+                "and then press enter (press 'q' to quit): "); 
             fgets(user_in, 20, stdin);
+            if (strncmp(user_in, "q", 1) == 0) {
+                break;
+            }
             instrs_to_advance = get_num_instrs(user_in);
             if (instrs_to_advance == 0) {
                 continue;
