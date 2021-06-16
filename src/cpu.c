@@ -748,13 +748,23 @@ void cpu_io_reset(IO8080 *io) {
 }
 
 
-void cpu_interrupt(State8080 *state, int interrupt_num) {
+void cpu_generate_interrupt(State8080 *state, int interrupt_num) {
+    state->int_pending = 1;
+    state->int_type = 8 * interrupt_num;
+}
+
+
+void cpu_service_interrupt(State8080 *state) {
+    if (!state->int_enable || !state->int_pending || state->int_delay != 0) {
+        return;
+    }
+    state->int_pending = 0;
+    state->int_enable = 0;
     uint8_t hi, lo;
     lo = state->pc & 0xff;
-    hi = (state->pc >> 8) & 0xff;
+    hi = (state->pc >> 8 ) & 0xff;
     push_x(state, hi, lo);
-
-    state->pc = 8 * interrupt_num;
+    state->pc = state->int_type;
 }
 
 
@@ -763,6 +773,14 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         printf("PC exceeds ROM\n");
         print_failed_state(state);
         exit(EXIT_FAILURE);
+    }
+
+    cpu_service_interrupt(state);
+
+    // interrupts are not serviced until
+    // the next instruction
+    if (state->int_delay > 0) {
+        state->int_delay--;
     }
 
     uint8_t *opcode = &state->memory[state->pc];
@@ -2074,6 +2092,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0xfb:  // EI
             // enable interrupts
             state->int_enable = 1;
+            state->int_delay = 1;
             break;
         case 0xfc:  // CM adr
             // if minus, call

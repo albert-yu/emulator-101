@@ -132,7 +132,7 @@ void machine_do_sync(Machine *machine) {
     }
 
     if (machine->cpu_state->int_enable && now > machine->next_int) {
-        cpu_interrupt(machine->cpu_state, machine->int_type);
+        cpu_generate_interrupt(machine->cpu_state, machine->int_type);
 
         // trick to flip between 1 and 2
         machine->int_type = 3 - machine->int_type;
