@@ -802,7 +802,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
     uint8_t *opcode = &state->memory[state->pc];
 
-    disassemble8080op(state->memory, state->pc);
+    // disassemble8080op(state->memory, state->pc);
     state->cycles += cycles_lookup[*opcode];
 
     // interrupts are not serviced until
