@@ -790,6 +790,12 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         exit(EXIT_FAILURE);
     }
 
+    if (io->in && io->value) {
+        // read any in values
+        state->a = io->value;
+    }
+    cpu_io_reset(io);
+
     cpu_service_interrupt(state);
 
     unsigned long cycles_old = state->cycles;
@@ -1668,10 +1674,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xdb:  // IN D8
-            // read any in values
-            if (io->in && io->value) {
-                state->a = io->value;
-            }
             io->in = 1;
             io->port = next_byte(state);
             break;

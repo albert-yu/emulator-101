@@ -193,6 +193,7 @@ int sleep_msec(long microseconds) {
 
 void machine_run(Machine *machine, long sleep_microseconds) {
     machine_do_sync(machine);
+    // machine_step(machine);
     sleep_msec(sleep_microseconds);
 }
 
