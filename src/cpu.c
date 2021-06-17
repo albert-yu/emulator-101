@@ -748,7 +748,7 @@ void cpu_io_reset(IO8080 *io) {
 }
 
 
-void cpu_generate_interrupt(State8080 *state, int interrupt_num) {
+void cpu_request_interrupt(State8080 *state, int interrupt_num) {
     state->int_pending = 1;
     state->int_type = 8 * interrupt_num;
 }

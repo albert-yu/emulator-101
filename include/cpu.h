@@ -114,7 +114,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io);
 /**
  * Generates an interrupt
  */
-void cpu_generate_interrupt(State8080 *state, int interrupt_num);
+void cpu_request_interrupt(State8080 *state, int interrupt_num);
 
 
 /**

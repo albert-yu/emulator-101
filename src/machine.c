@@ -109,7 +109,7 @@ void process_interrupts(Machine *machine) {
     machine->cycles -= CYCLES_INTERVAL;
 
     if (machine->cpu_state->int_enable) {
-        cpu_generate_interrupt(machine->cpu_state, machine->int_type);
+        cpu_request_interrupt(machine->cpu_state, machine->int_type);
 
         // trick to flip between 1 and 2
         machine->int_type = 3 - machine->int_type;
