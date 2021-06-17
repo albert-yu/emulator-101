@@ -448,6 +448,14 @@ void ret(State8080 *state) {
 }
 
 
+void ret_cond(State8080 *state, uint8_t cond) {
+    if (cond) {
+        ret(state);
+        update_cond_cycles(state);
+    } 
+}
+
+
 /*
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
@@ -1510,10 +1518,11 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0xc0:  // RNZ
         {
             // if NZ, RET
-            uint8_t not_zero = !state->cc.z;
-            if (not_zero) {
-                ret(state);
-            }
+            // uint8_t not_zero = !state->cc.z;
+            // if (not_zero) {
+            //     ret(state);
+            // }
+            ret_cond(state, !state->cc.z);
         }
             break;
         case 0xc1:  // POP B
