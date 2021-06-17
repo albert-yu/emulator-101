@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include <inttypes.h>
+#include <stdint.h>
 
 typedef struct condition_codes_t {
     // zero: set if result is 0
@@ -77,6 +78,11 @@ typedef struct state8080_t {
 
     // 1 if interrupt enabled
     uint8_t             int_enable;
+    uint8_t             int_pending;
+    uint8_t             int_delay;
+    uint8_t             int_type;
+
+    unsigned long       cycles;
 } State8080;
 
 
@@ -98,6 +104,7 @@ uint8_t cpu_io_empty(IO8080 io);
  */
 void cpu_io_reset(IO8080 *io);
 
+
 /*
  * Given the state, emulates the opcode
  * pointed to by the program counter
@@ -109,7 +116,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io);
 /**
  * Generates an interrupt
  */
-void cpu_interrupt(State8080 *state, int interrupt_num);
+void cpu_request_interrupt(State8080 *state, int interrupt_num);
+
 
 /**
  * Returns the framebuffer from memory

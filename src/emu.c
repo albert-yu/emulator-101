@@ -32,22 +32,6 @@ void state_free(State8080 *state) {
 // 2^15 addressable 8-bit chunks
 #define MAX_MEM (1 << 15)
 
-// /*
-//  * Returns the number of instructions
-//  * to advance
-//  */
-// size_t get_num_instrs(char *input) {
-//     if (strlen(input) == 1) {
-//         return 1;
-//     }
-//     // If the string starts with an 
-//     // alphanumeric character or only 
-//     // contains alphanumeric characters,
-//     // 0 is returned.
-//     size_t steps = (size_t) atoi(input);
-//     return steps < MAX_STEPS ? steps : MAX_STEPS;
-// }
-
 
 #define H_START 0x0000
 #define G_START 0x0800
@@ -106,35 +90,6 @@ void load_invaders(char *invaders_folder, uint8_t *memory) {
 }
 
 
-// void emu_step(Machine *machine) {
-//     size_t instr_count = 0;
-//     char user_in [20];
-
-//     size_t instrs_to_advance = 0;
-//     while (1) {
-//         printf("Emulator state:\n");
-//         cpu_print_state(machine->cpu_state);
-//         printf("Instructions executed: %zu\n", instr_count);
-
-//         if (instrs_to_advance == 0) {
-//             printf(
-//                 "Press enter to advance one instruction, or " 
-//                 "enter number of instructions to advance "
-//                 "and then press enter: "); 
-//             fgets(user_in, 20, stdin);
-//             instrs_to_advance = get_num_instrs(user_in);
-//             if (instrs_to_advance == 0) {
-//                 continue;
-//             }
-//         }
-//         printf("\n\n");
-//         machine_step(machine);
-//         instr_count++;
-//         instrs_to_advance--;
-//     }
-// }
-
-
 int emu_start(char *folder, EmuMode mode) {
     // declare ConditionCodes struct
     ConditionCodes cc;
@@ -159,6 +114,10 @@ int emu_start(char *folder, EmuMode mode) {
         .sp = 0,
         .pc = 0,
         .int_enable = 0,
+        .int_delay = 0,
+        .int_pending = 0,
+        .int_type = 0,
+        .cycles = 0,
         .memory = (uint8_t*) malloc(MAX_MEM * sizeof(*state.memory)),
         .cc = cc
     };
@@ -176,7 +135,8 @@ int emu_start(char *folder, EmuMode mode) {
         .cpu_state = &state,
         .shift_register = 0,
         .io = &io,
-        .ports = {0, 0, 0, 0, 0, 0, 0}
+        .ports = {0, 0, 0, 0, 0, 0, 0},
+        .int_type = 1,
     };
 
     load_invaders(folder, state.memory);
