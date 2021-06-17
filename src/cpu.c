@@ -290,7 +290,7 @@ void set_arith_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     }
     if (cleaned & SET_AC_FLAG) {
         state->cc.ac = auxcarry(answer); 
-  }
+    }
 }
 
 
@@ -317,7 +317,7 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
     }
     if (cleaned & SET_AC_FLAG) {
         state->cc.ac = 0; 
-  }
+    }
 }
 
 
@@ -452,7 +452,7 @@ void ret_cond(State8080 *state, uint8_t cond) {
     if (cond) {
         ret(state);
         update_cond_cycles(state);
-    } 
+    }
 }
 
 
