@@ -8,7 +8,7 @@
 /**
  * CPU cycle lookup table
  */
-uint8_t cycles[] = {
+uint8_t cycles_lookup[] = {
     4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x00..0x0f
     4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x10..0x1f
     4, 10, 16, 5, 5, 5, 7, 4, 4, 10, 16, 5, 5, 5, 7, 4, //etc
@@ -391,6 +391,12 @@ void call_adr(State8080 *state, uint16_t adr) {
 }
 
 
+void update_cond_cycles(State8080 *state) {
+    // if condition taken, increase cycle count by 6
+    state->cycles += 6;
+}
+
+
 /*
  * CALL conditionally
  * If cond is TRUE, then CALL subr
@@ -398,6 +404,7 @@ void call_adr(State8080 *state, uint16_t adr) {
 void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
     if (cond) {
         call_adr(state, subr);
+        update_cond_cycles(state);
     } else {
         // otherwise, move onto
         // next instruction
@@ -777,13 +784,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
     cpu_service_interrupt(state);
 
+    unsigned long cycles_old = state->cycles;
+
+    uint8_t *opcode = &state->memory[state->pc];
+    state->cycles += cycles_lookup[*opcode];
+
     // interrupts are not serviced until
     // the next instruction
     if (state->int_delay > 0) {
         state->int_delay--;
     }
-
-    uint8_t *opcode = &state->memory[state->pc];
     state->pc += 1;
 
     switch (*opcode) {
@@ -1918,5 +1928,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
     }
 
-    return cycles[*opcode];
+    unsigned long cycles_new = state->cycles;
+
+    return cycles_new - cycles_old;
 }

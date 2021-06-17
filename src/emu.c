@@ -162,6 +162,7 @@ int emu_start(char *folder, EmuMode mode) {
         .int_delay = 0,
         .int_pending = 0,
         .int_type = 0,
+        .cycles = 0,
         .memory = (uint8_t*) malloc(MAX_MEM * sizeof(*state.memory)),
         .cc = cc
     };

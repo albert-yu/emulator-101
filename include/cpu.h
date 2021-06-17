@@ -81,6 +81,8 @@ typedef struct state8080_t {
     uint8_t             int_pending;
     uint8_t             int_delay;
     uint8_t             int_type;
+
+    unsigned long       cycles;
 } State8080;
 
 
