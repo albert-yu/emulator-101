@@ -53,7 +53,7 @@ void render_bitmap_upright(SDL_Renderer *renderer, uint8_t *framebuf) {
 }
 
 
-#define MAX_STEPS 1e6
+#define MAX_STEPS 1e7
 
 size_t get_num_instrs(char *input) {
     if (strlen(input) == 1) {

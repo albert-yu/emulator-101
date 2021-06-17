@@ -60,3 +60,5 @@ invaders/
 .cache/
 compile_commands.json
 .vscode
+
+out*.txt
