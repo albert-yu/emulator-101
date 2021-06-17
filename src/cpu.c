@@ -1516,14 +1516,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             cmp_x(state, state->a);
             break;
         case 0xc0:  // RNZ
-        {
-            // if NZ, RET
-            // uint8_t not_zero = !state->cc.z;
-            // if (not_zero) {
-            //     ret(state);
-            // }
             ret_cond(state, !state->cc.z);
-        }
             break;
         case 0xc1:  // POP B
             // pop the stack into
@@ -1575,9 +1568,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xc8:  // RZ
             // if Z, RET
-            if (state->cc.z) {
-                ret(state);
-            }
+            ret_cond(state, state->cc.z);
             break;
         case 0xc9:  // RET
             ret(state);
@@ -1619,9 +1610,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xd0:  // RNC
             // if not carry, return
-            if (!state->cc.cy) {
-                ret(state);
-            }
+            ret_cond(state, !state->cc.cy);
             break;
         case 0xd1:
             pop_pair(state, &state->d, &state->e);
@@ -1667,9 +1656,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_adr(state, 16);
             break;
         case 0xd8:  // RC
-            if (state->cc.cy) {
-                ret(state);
-            }
+            ret_cond(state, state->cc.cy);
             break;
         case 0xd9:
             unused_opcode(state, *opcode);
@@ -1719,9 +1706,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xe0:  // RPO
             // if parity odd, RET
-            if (!state->cc.p) {
-                ret(state);
-            }
+            ret_cond(state, !state->cc.p);
             break;
         case 0xe1:  // POP H
             pop_pair(state, &state->h, &state->l);
@@ -1766,9 +1751,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_adr(state, 0x20);
             break;
         case 0xe8:  // RPE
-            if (state->cc.p) {
-                ret(state);
-            }
+            ret_cond(state, state->cc.p);
             break;
         case 0xe9:  // PCHL
             // PC.hi <- H; PC.lo <- L
@@ -1811,9 +1794,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xf0:  // RP
             // if positive, RET
-            if (state->cc.s == 0) {
-                ret(state);
-            }
+            ret_cond(state, state->cc.s == 0);
         case 0xf1:  // POP PSW
         {
             uint8_t sp_val, a_val;
@@ -1906,9 +1887,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xf8:  // RM
             // if minus, RET
-            if (state->cc.s) {
-                ret(state);
-            }
+            ret_cond(state, state->cc.s);
             break;
         case 0xf9:  // SPHL: SP = HL
             state->sp = hl_addr(state);
