@@ -732,15 +732,6 @@ uint8_t get_hl_mem(State8080 *state) {
 }
 
 
-/**
- * Returns pointer to value in memory
- * pointed to by HL register pair
- */
-uint8_t* get_hl_ptr(State8080 *state) {
-    return mem_read_ptr(state, hl_addr(state));
-}
-
-
 void set_hl_addr(State8080 *state, uint16_t addr) {
     set_reg_pair(&state->h, &state->l, addr);
 }
@@ -1071,17 +1062,17 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->sp++; 
             break;
         case 0x34:  // INR M
-            inr_x(state, get_hl_ptr(state));
+        {
+            uint16_t offset = hl_addr(state);
+            uint8_t *m_ptr = &state->memory[offset];
+            inr_x(state, m_ptr);
+        }
             break;
         case 0x35:  // DCR M
         {
             uint16_t offset = hl_addr(state);
             uint8_t *m_ptr = &state->memory[offset];
             dcr_x(state, m_ptr);
-
-            // TODO: investigate why the below implementation
-            // changes the behavior of the emulator
-            // dcr_x(state, get_hl_ptr(state));
         }
             break;
         case 0x36:  // (HL) <- byte 2
