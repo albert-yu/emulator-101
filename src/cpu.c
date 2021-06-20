@@ -363,7 +363,8 @@ void call_adr(State8080 *state, uint16_t adr) {
     // off
     uint16_t sp_addr, ret_addr;
     sp_addr = state->sp;
-    ret_addr = state->pc + 2;
+    // ret_addr = state->pc + 2;
+    ret_addr = state->pc;
 
     // split return address
     // into two parts
@@ -1544,7 +1545,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xc7:  // RST 0
-            call_adr(state, 0);
+            call_adr(state, 0x00);
             break;
         case 0xc8:  // RZ
             // if Z, RET
@@ -1563,10 +1564,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_cond(state, state->cc.z);
             break;
         case 0xcd:  // CALL adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_adr(state, adr); 
-        }
+            call_adr(state, next_word(state)); 
             break;
         case 0xce:  // ACI D8: A <- A + data + CY
         {
@@ -1580,7 +1578,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xcf: // RST 8
-            call_adr(state, 8);
+            call_adr(state, 0x08);
             break;
         case 0xd0:  // RNC
             // if not carry, return
@@ -1618,9 +1616,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->pc += 1;
         } 
             break;
-        case 0xd7:  // CALL 10 (16 in decimal)
+        case 0xd7:  // RST 2: CALL 10 (hex)
             // 0, 8, 16, 24, 32, 40, 48, and 56
-            call_adr(state, 16);
+            call_adr(state, 0x10);
             break;
         case 0xd8:  // RC
             ret_cond(state, state->cc.cy);
@@ -1658,8 +1656,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->pc += 2;
         }
             break;
-        case 0xdf:
-            call_adr(state, 24);
+        case 0xdf: // RST 3
+            call_adr(state, 0x18);
             break;
         case 0xe0:  // RPO
             // if parity odd, RET
@@ -1696,8 +1694,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->pc += 1;
         }
             break;
-        case 0xe7:
-            // decimal value = 32
+        case 0xe7:  // RST 4
             call_adr(state, 0x20);
             break;
         case 0xe8:  // RPE
@@ -1733,7 +1730,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->pc += 1;
         }
             break;
-        case 0xef:  // RST
+        case 0xef:  // RST 5
             call_adr(state, 0x28);
             break;
         case 0xf0:  // RP
@@ -1849,7 +1846,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0xfe:  // CPI byte
             cmp_x(state, next_byte(state));
             break;
-        case 0xff:
+        case 0xff:  // RST 7
             call_adr(state, 0x38);
             break;
     }
