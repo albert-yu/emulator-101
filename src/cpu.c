@@ -333,14 +333,12 @@ void jmp(State8080 *state, uint16_t adr) {
 
 
 /*
- * If cond, JMP adr
+ * If `cond`, JMP to next address
  */
-void jmp_cond(State8080 *state, uint16_t adr, uint8_t cond) {
+void jmp_cond(State8080 *state, uint8_t cond) {
+    uint16_t adr = next_word(state);
     if (cond) {
         jmp(state, adr);
-    } else {
-        // branch not taken
-        state->pc += 2;
     }
 }
 
@@ -388,19 +386,22 @@ void update_cond_cycles(State8080 *state) {
 }
 
 
-/*
+/**
  * CALL conditionally
- * If cond is TRUE, then CALL subr
+ * If cond is TRUE, then CALL subroutine in following
+ * two op bytes
  */
-void call_cond(State8080 *state, uint16_t subr, uint8_t cond) {
+void call_cond(State8080 *state, uint8_t cond) {
+    uint16_t subr = next_word(state);
     if (cond) {
         call_adr(state, subr);
         update_cond_cycles(state);
-    } else {
-        // otherwise, move onto
-        // next instruction
-        state->pc += 2;
     }
+    // else {
+    //     // otherwise, move onto
+    //     // next instruction
+    //     state->pc += 2;
+    // }
 }
 
 
@@ -1514,11 +1515,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             pop_pair(state, &state->b, &state->c);
             break;
         case 0xc2:  // JNZ adr
-        {
-            uint8_t notzero = state->cc.z == 0;
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, notzero);
-        }
+            jmp_cond(state, state->cc.z == 0);
             break;
         case 0xc3:  // JMP adr
         {
@@ -1527,11 +1524,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xc4:  // CNZ adr
-        {
-            uint8_t notzero = !state->cc.z; 
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, notzero);
-        }
+            call_cond(state, !state->cc.z);
             break;
         case 0xc5:  // PUSH B
             push_x(state, state->b, state->c);
@@ -1564,19 +1557,13 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             ret(state);
             break;
         case 0xca:  // JZ adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, state->cc.z);
-        }
+            jmp_cond(state, state->cc.z);
             break;
         case 0xcb:
             unused_opcode(state, *opcode);
             break;
         case 0xcc:  // CZ adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, state->cc.z);
-        }
+            call_cond(state, state->cc.z);
             break;
         case 0xcd:  // CALL adr
         {
@@ -1606,11 +1593,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             pop_pair(state, &state->d, &state->e);
             break;
         case 0xd2:  // JNC adr
-        {
             // if not carry, jmp
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, !state->cc.cy);
-        }
+            jmp_cond(state, !state->cc.cy);
             break;
         case 0xd3:  // OUT D8
             io->out = 1;
@@ -1618,11 +1602,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             io->value = state->a;
             break;
         case 0xd4:
-        {
-            uint8_t nocarry = !state->cc.cy;
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, nocarry);
-        }
+            call_cond(state, !state->cc.cy);
             break;
         case 0xd5:  // PUSH D
             push_x(state, state->d, state->e);
@@ -1652,20 +1632,14 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode);
             break;
         case 0xda:
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, state->cc.cy);
-        }
+            jmp_cond(state, state->cc.cy);
             break;
         case 0xdb:  // IN D8
             io->in = 1;
             io->port = next_byte(state);
             break;
         case 0xdc:  // CC adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, state->cc.cy);
-        }
+            call_cond(state, state->cc.cy);
             break;
         case 0xdd:
             unused_opcode(state, *opcode); 
@@ -1698,10 +1672,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             pop_pair(state, &state->h, &state->l);
             break;
         case 0xe2:  // JPO adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, !state->cc.p);
-        }
+            jmp_cond(state, !state->cc.p);
             break;
         case 0xe3:  // XTHL
         {
@@ -1715,11 +1686,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xe4:  // CPO adr
-        {
-            uint8_t odd = !state->cc.p;
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, odd);
-        }
+            call_cond(state, !state->cc.p);
             break;
         case 0xe5:  // PUSH H
             push_x(state, state->h, state->l);
@@ -1744,11 +1711,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->pc = makeword(state->h, state->l);
             break;
         case 0xea:  // JPE adr
-        {
             // jmp if even
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, state->cc.p);
-        }
+            jmp_cond(state, state->cc.p);
             break;
         case 0xeb:  // XCHG
             // H <-> D; L <-> E
@@ -1756,11 +1720,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             swp_ptrs(&state->l, &state->e);
             break;
         case 0xec:  // CPE adr
-        {
             // call address if parity even
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, state->cc.p);
-        }
+            call_cond(state, state->cc.p);
             break;
         case 0xed:
             unused_opcode(state, *opcode);
@@ -1806,22 +1767,16 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0xf2:  // JP adr
-        {
             // if positive, JMP
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp_cond(state, adr, state->cc.s == 0);
-        }
+            jmp_cond(state, state->cc.s == 0);
             break;
         case 0xf3:  // DI
             // disable interrupts
             state->int_enable = 0;
             break;
         case 0xf4:   // CP adr
-        {
-            uint8_t pos = !state->cc.s;
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            call_cond(state, adr, pos);
-        }
+            // call if positive
+            call_cond(state, !state->cc.s);
             break;
         case 0xf5:  // PUSH PSW
         {
@@ -1880,7 +1835,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xfa:  // JM
             // jump if sign is negative (sign = 1)
-            jmp_cond(state, next_word(state), state->cc.s);
+            jmp_cond(state, state->cc.s);
             break;
         case 0xfb:  // EI
             // enable interrupts
@@ -1888,8 +1843,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->int_delay = 1;
             break;
         case 0xfc:  // CM adr
-            // if minus, call
-            call_cond(state, next_word(state), state->cc.s);
+            // if negative, call
+            call_cond(state, state->cc.s);
             break;
         case 0xfd:
             unused_opcode(state, *opcode);
