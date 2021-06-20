@@ -117,13 +117,25 @@ void unused_opcode(State8080 *state, uint8_t opcode) {
  * Writes to memory only if the offset is valid.
  * Otherwise, exits the program with failure.
  */
-void mem_write(State8080 *state, uint16_t offset, uint8_t value) {
+void mem_write_byte(State8080 *state, uint16_t offset, uint8_t value) {
     if (offset >= ROM_START && offset <= ROM_END) {
         printf("Fatal error: tried to write to ROM at address 0x%x\n", offset);
         print_failed_state(state);
         exit(EXIT_FAILURE);
     }
     state->memory[offset] = value;
+}
+
+
+/**
+ * Writes a word to memory and ensures no writing to ROM
+ */
+void mem_write_word(State8080 *state, uint16_t offset, uint16_t word) {
+    uint8_t hi, lo;
+    hi = (word >> 8) & 0xff;
+    lo = word & 0xff;
+    mem_write_byte(state, offset + 1, hi);
+    mem_write_byte(state, offset, lo);
 }
 
 
@@ -343,13 +355,22 @@ void jmp_cond(State8080 *state, uint8_t cond) {
 }
 
 
+/**
+ * Pushes word onto the stack
+ */
+void push_word(State8080 *state, uint16_t word) {
+    state->sp -= 2;
+    mem_write_word(state, state->sp, word);
+}
+
+
 /*
  * Pushes contents onto the stack.
  */
-void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
+void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
     uint16_t sp_addr = state->sp;
-    mem_write(state, sp_addr - 1, hi);
-    mem_write(state, sp_addr - 2, lo);
+    mem_write_byte(state, sp_addr - 1, hi);
+    mem_write_byte(state, sp_addr - 2, lo);
     state->sp -= 2;
 }
 
@@ -358,26 +379,27 @@ void push_x(State8080 *state, uint8_t hi, uint8_t lo) {
  * Call specified target address (need for RST)
  */
 void call_adr(State8080 *state, uint16_t adr) {
-    // get return address
-    // to pick up where left
-    // off
-    uint16_t sp_addr, ret_addr;
-    sp_addr = state->sp;
-    // ret_addr = state->pc + 2;
-    ret_addr = state->pc;
+    // // get return address
+    // // to pick up where left
+    // // off
+    // uint16_t sp_addr, ret_addr;
+    // sp_addr = state->sp;
+    // // ret_addr = state->pc + 2;
+    // ret_addr = state->pc;
 
-    // split return address
-    // into two parts
-    uint8_t hi_addr, lo_addr;
-    hi_addr = (ret_addr >> 8) & 0xff;
-    lo_addr = ret_addr & 0xff;
+    // // split return address
+    // // into two parts
+    // uint8_t hi_addr, lo_addr;
+    // hi_addr = (ret_addr >> 8) & 0xff;
+    // lo_addr = ret_addr & 0xff;
 
-    // push return address onto the stack
-    push_x(state, hi_addr, lo_addr);
+    // // push return address onto the stack
+    // push_x(state, hi_addr, lo_addr);
+    push_word(state, state->pc);
 
-    // set program counter to
-    // target address
-    state->pc = adr;
+    // // set program counter to
+    // // target address
+    jmp(state, adr);
 }
 
 
@@ -679,7 +701,7 @@ void set_bc_addr(State8080 *state, uint16_t addr) {
 
 
 void set_bc_mem(State8080 *state, uint8_t val) {
-    mem_write(state, bc_addr(state), val);
+    mem_write_byte(state, bc_addr(state), val);
 }
 
 
@@ -703,7 +725,7 @@ void set_de_addr(State8080 *state, uint16_t addr) {
 
 
 void set_de_mem(State8080 *state, uint8_t val) {
-    mem_write(state, de_addr(state), val);
+    mem_write_byte(state, de_addr(state), val);
 }
 
 
@@ -735,7 +757,7 @@ void set_hl_addr(State8080 *state, uint16_t addr) {
  */
 void set_hl_mem(State8080 *state, uint8_t val) {
     uint16_t offset = hl_addr(state);
-    mem_write(state, offset, val);
+    mem_write_byte(state, offset, val);
 }
 
 
@@ -762,7 +784,7 @@ void cpu_service_interrupt(State8080 *state) {
     uint8_t hi, lo;
     lo = state->pc & 0xff;
     hi = (state->pc >> 8 ) & 0xff;
-    push_x(state, hi, lo);
+    push_pair(state, hi, lo);
     state->pc = state->int_type;
 }
 
@@ -946,8 +968,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // when put together
             // uint16_t addr = makeword(opcode[2], opcode[1]);
             uint16_t addr = next_word(state);
-            mem_write(state, addr, state->l);
-            mem_write(state, addr + 1, state->h);
+            mem_write_byte(state, addr, state->l);
+            mem_write_byte(state, addr + 1, state->h);
             // state->pc += 2;
         }
             break;
@@ -1046,7 +1068,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             // store accumulator direct
             // uint16_t addr = makeword(opcode[2], opcode[1]);
             uint16_t addr = next_word(state);
-            mem_write(state, addr, state->a);
+            mem_write_byte(state, addr, state->a);
             // state->pc += 2;
         }
             break;
@@ -1525,7 +1547,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_cond(state, !state->cc.z);
             break;
         case 0xc5:  // PUSH B
-            push_x(state, state->b, state->c);
+            push_pair(state, state->b, state->c);
             break;
         case 0xc6:  // ADI D8
         {
@@ -1600,7 +1622,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_cond(state, !state->cc.cy);
             break;
         case 0xd5:  // PUSH D
-            push_x(state, state->d, state->e);
+            push_pair(state, state->d, state->e);
             break;
         case 0xd6:   // SUI D8
         {
@@ -1684,7 +1706,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_cond(state, !state->cc.p);
             break;
         case 0xe5:  // PUSH H
-            push_x(state, state->h, state->l);
+            push_pair(state, state->h, state->l);
             break;
         case 0xe6:  // ANI D8
         {
@@ -1777,7 +1799,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             uint16_t sp_adr = state->sp;
             
             // ((SP) - 1) <- A
-            mem_write(state, sp_adr - 1, state->a);
+            mem_write_byte(state, sp_adr - 1, state->a);
 
             uint8_t sp_flags = 0;
 
@@ -1802,7 +1824,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
             // (........)7 <- S
             sp_flags |= (state->cc.s << 7);
-            mem_write(state, sp_adr - 2, sp_flags);
+            mem_write_byte(state, sp_adr - 2, sp_flags);
 
             // (SP) <- (SP) - 2
             state->sp -= 2;
