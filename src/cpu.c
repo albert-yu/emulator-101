@@ -376,29 +376,14 @@ void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
 
 
 /*
- * Call specified target address (need for RST)
+ * Call specified target address
  */
 void call_adr(State8080 *state, uint16_t adr) {
-    // // get return address
-    // // to pick up where left
-    // // off
-    // uint16_t sp_addr, ret_addr;
-    // sp_addr = state->sp;
-    // // ret_addr = state->pc + 2;
-    // ret_addr = state->pc;
-
-    // // split return address
-    // // into two parts
-    // uint8_t hi_addr, lo_addr;
-    // hi_addr = (ret_addr >> 8) & 0xff;
-    // lo_addr = ret_addr & 0xff;
-
-    // // push return address onto the stack
-    // push_x(state, hi_addr, lo_addr);
+    // push return address onto the stack
     push_word(state, state->pc);
 
-    // // set program counter to
-    // // target address
+    // set program counter to
+    // target address
     jmp(state, adr);
 }
 
@@ -420,11 +405,6 @@ void call_cond(State8080 *state, uint8_t cond) {
         call_adr(state, subr);
         update_cond_cycles(state);
     }
-    // else {
-    //     // otherwise, move onto
-    //     // next instruction
-    //     state->pc += 2;
-    // }
 }
 
 
@@ -781,11 +761,8 @@ void cpu_service_interrupt(State8080 *state) {
     }
     state->int_pending = 0;
     // state->int_enable = 0;
-    uint8_t hi, lo;
-    lo = state->pc & 0xff;
-    hi = (state->pc >> 8 ) & 0xff;
-    push_pair(state, hi, lo);
-    state->pc = state->int_type;
+    push_word(state, state->pc);
+    jmp(state, state->int_type);
 }
 
 
