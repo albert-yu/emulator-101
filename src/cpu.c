@@ -278,7 +278,7 @@ uint8_t auxcarry(uint16_t answer) {
  */
 void set_arith_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
     // remove trailing bits
-    uint8_t cleaned = flagstoset & 0b11111000;
+    uint8_t cleaned = flagstoset & SET_ALL_FLAGS;
     if (cleaned & SET_Z_FLAG) {
         state->cc.z = zero(answer);
     }
@@ -302,7 +302,7 @@ void set_arith_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
  */
 void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
     // remove trailing bits
-    uint8_t cleaned = flagstoset & 0b11111000;
+    uint8_t cleaned = flagstoset & SET_ALL_FLAGS;
     uint16_t answer = (uint16_t) res;
     if (cleaned & SET_Z_FLAG) {
         state->cc.z = zero(answer);
@@ -327,7 +327,7 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
 /**
  * Sets the 16-bit value to the register pair
  */
-void set_reg_pair(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
+void set_pair(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
     uint8_t left = (val >> 8) & 0xff;
     uint8_t right = val & 0xff;
     *left_ptr = left;
@@ -365,7 +365,7 @@ void push_word(State8080 *state, uint16_t word) {
 
 
 /*
- * Pushes contents onto the stack.
+ * Pushes register pair onto the stack.
  */
 void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
     push_word(state, makeword(hi, lo));
@@ -673,7 +673,7 @@ uint8_t get_bc_mem(State8080 *state) {
 
 
 void set_bc_addr(State8080 *state, uint16_t addr) {
-    set_reg_pair(&state->b, &state->c, addr);
+    set_pair(&state->b, &state->c, addr);
 }
 
 
@@ -697,7 +697,7 @@ uint8_t get_de_mem(State8080 *state) {
 
 
 void set_de_addr(State8080 *state, uint16_t addr) {
-    set_reg_pair(&state->d, &state->e, addr);
+    set_pair(&state->d, &state->e, addr);
 }
 
 
@@ -725,7 +725,7 @@ uint8_t get_hl_mem(State8080 *state) {
 
 
 void set_hl_addr(State8080 *state, uint16_t addr) {
-    set_reg_pair(&state->h, &state->l, addr);
+    set_pair(&state->h, &state->l, addr);
 }
 
 
