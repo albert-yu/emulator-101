@@ -368,10 +368,7 @@ void push_word(State8080 *state, uint16_t word) {
  * Pushes contents onto the stack.
  */
 void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
-    uint16_t sp_addr = state->sp;
-    mem_write_byte(state, sp_addr - 1, hi);
-    mem_write_byte(state, sp_addr - 2, lo);
-    state->sp -= 2;
+    push_word(state, makeword(hi, lo));
 }
 
 
