@@ -94,11 +94,18 @@ timestamp ts_utc_micro() {
 
 
 #define MHZ 2
-#define INV_FPS (1.0 / 60.0)
+#define FPS 60
+
+
+// real clock timing
+#define INV_FPS (1.0 / FPS)
 #define INTERVAL_MICROSEC (INV_FPS * 1e6 / MHZ)
 
-// number of cycles between interrupts
-#define CYCLES_INTERVAL 16667
+// cycle timing
+#define CYCLES_PER_FRAME (MHZ * 1e6 / FPS)
+
+// number of cycles between interrupts (every half frame)
+#define CYCLES_INTERVAL (CYCLES_PER_FRAME / 2)
 
 
 void process_interrupts(Machine *machine) {
