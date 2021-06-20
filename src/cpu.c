@@ -1518,10 +1518,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, state->cc.z == 0);
             break;
         case 0xc3:  // JMP adr
-        {
-            uint16_t adr = makeword(opcode[2], opcode[1]);
-            jmp(state, adr);
-        }
+            jmp(state, next_word(state));
             break;
         case 0xc4:  // CNZ adr
             call_cond(state, !state->cc.z);
