@@ -147,15 +147,6 @@ uint8_t mem_read_byte(State8080 *state, uint16_t offset) {
 
 
 /**
- * Returns a pointer to the value at the specified
- * location in memory
- */
-uint8_t* mem_read_ptr(State8080 *state, uint8_t offset) {
-    return &state->memory[offset];
-}
-
-
-/**
  * Returns next byte pointed to by the program counter
  * and increments the program counter
  */
