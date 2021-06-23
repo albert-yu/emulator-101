@@ -735,12 +735,6 @@ void cpu_service_interrupt(State8080 *state) {
 
 
 int cpu_emulate_op(State8080 *state, IO8080 *io) {
-    if (state->pc > ROM_END) {
-        printf("PC exceeds ROM\n");
-        print_failed_state(state);
-        exit(EXIT_FAILURE);
-    }
-
     if (io->in && io->value) {
         // read any in values
         state->a = io->value;
