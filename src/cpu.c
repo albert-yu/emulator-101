@@ -624,7 +624,8 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
     val_to_add = makeword(*x, *y);
     uint32_t result = tworeg_add(
         &state->h, &state->l, val_to_add);
-    state->cc.cy = ((result & 0xffff0000) != 0);
+    // state->cc.cy = ((result & 0xffff0000) != 0);
+    state->cc.cy = (result >> 16) & 1;
 }
 
 
@@ -1010,10 +1011,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // (adr) <- A
             // store accumulator direct
-            // uint16_t addr = makeword(opcode[2], opcode[1]);
             uint16_t addr = next_word(state);
             mem_write_byte(state, addr, state->a);
-            // state->pc += 2;
         }
             break;
         case 0x33:  // INX SP: SP <- SP + 1
