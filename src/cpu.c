@@ -435,16 +435,26 @@ void ret_cond(State8080 *state, uint8_t cond) {
 }
 
 
+void add_to_reg(State8080 *state, uint8_t *reg, uint8_t val, uint8_t carry) {
+    uint16_t answer = (uint16_t) *reg + val + carry;
+    set_arith_flags(state, answer, SET_ALL_FLAGS);
+    *reg = answer & 0xff;
+}
+
+
+void sub_from_reg(State8080 *state, uint8_t *reg, uint8_t val, uint8_t carry) {
+    add_to_reg(state, reg, ~val, !carry);
+    state->cc.cy = !state->cc.cy;
+}
+
+
 /*
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
  * (instructions 0x80 to 0x87)
  */
 void add_x(State8080 *state, uint8_t x) {
-    uint16_t a = (uint16_t) state->a;
-    uint16_t answer = a + (uint16_t) x;
-    set_arith_flags(state, answer, SET_ALL_FLAGS ^ SET_CY_FLAG);
-    state->a = answer & 0xff;
+    add_to_reg(state, &state->a, x, 0);
 }
 
 
@@ -453,13 +463,7 @@ void add_x(State8080 *state, uint8_t x) {
  * ADC X: A <- A + X + CY
  */
 void adc_x(State8080 *state, uint8_t x) {
-    uint16_t a, cy, x16, answer;
-    a = (uint16_t) state->a;
-    cy = (uint16_t) state->cc.cy;
-    x16 = (uint16_t) x;
-    answer = a + cy + x16;
-    set_arith_flags(state, answer, SET_ALL_FLAGS);
-    state->a = answer & 0xff;
+    add_to_reg(state, &state->a, x, state->cc.cy);
 }
 
 
@@ -468,14 +472,7 @@ void adc_x(State8080 *state, uint8_t x) {
  * SUB X: A <- A - X
  */
 void sub_x(State8080 *state, uint8_t x) {
-    uint16_t a = (uint16_t) state->a;
-    uint16_t answer = a - (uint16_t) x;
-    set_arith_flags(state, answer, 
-        SET_ALL_FLAGS ^ SET_CY_FLAG);
-    if (x > state->a) {
-        state->cc.cy = 1;
-    }
-    state->a = answer & 0xff;
+    sub_from_reg(state, &state->a, x, 0);
 }
 
 
@@ -484,17 +481,7 @@ void sub_x(State8080 *state, uint8_t x) {
  * SBB X: A <- A - X - CY
  */
 void sbb_x(State8080 *state, uint8_t x) {
-    uint16_t a, cy, x16, answer;
-    a = (uint16_t) state->a;
-    cy = (uint16_t) state->cc.cy;
-    x16 = (uint16_t) x;
-    answer = a - x16 - cy;
-    set_arith_flags(state, answer, 
-        SET_ALL_FLAGS ^ SET_CY_FLAG);
-    if (x16 + cy > a) {
-        state->cc.cy = 1;
-    }
-    state->a = answer & 0xff;
+    sub_from_reg(state, &state->a, x, state->cc.cy);
 }
 
 
