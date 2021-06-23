@@ -30,7 +30,18 @@ make clean && make debug
 
 ## Run
 
-For the first argument, takes the folder containing `invaders.h`, `invaders.g`, etc.
+For the first argument, takes the folder containing `invaders.h`, `invaders.g`, etc. So with the following folder structure,
+
+```plain
+├── intel8080
+├── invaders
+│   ├── invaders.e
+│   ├── invaders.f
+│   ├── invaders.g
+│   └── invaders.h
+```
+
+Run:
 
 ```bash
 ./intel8080 invaders
