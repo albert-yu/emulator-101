@@ -445,7 +445,7 @@ void ret_cond(State8080 *state, uint8_t cond) {
 void add_x(State8080 *state, uint8_t x) {
     uint16_t a = (uint16_t) state->a;
     uint16_t answer = a + (uint16_t) x;
-    set_arith_flags(state, answer, SET_ALL_FLAGS);
+    set_arith_flags(state, answer, SET_ALL_FLAGS ^ SET_CY_FLAG);
     state->a = answer & 0xff;
 }
 
@@ -510,7 +510,7 @@ void ana_x(State8080 *state, uint8_t x) {
     uint8_t answer;
     answer = state->a & x;
     set_logic_flags(state, answer, SET_ALL_FLAGS);
-    state->a = answer & 0xff;
+    state->a = answer;
 }
 
 
@@ -521,7 +521,7 @@ void ana_x(State8080 *state, uint8_t x) {
 void xra_x(State8080 *state, uint8_t x) {
     uint8_t answer = state->a ^ x;
     set_logic_flags(state, answer, SET_ALL_FLAGS);
-    state->a = answer & 0xff;
+    state->a = answer;
 }
 
 
@@ -532,7 +532,7 @@ void xra_x(State8080 *state, uint8_t x) {
 void ora_x(State8080 *state, uint8_t x) {
     uint8_t answer = state->a | x;
     set_logic_flags(state, answer, SET_ALL_FLAGS);
-    state->a = answer & 0xff;
+    state->a = answer;
 }
 
 
