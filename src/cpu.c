@@ -1047,13 +1047,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         }
             break;
         case 0x3a:  // LDA adr
-        {
             // A <- (adr)
-            // uint16_t addr = makeword(opcode[2], opcode[1]);
-            // state->a = mem_read(state, addr);
-            // state->pc += 2;
             state->a = mem_read_byte(state, next_word(state));
-        }
             break;
         case 0x3b:  // DCX SP
         {
@@ -1487,21 +1482,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             push_pair(state, state->b, state->c);
             break;
         case 0xc6:  // ADI D8
-        {
-            // The immediate form is the almost the 
-            // same except the source of the addend 
-            // is the byte after the instruction. 
-            // Since "opcode" is a pointer to the 
-            // current instruction in memory, 
-            // opcode[1] will be the immediately following byte.
-            uint16_t answer;
-            answer = (uint16_t) state->a + (uint16_t) opcode[1];
-            set_arith_flags(state, answer, SET_ALL_FLAGS);
-
-            state->a = (uint8_t) answer;
-            // instruction is of size 2
-            state->pc += 1;
-        }
+            add_to_reg(state, &state->a, next_byte(state), 0);
             break;
         case 0xc7:  // RST 0
             call_adr(state, 0x00);
@@ -1526,15 +1507,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             call_adr(state, next_word(state)); 
             break;
         case 0xce:  // ACI D8: A <- A + data + CY
-        {
-            uint8_t data = opcode[1];
-            uint16_t a, answer;
-            a = (uint16_t) state->a;
-            answer = a + data + state->cc.cy;
-            set_arith_flags(state, answer, SET_ALL_FLAGS);
-            state->a = answer & 0xff;
-            state->pc += 1;
-        }
+            add_to_reg(state, &state->a, next_byte(state), state->cc.cy);
             break;
         case 0xcf: // RST 8
             call_adr(state, 0x08);
@@ -1562,18 +1535,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             push_pair(state, state->d, state->e);
             break;
         case 0xd6:   // SUI D8
-        {
-            uint8_t byte = opcode[1];
-            uint16_t answer = (uint16_t) state->a - (uint16_t) byte;
-            set_arith_flags(state, answer, 
-                SET_ALL_FLAGS ^ SET_CY_FLAG);
-            if (byte > state->a) {
-                state->cc.cy = 1;
-            }
-            state->a = answer & 0xff;
-            
-            state->pc += 1;
-        } 
+            sub_from_reg(state, &state->a, next_byte(state), 0);
             break;
         case 0xd7:  // RST 2: CALL 10 (hex)
             // 0, 8, 16, 24, 32, 40, 48, and 56
@@ -1633,10 +1595,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xe6:  // ANI D8
         {
-            uint8_t answer = state->a & opcode[1];
+            uint8_t answer = state->a & next_byte(state);
             set_logic_flags(state, answer, SET_ALL_FLAGS);
             state->a = answer & 0xff;
-            state->pc += 1;
         }
             break;
         case 0xe7:  // RST 4
@@ -1667,12 +1628,10 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             break;
         case 0xee:  // XRI D8
         {
-            uint16_t answer;
-            answer = (uint16_t) state->a ^ opcode[1];
+            uint16_t answer = (uint16_t) state->a ^ next_byte(state);
             set_logic_flags(state, answer,
                 SET_ALL_FLAGS);
             state->a = answer & 0xff;
-            state->pc += 1;
         }
             break;
         case 0xef:  // RST 5
