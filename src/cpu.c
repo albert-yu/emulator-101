@@ -302,14 +302,12 @@ void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
     if (cleaned & SET_P_FLAG) {
         state->cc.p = parity(answer);
     }
-
-    // carry and aux carry flags are zero
-    if (cleaned & SET_CY_FLAG) {
-        state->cc.cy = 0;
-    }
     if (cleaned & SET_AC_FLAG) {
-        state->cc.ac = 0; 
+        state->cc.ac = auxcarry(answer); 
     }
+
+    // carry is always zero
+    state->cc.cy = 0;
 }
 
 
@@ -616,12 +614,8 @@ void dcr_x(State8080 *state, uint8_t *ptr) {
  * INX XY: XY <- XY + 1
  */
 void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
-    //tworeg_add(left_ptr, right_ptr, 1);
+    tworeg_add(left_ptr, right_ptr, 1);
     // INX does not set the carry bit
-    (*right_ptr)++;
-    if (*right_ptr == 0) {
-        (*left_ptr)++;
-    }
 }
 
 
