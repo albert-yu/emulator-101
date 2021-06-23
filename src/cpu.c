@@ -905,11 +905,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         {
             // the following two opcodes form an address
             // when put together
-            // uint16_t addr = makeword(opcode[2], opcode[1]);
             uint16_t addr = next_word(state);
             mem_write_byte(state, addr, state->l);
             mem_write_byte(state, addr + 1, state->h);
-            // state->pc += 2;
         }
             break;
         case 0x23:  // INX H
@@ -1002,12 +1000,9 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             state->sp = next_word(state);
             break;
         case 0x32:  // STA adr
-        {
             // (adr) <- A
             // store accumulator direct
-            uint16_t addr = next_word(state);
-            mem_write_byte(state, addr, state->a);
-        }
+            mem_write_byte(state, next_word(state), state->a);
             break;
         case 0x33:  // INX SP: SP <- SP + 1
             // stack pointer is already 16 bits
