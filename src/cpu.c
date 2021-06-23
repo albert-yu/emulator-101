@@ -1605,21 +1605,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             unused_opcode(state, *opcode); 
             break;
         case 0xde:  // SBI D8
-        {
-            uint16_t answer, a, cy, byte;
-            a = (uint16_t) state->a;
-            cy = (uint16_t) state->cc.cy;
-            byte = (uint16_t) opcode[1];
-            answer = a - byte - cy;
-            set_arith_flags(state, answer, 
-                SET_ALL_FLAGS ^ SET_CY_FLAG);
-            // set CY if subtracting larger num
-            if (byte + cy > a) {
-                state->cc.cy = 1;
-            }
-            state->a = answer & 0xff;
-            state->pc += 2;
-        }
+            sub_from_reg(state, &state->a, next_byte(state), state->cc.cy);
             break;
         case 0xdf: // RST 3
             call_adr(state, 0x18);
