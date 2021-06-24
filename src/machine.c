@@ -87,7 +87,6 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
  */
 timestamp ts_utc_micro() {
     struct timespec time;
-    // gettimeofday(&time, NULL);
     timespec_get(&time, TIME_UTC);
     return ((double)time.tv_sec * 1e6) + ((double) time.tv_nsec) / 1000.0;
 }
@@ -134,9 +133,6 @@ int machine_step(Machine *machine) {
         return cycles;
     }
 
-    // NOTE: according to the guide,
-    // the cycle count is 3 instead 
-    // of 10 for IN and OUT. Why?
     if (io->in) {
         uint8_t a = machine_in_cpu(machine, io->port);
         io->value = a;
@@ -159,14 +155,6 @@ void machine_do_sync(Machine *machine) {
         machine->next_int = machine->last_ts + INTERVAL_MICROSEC;
         machine->int_type = 1;
     }
-
-    // if (machine->cpu_state->int_enable && now > machine->next_int) {
-    //     cpu_generate_interrupt(machine->cpu_state, machine->int_type);
-
-    //     // trick to flip between 1 and 2
-    //     machine->int_type = 3 - machine->int_type;
-    //     machine->next_int = now + INTERVAL_MICROSEC / 2.0;
-    // }
 
     timestamp since_last = now - machine->last_ts;
 
@@ -199,7 +187,6 @@ int sleep_msec(long microseconds) {
 
 void machine_run(Machine *machine, long sleep_microseconds) {
     machine_do_sync(machine);
-    // machine_step(machine);
     sleep_msec(sleep_microseconds);
 }
 
