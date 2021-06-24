@@ -54,8 +54,8 @@ void print_instructions(State8080 *state) {
 }
 
 
-/*
- * Print out the state for debugging
+/**
+ * Prints out the state for debugging
  */
 void cpu_print_state(State8080 *state) {
     printf("\n");
@@ -139,7 +139,7 @@ void mem_write_word(State8080 *state, uint16_t offset, uint16_t word) {
 }
 
 
-/*
+/**
  * Combines two 8 bit values into a single
  * 16 bit value
  */
@@ -194,7 +194,7 @@ uint8_t sign(uint16_t answer) {
 }
 
 
-/*
+/**
  * Returns 1 if number of set bits is even and 0 o.w.
  * (only for lower 8 bits)
  */
@@ -214,7 +214,7 @@ uint8_t parity(uint16_t answer) {
 }
 
 
-/*
+/**
  * Returns 1 when instruction resulted 
  * in a carry or borrow into the high order bit
  */
@@ -223,6 +223,10 @@ uint8_t carry(uint16_t answer) {
 }
 
 
+/**
+ * Returns 1 when instruction resulted in
+ * auxiliary carry (half-carry)
+ */
 uint8_t auxcarry(uint16_t answer) {
     // From the manual:
     // If the instruction caused a
@@ -259,7 +263,7 @@ uint8_t auxcarry(uint16_t answer) {
 #define SET_ALL_FLAGS (SET_Z_FLAG | SET_S_FLAG | SET_P_FLAG | SET_CY_FLAG | SET_AC_FLAG)
 
 
-/*
+/**
  * Set the specified flags according to the answer received by
  * arithmetic
  * flagstoset - from left to right, the z, s, p, cy, 
@@ -286,7 +290,7 @@ void set_arith_flags(State8080 *state, uint16_t answer, uint8_t flagstoset) {
 }
 
 
-/*
+/**
  * Sets flags from a logic operation response
  */
 void set_logic_flags(State8080 *state, uint8_t res, uint8_t flagstoset) {
@@ -322,7 +326,7 @@ void set_pair(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 }
 
 
-/*
+/**
  * JMP to address specified
  * in bytes 2 and 3
  */
@@ -331,7 +335,7 @@ void jmp(State8080 *state, uint16_t adr) {
 }
 
 
-/*
+/**
  * If `cond`, JMP to next address
  */
 void jmp_cond(State8080 *state, uint8_t cond) {
@@ -351,7 +355,7 @@ void push_word(State8080 *state, uint16_t word) {
 }
 
 
-/*
+/**
  * Pushes register pair onto the stack.
  */
 void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
@@ -359,7 +363,7 @@ void push_pair(State8080 *state, uint8_t hi, uint8_t lo) {
 }
 
 
-/*
+/**
  * Call specified target address
  */
 void call_adr(State8080 *state, uint16_t adr) {
@@ -419,7 +423,7 @@ uint16_t pop_word(State8080 *state) {
 }
 
 
-/*
+/**
  * RET instruction
  */
 void ret(State8080 *state) {
@@ -448,7 +452,7 @@ void sub_from_reg(State8080 *state, uint8_t *reg, uint8_t val, uint8_t carry) {
 }
 
 
-/*
+/**
  * Performs an add and stores the result in A
  * ADD X: A <- A + X
  * (instructions 0x80 to 0x87)
@@ -458,7 +462,7 @@ void add_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Performs an add carry
  * ADC X: A <- A + X + CY
  */
@@ -467,7 +471,7 @@ void adc_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Performs a sub and stores the result in A
  * SUB X: A <- A - X
  */
@@ -476,7 +480,7 @@ void sub_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Performs a sub carry
  * SBB X: A <- A - X - CY
  */
@@ -485,7 +489,7 @@ void sbb_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Bitwise AND
  * ANA X: A <- A & X
  */
@@ -499,7 +503,7 @@ void ana_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Bitwise XOR
  * XRA X: A <- A ^ X
  */
@@ -510,7 +514,7 @@ void xra_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Bitwise OR
  * ORA X: A <- A | X
  */
@@ -521,7 +525,7 @@ void ora_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Swaps p1 with p2
  */
 void swp_ptrs(uint8_t *p1, uint8_t *p2) {
@@ -532,7 +536,7 @@ void swp_ptrs(uint8_t *p1, uint8_t *p2) {
 }
 
 
-/*
+/**
  * Compare register
  * (A) - (r)
  * The content of register or memory location  (x) 
@@ -548,7 +552,7 @@ void cmp_x(State8080 *state, uint8_t x) {
 }
 
 
-/*
+/**
  * Adds the `val` to the 16-bit number stored by `left_ptr`
  * and `right_ptr` collectively and stores it back in
  * the two pointers. Also returns the result as 32 bits.
@@ -573,7 +577,7 @@ uint32_t tworeg_add(uint8_t *left_ptr, uint8_t *right_ptr, uint16_t val) {
 }
 
 
-/*
+/**
  * Emulates INR (increment register) instruction
  * INR X: X <- X + 1
  */
@@ -585,7 +589,7 @@ void inr_x(State8080 *state, uint8_t *ptr) {
 }
 
 
-/*
+/**
  * Emulates DCR (decrement register) instruction
  * DCR X: X <- X - 1
  */
@@ -597,7 +601,7 @@ void dcr_x(State8080 *state, uint8_t *ptr) {
 }
 
 
-/*
+/**
  * INX XY: XY <- XY + 1
  */
 void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
@@ -606,7 +610,7 @@ void inx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
 }
 
 
-/*
+/**
  * DCX XY: XY <- XY - 1
  */
 void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
@@ -615,7 +619,7 @@ void dcx_xy(uint8_t *left_ptr, uint8_t *right_ptr) {
 }
 
 
-/*
+/**
  * DAD XY: HL <- HL + XY
  * and sets CY flag to 1 if result needs carry
  */
@@ -629,6 +633,9 @@ void dad_xy(State8080 *state, uint8_t *x, uint8_t *y) {
 }
 
 
+/**
+ * Gets the word created by the BC register pair
+ */
 uint16_t bc_addr(State8080 *state) {
     return makeword(state->b, state->c);
 }
@@ -643,16 +650,25 @@ uint8_t get_bc_mem(State8080 *state) {
 }
 
 
+/**
+ * Sets the BC register pair
+ */
 void set_bc_addr(State8080 *state, uint16_t addr) {
     set_pair(&state->b, &state->c, addr);
 }
 
 
+/**
+ * Sets the memory pointed to by the BC register pair
+ */
 void set_bc_mem(State8080 *state, uint8_t val) {
     mem_write_byte(state, bc_addr(state), val);
 }
 
 
+/**
+ * Gets the word created by the DE register pair
+ */
 uint16_t de_addr(State8080 *state) {
     return makeword(state->d, state->e);
 }
@@ -660,7 +676,7 @@ uint16_t de_addr(State8080 *state) {
 
 /**
  * Reads the value in memory pointed to
- * by the BC register pair
+ * by the DE register pair
  */
 uint8_t get_de_mem(State8080 *state) {
     return mem_read_byte(state, de_addr(state));
@@ -677,7 +693,7 @@ void set_de_mem(State8080 *state, uint8_t val) {
 }
 
 
-/*
+/**
  * Returns the address stored in HL register
  * pair
  */
@@ -686,7 +702,7 @@ uint16_t hl_addr(State8080 *state) {
 }
 
 
-/*
+/**
  * Reads the value in memory pointed to by
  * the HL register pair
  */
@@ -695,12 +711,15 @@ uint8_t get_hl_mem(State8080 *state) {
 }
 
 
+/**
+ * Sets the HL register pair
+ */
 void set_hl_addr(State8080 *state, uint16_t addr) {
     set_pair(&state->h, &state->l, addr);
 }
 
 
-/*
+/**
  * Sets the memory addressed by HL to `val`
  */
 void set_hl_mem(State8080 *state, uint8_t val) {
@@ -709,6 +728,9 @@ void set_hl_mem(State8080 *state, uint8_t val) {
 }
 
 
+/**
+ * Clears all I/O values
+ */
 void cpu_io_reset(IO8080 *io) {
     io->in = 0;
     io->out = 0;
@@ -728,7 +750,6 @@ void cpu_service_interrupt(State8080 *state) {
         return;
     }
     state->int_pending = 0;
-    // state->int_enable = 0;
     push_word(state, state->pc);
     jmp(state, state->int_type);
 }
@@ -747,7 +768,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
     uint8_t *opcode = &state->memory[state->pc];
 
-    // disassemble8080op(state->memory, state->pc);
     state->cycles += cycles_lookup[*opcode];
 
     // interrupts are not serviced until
@@ -1264,15 +1284,12 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
         case 0x80:  // ADD B
             add_x(state, state->b);
             break;
-
         case 0x81:  // ADD C
             add_x(state, state->c);
             break;
-
         case 0x82:  // ADD D
             add_x(state, state->d);
             break;
-
         case 0x83:  // ADD E
             add_x(state, state->e);
             break;
@@ -1283,7 +1300,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             add_x(state, state->l);
             break;
         case 0x86:  // ADD M
-            // uint8_t m = get_hl_mem(state);
             add_x(state, get_hl_mem(state));
             break;
         case 0x87:  // ADD A
