@@ -2,6 +2,8 @@
 
 [Emulator 101](http://emulator101.com/)
 
+![Attract mode](img/demo.gif)
+
 ## Build
 
 This depends on SDL2 for rendering graphics. So, on macOS with Homebrew:
@@ -35,10 +37,10 @@ For the first argument, takes the folder containing `invaders.h`, `invaders.g`, 
 ```plain
 ├── intel8080
 ├── invaders
-│   ├── invaders.e
-│   ├── invaders.f
-│   ├── invaders.g
-│   └── invaders.h
+    ├── invaders.e
+    ├── invaders.f
+    ├── invaders.g
+    └── invaders.h
 ```
 
 Run:
