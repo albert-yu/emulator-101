@@ -108,6 +108,7 @@ void platform_run(Machine *machine) {
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
+    uint8_t *framebuf;
     int pending = 0;
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -124,7 +125,7 @@ void platform_run(Machine *machine) {
         machine_run(machine, MICRO_SECS);
 
         // get frame buffer
-        uint8_t *framebuf = machine_framebuffer(machine);
+        framebuf = machine_framebuffer(machine);
 
         // render pixels
         render_bitmap_upright(renderer, framebuf);
