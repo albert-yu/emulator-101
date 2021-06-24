@@ -215,6 +215,43 @@ void* machine_framebuffer(Machine *machine) {
 #define RIGHT_BIT_UNSET ~RIGHT_BIT_SET
 
 
+/**
+ * Returns which port the key
+ * will get mapped to
+ */
+uint8_t which_port(char key) {
+    uint8_t port;
+    switch (key) {
+        case P2_START:
+        case P1_START:
+        case P1_FIRE:
+        case P1_JOY_LEFT: 
+        case P1_JOY_RIGHT:
+        case INSERT_COIN:
+            port = 1;
+            break;
+        case P2_FIRE:
+        case P2_JOY_LEFT: 
+        case P2_JOY_RIGHT:
+            port = 2;
+    } 
+    return port;
+}
+
+
+void machine_insert_coin(Machine *machine) {
+    machine->ports[1] |= 1;
+}
+
+
+void update_io(Machine *machine, char key) {
+    uint8_t port = which_port(key);
+    machine->io->port = port;
+    machine->io->value = machine->ports[port];
+    machine->io->in = 1;
+}
+
+
 void machine_keydown(Machine *machine, char key) {
     switch (key) {
         case P2_START:
@@ -249,11 +286,8 @@ void machine_keydown(Machine *machine, char key) {
             machine_insert_coin(machine);
             break;
     }
-}
 
-
-void machine_insert_coin(Machine *machine) {
-    machine->ports[1] |= 1;
+    update_io(machine, key);
 }
 
 
@@ -286,4 +320,5 @@ void machine_keyup(Machine *machine, char key) {
             machine->ports[2] &= RIGHT_BIT_UNSET;
             break;
     }
+    update_io(machine, key);
 }
