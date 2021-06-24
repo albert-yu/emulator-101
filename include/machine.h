@@ -54,6 +54,12 @@ typedef struct machine_t {
 
 
 /**
+ * Initializes default values for machine ports
+ */
+void machine_init_ports(Machine *machine);
+
+
+/**
  * Executes one CPU instruction
  * through the machine and returns
  * the number of cycles

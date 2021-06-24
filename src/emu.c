@@ -138,6 +138,7 @@ int emu_start(char *folder, EmuMode mode) {
         .ports = {0, 0, 0, 0, 0, 0, 0},
         .int_type = 1,
     };
+    machine_init_ports(&machine);
 
     load_invaders(folder, state.memory);
 

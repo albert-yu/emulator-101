@@ -196,6 +196,19 @@ void* machine_framebuffer(Machine *machine) {
 }
 
 
+// Bits 1-3 always set
+#define PORT_0_DEFAULT 0b00001110
+
+// Bit 3 always set
+#define PORT_1_DEFAULT 0b00001000
+
+
+void machine_init_ports(Machine *machine) {
+    machine->ports[0] = PORT_0_DEFAULT;
+    machine->ports[1] = PORT_1_DEFAULT;
+}
+
+
 #define P2_START_BIT_SET (1 << P2_START)
 #define P1_START_BIT_SET (1 << P1_START)
 
@@ -246,7 +259,6 @@ void machine_insert_coin(Machine *machine) {
 
 void update_io(Machine *machine, char key) {
     uint8_t port = which_port(key);
-    machine->io->port = port;
     machine->io->value = machine->ports[port];
     machine->io->in = 1;
 }
