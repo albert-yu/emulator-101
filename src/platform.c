@@ -68,17 +68,58 @@ size_t get_num_instrs(char *input) {
 }
 
 
+char control_map(SDL_Keycode keycode) {
+    char result = 0;
+    switch (keycode) {
+        case SDLK_KP_ENTER:
+        case SDLK_RETURN:
+            result = P1_START;
+            break;
+        case SDLK_LEFT:
+            result = P1_JOY_LEFT;
+            break;
+        case SDLK_RIGHT:
+            result = P1_JOY_RIGHT;
+            break;
+        case SDLK_SPACE:
+            result = P1_FIRE;
+            break;
+        case SDLK_c:
+            result = INSERT_COIN;
+            break;
+    }
+    return result;
+}
+
+
+void handle_input(SDL_Event *event, Machine *machine) {
+    switch (event->type) {
+        case SDL_KEYDOWN:
+            machine_keydown(machine, control_map(event->key.keysym.sym));
+            break;
+        case SDL_KEYUP:
+            machine_keyup(machine, control_map(event->key.keysym.sym));
+            break;
+    }
+}
+
+
 void platform_run(Machine *machine) {
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
+    int pending = 0;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(COLS, ROWS, 0, &window, &renderer);
     while (1) {
-        if (SDL_PollEvent(&event) && event.type == SDL_QUIT) {
+        pending = SDL_PollEvent(&event);
+        if (pending && event.type == SDL_QUIT) {
             break;
         }
+        // read input
+        handle_input(&event, machine);
+
         // update state
         machine_run(machine, MICRO_SECS);
 

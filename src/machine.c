@@ -249,6 +249,11 @@ void machine_keydown(Machine *machine, char key) {
 }
 
 
+void machine_insert_coin(Machine *machine) {
+    machine->ports[1] |= 1;
+}
+
+
 void machine_keyup(Machine *machine, char key) {
     switch (key) {
         case P2_START:
@@ -277,10 +282,8 @@ void machine_keyup(Machine *machine, char key) {
             // set bit 6 of port 1
             machine->ports[2] &= RIGHT_BIT_UNSET;
             break;
+        case INSERT_COIN:
+            machine_insert_coin(machine);
+            break;
     }
-}
-
-
-void machine_insert_coin(Machine *machine) {
-    machine->ports[1] |= 1;
 }
