@@ -39,14 +39,20 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
     uint8_t a = 0;
     switch (port) {
         case 0:
-            a = machine->ports[0];
+            a = 1;
             break;
         case 1:
-            a = machine->ports[1];
+            a = 0;
             break;
-        case 2:
-            a = machine->ports[2];
-            break;
+        // case 0:
+        //     a = machine->ports[0];
+        //     break;
+        // case 1:
+        //     a = machine->ports[1];
+        //     break;
+        // case 2:
+        //     a = machine->ports[2];
+        //     break;
         case 3:
         {
             uint16_t v = machine->shift_register;
