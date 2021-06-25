@@ -43,7 +43,7 @@ For the first argument, takes the folder containing `invaders.h`, `invaders.g`, 
     └── invaders.h
 ```
 
-Run:
+the command would be:
 
 ```bash
 ./intel8080 invaders
@@ -51,10 +51,21 @@ Run:
 
 To step through one instruction at a time, use the `-s` option:
 
-
 ```bash
 ./intel8080 -s invaders
 ```
+
+### Controls
+
+Currently only single player mode is supported. The mappings are as follows:
+
+|Action|Button|
+|:---:|:---:|
+|Insert coin|<kbd>C</kbd>|
+|Start|<kbd>Enter</kbd>|
+|Left|<kbd>←</kbd>|
+|Right|<kbd>→</kbd>|
+|Fire|<kbd>Space</kbd>|
 
 ## References
 
