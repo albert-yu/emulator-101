@@ -774,6 +774,8 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
 
     state->cycles += cycles_lookup[*opcode];
 
+    // disassemble8080op(state->memory, state->pc);
+
     // interrupts are not serviced until
     // the next instruction
     if (state->int_delay > 0) {
