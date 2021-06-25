@@ -42,14 +42,8 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
             a = 1;
             break;
         case 1:
-            a = 0;
+            a = machine->ports[1];
             break;
-        // case 0:
-        //     a = machine->ports[0];
-        //     break;
-        // case 1:
-        //     a = machine->ports[1];
-        //     break;
         // case 2:
         //     a = machine->ports[2];
         //     break;
