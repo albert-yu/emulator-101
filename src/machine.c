@@ -52,7 +52,6 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
             uint16_t v = machine->shift_register;
             uint8_t shift_offset = machine->ports[2];
             a = (v >> (8 - shift_offset)) & 0xff;
-            // machine->ports.in3 = a; // useless assignment
         }
             break;
     }
