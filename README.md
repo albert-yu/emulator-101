@@ -1,12 +1,12 @@
-# Emulating the Intel 8080
+# [Emulator 101](http://emulator101.com/)
 
-[Emulator 101](http://emulator101.com/)
+This project emulates the Intel 8080 CPU used to run Space Invaders. It also runs Space Invaders in a playable state:
 
 ![Attract mode](img/demo.gif)
 
 ## Build
 
-This depends on SDL2 for rendering graphics. So, on macOS with Homebrew:
+This project depends on [SDL2](https://www.libsdl.org/) for rendering graphics. So, on macOS with Homebrew:
 
 ```bash
 brew install sdl2
@@ -32,7 +32,7 @@ make clean && make debug
 
 ## Run
 
-For the first argument, takes the folder containing `invaders.h`, `invaders.g`, etc. So with the following folder structure,
+For the first argument, the executable takes the folder containing `invaders.h`, `invaders.g`, etc. So with the following folder structure,
 
 ```plain
 ├── intel8080
@@ -49,7 +49,7 @@ the command would be:
 ./intel8080 invaders
 ```
 
-To step through one instruction at a time, use the `-s` option:
+To step through one instruction at a time (useful for debugging or as a reference), use the `-s` option:
 
 ```bash
 ./intel8080 -s invaders
@@ -66,6 +66,8 @@ Currently only single player mode is supported. The mappings are as follows:
 |Left|<kbd>←</kbd>|
 |Right|<kbd>→</kbd>|
 |Fire|<kbd>Space</kbd>|
+
+Controls do not work in step mode.
 
 ## References
 
