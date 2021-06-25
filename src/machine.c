@@ -72,6 +72,9 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
             machine->ports[2] = shift_offset;
         }
             break;
+        case 3:
+            // play sound
+            break;
         case 4:
         {
             uint16_t curr_val = machine->shift_register;
@@ -81,6 +84,9 @@ void machine_out_cpu(Machine *machine, uint8_t port, uint8_t value) {
             uint16_t new_val = (value << 8) | (curr_val >> 8);
             machine->shift_register = new_val;
         }
+            break;
+        case 5:
+            // play sound
             break;
     }
 }
@@ -143,17 +149,6 @@ int machine_step(Machine *machine) {
             machine_out_cpu(machine, io->port, io->value);
             break;
     }
-
-    // if (cpu_io_empty(*io)) {
-    //     return cycles;
-    // }
-
-    // if (io->in) {
-    //     uint8_t a = machine_in_cpu(machine, io->port);
-    //     io->value = a;
-    // } else if (io->out) {
-    //     machine_out_cpu(machine, io->port, io->value);
-    // }
 
     return cycles;
 }

@@ -761,12 +761,6 @@ void cpu_service_interrupt(State8080 *state) {
 
 
 int cpu_emulate_op(State8080 *state, IO8080 *io) {
-    // if (io->in && io->value) {
-    //     // read any in values
-    //     state->a = io->value;
-    // }
-    // cpu_io_reset(io);
-
     cpu_service_interrupt(state);
 
     unsigned long cycles_old = state->cycles;
