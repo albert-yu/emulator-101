@@ -276,7 +276,6 @@ void machine_insert_coin(Machine *machine) {
 void update_io(Machine *machine, char key) {
     uint8_t port = which_port(key);
     machine->io->value = machine->ports[port];
-    machine->io->in = 1;
 }
 
 

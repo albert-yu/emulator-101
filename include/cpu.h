@@ -46,12 +46,6 @@ typedef struct io8080_t {
 
     // port value
     uint8_t value;
-
-    // flag for IN (1 if active)
-    uint8_t in:1;
-
-    // flag for OUT (1 if active)
-    uint8_t out:1;
 } IO8080;
 
 

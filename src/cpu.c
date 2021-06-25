@@ -87,7 +87,7 @@ void cpu_print_state(State8080 *state) {
 
 
 uint8_t cpu_io_empty(IO8080 io) {
-    uint8_t any_filled = io.in || io.out || io.port || io.value;
+    uint8_t any_filled = io.port || io.value;
     return !any_filled;
 }
 
@@ -742,8 +742,6 @@ void cpu_set_acc(State8080 *state, uint8_t val) {
  * Clears all I/O values
  */
 void cpu_io_reset(IO8080 *io) {
-    io->in = 0;
-    io->out = 0;
     io->port = 0;
     io->value = 0;
 }
@@ -1541,7 +1539,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, !state->cc.cy);
             break;
         case 0xd3:  // OUT D8
-            // io->out = 1;
             io->port = next_byte(state);
             io->value = state->a;
             break;
@@ -1568,7 +1565,6 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, state->cc.cy);
             break;
         case 0xdb:  // IN D8
-            // io->in = 1;
             io->port = next_byte(state);
             break;
         case 0xdc:  // CC adr
