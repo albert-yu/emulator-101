@@ -139,8 +139,6 @@ int machine_step(Machine *machine) {
     int cycles = cpu_emulate_op(machine->cpu_state, io);
     machine->cycles += cycles;
 
-    process_interrupts(machine);
-
     switch (opcode) {
         case 0xdb: // IN
             cpu_set_acc(machine->cpu_state, machine_in_cpu(machine, io->port));
@@ -149,6 +147,8 @@ int machine_step(Machine *machine) {
             machine_out_cpu(machine, io->port, io->value);
             break;
     }
+    cpu_io_reset(io);
+    process_interrupts(machine);
 
     return cycles;
 }
