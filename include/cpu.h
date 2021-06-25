@@ -93,6 +93,11 @@ void cpu_print_state(State8080 *state);
 
 
 /**
+ * Returns the current opcode
+ */
+uint8_t cpu_curr_op(State8080 *state);
+
+/**
  * Returns true if the given IO struct
  * is empty (has default values)
  */

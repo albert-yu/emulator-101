@@ -728,6 +728,11 @@ void set_hl_mem(State8080 *state, uint8_t val) {
 }
 
 
+uint8_t cpu_curr_op(State8080 *state) {
+    return mem_read_byte(state, state->pc);
+}
+
+
 /**
  * Clears all I/O values
  */
@@ -756,11 +761,11 @@ void cpu_service_interrupt(State8080 *state) {
 
 
 int cpu_emulate_op(State8080 *state, IO8080 *io) {
-    if (io->in && io->value) {
-        // read any in values
-        state->a = io->value;
-    }
-    cpu_io_reset(io);
+    // if (io->in && io->value) {
+    //     // read any in values
+    //     state->a = io->value;
+    // }
+    // cpu_io_reset(io);
 
     cpu_service_interrupt(state);
 
@@ -1535,7 +1540,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, !state->cc.cy);
             break;
         case 0xd3:  // OUT D8
-            io->out = 1;
+            // io->out = 1;
             io->port = next_byte(state);
             io->value = state->a;
             break;
@@ -1562,7 +1567,7 @@ int cpu_emulate_op(State8080 *state, IO8080 *io) {
             jmp_cond(state, state->cc.cy);
             break;
         case 0xdb:  // IN D8
-            io->in = 1;
+            // io->in = 1;
             io->port = next_byte(state);
             break;
         case 0xdc:  // CC adr

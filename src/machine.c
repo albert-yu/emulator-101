@@ -39,9 +39,14 @@ uint8_t machine_in_cpu(Machine *machine, uint8_t port) {
     uint8_t a = 0;
     switch (port) {
         case 0:
-            return 1;
+            a = machine->ports[0];
+            break;
         case 1:
-            return 0;
+            a = machine->ports[1];
+            break;
+        case 2:
+            a = machine->ports[2];
+            break;
         case 3:
         {
             uint16_t v = machine->shift_register;
@@ -124,21 +129,31 @@ void process_interrupts(Machine *machine) {
 
 int machine_step(Machine *machine) {
     IO8080 *io = machine->io;
+    uint8_t opcode = cpu_curr_op(machine->cpu_state);
     int cycles = cpu_emulate_op(machine->cpu_state, io);
     machine->cycles += cycles;
 
     process_interrupts(machine);
 
-    if (cpu_io_empty(*io)) {
-        return cycles;
+    switch (opcode) {
+        case 0xdb: // IN
+            machine->cpu_state->a = machine_in_cpu(machine, io->port);
+            break;
+        case 0xd3: // OUT
+            machine_out_cpu(machine, io->port, io->value);
+            break;
     }
 
-    if (io->in) {
-        uint8_t a = machine_in_cpu(machine, io->port);
-        io->value = a;
-    } else if (io->out) {
-        machine_out_cpu(machine, io->port, io->value);
-    }
+    // if (cpu_io_empty(*io)) {
+    //     return cycles;
+    // }
+
+    // if (io->in) {
+    //     uint8_t a = machine_in_cpu(machine, io->port);
+    //     io->value = a;
+    // } else if (io->out) {
+    //     machine_out_cpu(machine, io->port, io->value);
+    // }
 
     return cycles;
 }
@@ -330,6 +345,9 @@ void machine_keyup(Machine *machine, char key) {
         case P2_JOY_RIGHT:
             // set bit 6 of port 1
             machine->ports[2] &= RIGHT_BIT_UNSET;
+            break;
+        case INSERT_COIN:
+            machine->ports[1] &= 0b11111110;
             break;
     }
     update_io(machine, key);
