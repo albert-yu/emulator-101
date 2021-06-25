@@ -733,6 +733,11 @@ uint8_t cpu_curr_op(State8080 *state) {
 }
 
 
+void cpu_set_acc(State8080 *state, uint8_t val) {
+    state->a = val;
+}
+
+
 /**
  * Clears all I/O values
  */

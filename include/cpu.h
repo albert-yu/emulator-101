@@ -97,6 +97,13 @@ void cpu_print_state(State8080 *state);
  */
 uint8_t cpu_curr_op(State8080 *state);
 
+
+/**
+ * Sets the value of the accumulator
+ */
+void cpu_set_acc(State8080 *state, uint8_t val);
+
+
 /**
  * Returns true if the given IO struct
  * is empty (has default values)

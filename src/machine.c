@@ -143,7 +143,7 @@ int machine_step(Machine *machine) {
 
     switch (opcode) {
         case 0xdb: // IN
-            machine->cpu_state->a = machine_in_cpu(machine, io->port);
+            cpu_set_acc(machine->cpu_state, machine_in_cpu(machine, io->port));
             break;
         case 0xd3: // OUT
             machine_out_cpu(machine, io->port, io->value);
