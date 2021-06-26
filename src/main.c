@@ -7,9 +7,6 @@
 int main(int argc, char **argv) {
     int opt;
     EmuMode mode = RUN_MODE;
-    // if (argv) {
-    //     load_and_run(argv[1]);
-    // }
     while ((opt = getopt(argc, argv, "rsd")) != -1) {
         switch (opt) {
             case 'r': mode = RUN_MODE; break;

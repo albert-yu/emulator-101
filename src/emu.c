@@ -122,8 +122,6 @@ int emu_start(char *folder, EmuMode mode) {
 
     IO8080 io;
     io = (IO8080) {
-        .in = 0,
-        .out = 0,
         .port = 0,
         .value = 0
     };
