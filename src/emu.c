@@ -8,23 +8,6 @@
 #include "emu.h"
 #include "platform.h"
 
-State8080* state_alloc(size_t mem_size) {
-    State8080 *state = malloc(sizeof(*state));
-    state->memory = (uint8_t*) calloc(mem_size, sizeof(uint8_t));
-    return state;
-}
-
-void state_free(State8080 *state) {
-    if (state) {
-        if (state->memory) {
-            free(state->memory);
-            state->memory = NULL;
-        }
-        free(state);
-        state = NULL;
-    }
-}
-
 
 // 16-bit address has a maximum of
 // 2^15 addressable 8-bit chunks
