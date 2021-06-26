@@ -42,9 +42,6 @@ typedef struct machine_t {
     // time stamp of last time
     timestamp last_ts;
 
-    // time stamp of next interrupt
-    timestamp next_int;
-
     // type of interrupt (1 or 2)
     int int_type;
 

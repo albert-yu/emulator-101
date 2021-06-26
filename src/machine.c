@@ -106,10 +106,6 @@ timestamp ts_utc_micro() {
 #define FPS 60
 
 
-// real clock timing
-#define INV_FPS (1.0 / FPS)
-#define INTERVAL_MICROSEC (INV_FPS * 1e6 / MHZ)
-
 // cycle timing
 #define CYCLES_PER_FRAME (MHZ * 1e6 / FPS)
 
@@ -161,8 +157,6 @@ void machine_do_sync(Machine *machine) {
     timestamp now = ts_utc_micro();
     if (machine->last_ts < EPSILON) {
         machine->last_ts = now;
-        machine->next_int = machine->last_ts + INTERVAL_MICROSEC;
-        machine->int_type = 1;
     }
 
     timestamp since_last = now - machine->last_ts;
