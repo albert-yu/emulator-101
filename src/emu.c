@@ -32,6 +32,7 @@ void load_invaders_chunk(char *invaders_folder, char chunk, uint8_t *memory) {
     FILE *f = fopen(folder_path, "rb");
     if (f == NULL) {
         printf("Error: couldn't open %s\n", folder_path);
+        free(folder_path);
         exit(1);
     }
 
@@ -59,6 +60,8 @@ void load_invaders_chunk(char *invaders_folder, char chunk, uint8_t *memory) {
             break;
     }
     fread(memory + offset, fsize, 1, f);
+
+    free(folder_path);
     fclose(f);
 }
 
