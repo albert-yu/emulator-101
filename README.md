@@ -6,7 +6,7 @@ This project emulates the Intel 8080 CPU used to run Space Invaders. It also run
 
 ## Build
 
-This project depends on [SDL2](https://www.libsdl.org/) for rendering graphics. So, on macOS with Homebrew:
+This project depends on [SDL2](https://www.libsdl.org/) for rendering graphics. To install SDL2 on macOS with Homebrew:
 
 ```bash
 brew install sdl2
