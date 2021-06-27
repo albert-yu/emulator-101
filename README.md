@@ -36,7 +36,7 @@ For the first argument, the executable takes the folder containing `invaders.h`,
 
 ```plain
 ├── intel8080
-├── invaders
+└── invaders
     ├── invaders.e
     ├── invaders.f
     ├── invaders.g
