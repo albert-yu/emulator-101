@@ -85,6 +85,8 @@ int emu_start(char *folder, EmuMode mode) {
         .ac = 0
     };
 
+    uint8_t memory [MAX_MEM];
+
     // declare State8080 struct
     State8080 state;
     state = (State8080) {
@@ -102,7 +104,7 @@ int emu_start(char *folder, EmuMode mode) {
         .int_pending = 0,
         .int_type = 0,
         .cycles = 0,
-        .memory = (uint8_t*) malloc(MAX_MEM * sizeof(*state.memory)),
+        .memory = &memory,
         .cc = cc
     };
 
@@ -135,8 +137,6 @@ int emu_start(char *folder, EmuMode mode) {
             fprintf(stderr, "Disassembler not implemented yet\n");
             break;
     }
-
-    free(state.memory);
 
     return 0;
 }
