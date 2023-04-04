@@ -9,7 +9,8 @@ OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 CFLAGS += -Wall
 CPPFLAGS += -Iinclude
-CPPFLAGS += -I/usr/local/include
+CPPFLAGS += -I/opt/homebrew/include
+LDFLAGS += -L/opt/homebrew/lib
 
 LDLIBS += -lSDL2
 
