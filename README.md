@@ -1,4 +1,4 @@
-# [Emulator 101](http://emulator101.com/)
+# [Emulator 101](https://web.archive.org/web/20241010195903/http://www.emulator101.com/)
 
 This project emulates the Intel 8080 CPU used to run Space Invaders. It also runs Space Invaders in a playable state (I will not be accepting comments about my gaming skills at this time):
 
